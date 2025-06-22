@@ -1,0 +1,41 @@
+{
+	"schemaVersion": 1,
+	"id": "crop-critters",
+	"version": "${version}",
+	"name": "Crop Critters",
+	"description": "Making farming exciting!",
+	"authors": [
+		"Yelf42"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "MIT",
+	"icon": "assets/crop-critters/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"yelf42.cropcritters.CropCritters"
+		],
+		"client": [
+			"yelf42.cropcritters.CropCrittersClient"
+		]
+	},
+	"mixins": [
+		"crop-critters.mixins.json",
+		{
+			"config": "crop-critters.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.16.14",
+		"minecraft": "~1.21.6",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
