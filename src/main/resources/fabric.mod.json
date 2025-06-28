@@ -1,6 +1,6 @@
 {
 	"schemaVersion": 1,
-	"id": "crop-critters",
+	"id": "cropcritters",
 	"version": "${version}",
 	"name": "Crop Critters",
 	"description": "Making farming exciting!",
@@ -12,7 +12,7 @@
 		"sources": "https://github.com/FabricMC/fabric-example-mod"
 	},
 	"license": "MIT",
-	"icon": "assets/crop-critters/icon.png",
+	"icon": "assets/cropcritters/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
@@ -23,9 +23,9 @@
 		]
 	},
 	"mixins": [
-		"crop-critters.mixins.json",
+		"cropcritters.mixins.json",
 		{
-			"config": "crop-critters.client.mixins.json",
+			"config": "cropcritters.client.mixins.json",
 			"environment": "client"
 		}
 	],

@@ -22,7 +22,7 @@ loom {
 	splitEnvironmentSourceSets()
 
 	mods {
-		"crop-critters" {
+		"cropcritters" {
 			sourceSet sourceSets.main
 			sourceSet sourceSets.client
 		}
