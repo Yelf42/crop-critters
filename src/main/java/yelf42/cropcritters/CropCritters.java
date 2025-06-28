@@ -2,11 +2,16 @@ package yelf42.cropcritters;
 
 import net.fabricmc.api.ModInitializer;
 
+import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
+import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityType;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.tag.BiomeTags;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
+import net.minecraft.world.gen.GenerationStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import yelf42.cropcritters.blocks.ModBlocks;
@@ -30,6 +35,8 @@ public class CropCritters implements ModInitializer {
 	public static final TagKey<Block> IGNORE_STRANGE_FERTILIZERS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "ignore_strange_fertilizers"));
 
 
+	public static final Identifier DEAD_CORAL_SHELF_ID = Identifier.of("cropcritters", "dead_coral_shelf");
+
 	@Override
 	public void onInitialize() {
 		// This code runs as soon as Minecraft is in a mod-load-ready state.
@@ -40,5 +47,11 @@ public class CropCritters implements ModInitializer {
 		ModItems.initialize();
 		ModBlocks.initialize();
 		ModEvents.initialize();
+
+		BiomeModifications.addFeature(
+				BiomeSelectors.tag(BiomeTags.IS_BEACH),
+				GenerationStep.Feature.UNDERGROUND_ORES,
+				RegistryKey.of(RegistryKeys.PLACED_FEATURE, DEAD_CORAL_SHELF_ID)
+		);
 	}
 }

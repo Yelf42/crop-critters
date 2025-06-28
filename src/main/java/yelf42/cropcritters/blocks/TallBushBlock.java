@@ -108,6 +108,7 @@ public class TallBushBlock extends BushBlock {
 
     @Override
     protected long getRenderingSeed(BlockState state, BlockPos pos) {
+        //noinspection deprecation
         return MathHelper.hashCode(pos.getX(), pos.down(state.get(HALF) == DoubleBlockHalf.LOWER ? 0 : 1).getY(), pos.getZ());
     }
 }
