@@ -20,6 +20,9 @@
 		],
 		"client": [
 			"yelf42.cropcritters.CropCrittersClient"
+		],
+		"fabric-datagen": [
+			"yelf42.cropcritters.datagen.ModDataGenerator"
 		]
 	},
 	"mixins": [

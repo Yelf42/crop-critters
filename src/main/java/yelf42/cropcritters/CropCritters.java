@@ -4,6 +4,8 @@ import net.fabricmc.api.ModInitializer;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityType;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
@@ -12,6 +14,10 @@ import org.slf4j.LoggerFactory;
 import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.events.ModEvents;
 import yelf42.cropcritters.items.ModItems;
+import yelf42.cropcritters.world.DeadCoralShelfFeature;
+import yelf42.cropcritters.world.DeadCoralShelfFeatureConfig;
+import yelf42.cropcritters.world.ModConfiguredFeatures;
+import yelf42.cropcritters.world.gen.ModWorldGeneration;
 
 public class CropCritters implements ModInitializer {
 	public static final String MOD_ID = "cropcritters";
@@ -30,6 +36,9 @@ public class CropCritters implements ModInitializer {
 	public static final TagKey<Block> IGNORE_STRANGE_FERTILIZERS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "ignore_strange_fertilizers"));
 
 
+	public static final Identifier DEAD_CORAL_SHELF_FEATURE_ID = Identifier.of("cropcritters", "dead_coral_shelf");
+	public static final DeadCoralShelfFeature DEAD_CORAL_SHELF_FEATURE = new DeadCoralShelfFeature(DeadCoralShelfFeatureConfig.CODEC);
+
 	@Override
 	public void onInitialize() {
 		// This code runs as soon as Minecraft is in a mod-load-ready state.
@@ -40,5 +49,7 @@ public class CropCritters implements ModInitializer {
 		ModItems.initialize();
 		ModBlocks.initialize();
 		ModEvents.initialize();
+		Registry.register(Registries.FEATURE, DEAD_CORAL_SHELF_FEATURE_ID, DEAD_CORAL_SHELF_FEATURE);
+		ModWorldGeneration.generateModWorldGen();
 	}
 }
