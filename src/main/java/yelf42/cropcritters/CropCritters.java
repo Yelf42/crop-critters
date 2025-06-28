@@ -3,14 +3,8 @@ package yelf42.cropcritters;
 import net.fabricmc.api.ModInitializer;
 
 import net.minecraft.block.Block;
-import net.minecraft.component.ComponentMap;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ToolComponent;
 import net.minecraft.entity.EntityType;
-import net.minecraft.item.Item;
-import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
@@ -18,9 +12,6 @@ import org.slf4j.LoggerFactory;
 import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.events.ModEvents;
 import yelf42.cropcritters.items.ModItems;
-
-import java.util.List;
-import java.util.stream.Stream;
 
 public class CropCritters implements ModInitializer {
 	public static final String MOD_ID = "cropcritters";
