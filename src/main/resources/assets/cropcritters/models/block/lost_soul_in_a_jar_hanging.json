@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/template_hanging_lantern",
+  "textures": {
+    "lantern": "cropcritters:block/lost_soul_in_a_jar"
+  }
+}

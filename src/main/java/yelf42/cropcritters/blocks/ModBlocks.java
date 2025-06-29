@@ -103,6 +103,20 @@ public class ModBlocks {
             true
     );
 
+    public static final Block LOST_SOUL_IN_A_JAR = register(
+            "lost_soul_in_a_jar",
+            LostSoulInAJarBlock::new,
+            AbstractBlock.Settings.create()
+                    .mapColor(MapColor.IRON_GRAY)
+                    .solid()
+                    .strength(2.5F)
+                    .sounds(BlockSoundGroup.GLASS)
+                    .luminance(state -> 15)
+                    .nonOpaque()
+                    .pistonBehavior(PistonBehavior.DESTROY),
+            true
+    );
+
     private static RegistryKey<Block> keyOfBlock(String name) {
         return RegistryKey.of(RegistryKeys.BLOCK, Identifier.of(CropCritters.MOD_ID, name));
     }
@@ -114,13 +128,13 @@ public class ModBlocks {
     public static void initialize() {
         CropCritters.LOGGER.info("Initializing blocks for " + CropCritters.MOD_ID);
 
-        CropCritters.LOGGER.info("SOUL_FARMLAND item: " + ModBlocks.SOUL_FARMLAND.asItem());
         ItemGroupEvents.modifyEntriesEvent(ModItems.CROP_CRITTERS_ITEM_GROUP_KEY).register((itemGroup) -> {
             itemGroup.add(ModBlocks.SOUL_FARMLAND.asItem());
             itemGroup.add(ModBlocks.CRAWL_THISTLE.asItem());
             itemGroup.add(ModBlocks.CRIMSON_THORNWEED.asItem());
             itemGroup.add(ModBlocks.TALL_BUSH.asItem());
             itemGroup.add(ModBlocks.ORNAMENTAL_BUSH.asItem());
+            itemGroup.add(ModBlocks.LOST_SOUL_IN_A_JAR.asItem());
         });
     }
 }

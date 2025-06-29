@@ -118,23 +118,6 @@ public class StrangeFertilizerItem extends BoneMealItem {
         }
     }
 
-    // Force grow trees?
-    public static boolean useOnFertilizable(ItemStack stack, World world, BlockPos pos) {
-        BlockState blockState = world.getBlockState(pos);
-        if (blockState.getBlock() instanceof Fertilizable fertilizable && fertilizable.isFertilizable(world, pos, blockState)) {
-            if (world instanceof ServerWorld) {
-                if (fertilizable.canGrow(world, world.random, pos, blockState)) {
-                    fertilizable.grow((ServerWorld)world, world.random, pos, blockState);
-                }
-                stack.decrement(1);
-            }
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    // More random / larger than bonemeal effect
     public static boolean useOnGround(ItemStack stack, World world, BlockPos blockPos, BlockPos underwaterPos, @Nullable Direction facing) {
         BlockState state = world.getBlockState(blockPos);
         BlockState underwaterState = world.getBlockState(underwaterPos);
@@ -142,7 +125,7 @@ public class StrangeFertilizerItem extends BoneMealItem {
             useUnderwater(stack, world, underwaterPos, facing);
             return true;
         } else if (state.isIn(BlockTags.DIRT) || state.getBlock() instanceof Fertilizable fertilizable && fertilizable.isFertilizable(world, blockPos, state)) {
-            useOnLand(stack, world, blockPos, facing);
+            useOnLand(stack, world, blockPos);
             return true;
         } else {
             return false;
@@ -201,7 +184,7 @@ public class StrangeFertilizerItem extends BoneMealItem {
         stack.decrement(1);
     }
 
-    private static void useOnLand(ItemStack stack, World world, BlockPos blockPos, @Nullable Direction facing) {
+    private static void useOnLand(ItemStack stack, World world, BlockPos blockPos) {
         if (!(world instanceof ServerWorld)) return;
 
         Random random = world.getRandom();
@@ -271,5 +254,6 @@ public class StrangeFertilizerItem extends BoneMealItem {
                     return revivedState;
                 });
     }
+
 
 }

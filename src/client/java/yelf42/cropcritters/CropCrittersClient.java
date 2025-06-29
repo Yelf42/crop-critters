@@ -11,6 +11,7 @@ public class CropCrittersClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		// To make some parts of the block transparent (like glass, saplings and doors):
+		BlockRenderLayerMap.putBlock(ModBlocks.LOST_SOUL_IN_A_JAR, BlockRenderLayer.CUTOUT);
 		BlockRenderLayerMap.putBlock(ModBlocks.CRAWL_THISTLE, BlockRenderLayer.CUTOUT);
 		BlockRenderLayerMap.putBlock(ModBlocks.CRIMSON_THORNWEED, BlockRenderLayer.CUTOUT);
 		BlockRenderLayerMap.putBlock(ModBlocks.TALL_BUSH, BlockRenderLayer.CUTOUT);
