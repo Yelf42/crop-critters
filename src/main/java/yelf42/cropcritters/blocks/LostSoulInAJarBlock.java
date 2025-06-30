@@ -38,7 +38,7 @@ public class LostSoulInAJarBlock extends LanternBlock {
         if ((Boolean)state.get(POWERED)) world.setBlockState(pos, (BlockState)state.with(POWERED, false), 3);
         if (WeedGrowNotifier.checkWeedsToRing(world, pos)) {
             world.setBlockState(pos, (BlockState)state.with(POWERED, true), 3);
-            ring(world, pos);
+            ring(world, pos, random);
         }
         world.scheduleBlockTick(pos, state.getBlock(), 15, TickPriority.EXTREMELY_LOW);
     }
@@ -56,8 +56,8 @@ public class LostSoulInAJarBlock extends LanternBlock {
 
     }
 
-    public void ring(World world, BlockPos pos) {
-        world.playSound(null, pos, SoundEvents.BLOCK_BELL_USE, SoundCategory.BLOCKS, 1.0f, 1.0f);
+    public void ring(World world, BlockPos pos, Random random) {
+        world.playSound(null, pos, SoundEvents.BLOCK_NOTE_BLOCK_CHIME.value(), SoundCategory.BLOCKS, 2.0f, 1.0f + 0.5f * (float)random.nextInt(7));
     }
 
     @Override
