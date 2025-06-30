@@ -11,6 +11,7 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.BiomeTags;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
+import net.minecraft.world.biome.BiomeKeys;
 import net.minecraft.world.gen.GenerationStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,7 @@ public class CropCritters implements ModInitializer {
 
 
 	public static final Identifier DEAD_CORAL_SHELF_ID = Identifier.of("cropcritters", "dead_coral_shelf");
+	public static final Identifier CRIMSON_THORNWEED_SPAWN_ID = Identifier.of("cropcritters", "crimson_thornweed");
 
 	@Override
 	public void onInitialize() {
@@ -48,10 +50,17 @@ public class CropCritters implements ModInitializer {
 		ModBlocks.initialize();
 		ModEvents.initialize();
 
+		// Vanilla biome mods
+		LOGGER.info("Starting biome changes for " + CropCritters.MOD_ID);
 		BiomeModifications.addFeature(
 				BiomeSelectors.tag(BiomeTags.IS_BEACH),
 				GenerationStep.Feature.UNDERGROUND_ORES,
 				RegistryKey.of(RegistryKeys.PLACED_FEATURE, DEAD_CORAL_SHELF_ID)
+		);
+		BiomeModifications.addFeature(
+				BiomeSelectors.includeByKey(BiomeKeys.CRIMSON_FOREST),
+				GenerationStep.Feature.VEGETAL_DECORATION,
+				RegistryKey.of(RegistryKeys.PLACED_FEATURE, CRIMSON_THORNWEED_SPAWN_ID)
 		);
 	}
 }

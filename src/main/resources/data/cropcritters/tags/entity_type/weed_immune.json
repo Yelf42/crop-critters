@@ -8,6 +8,8 @@
     "#minecraft:undead",
     "#cropcritters:crop_critters",
     "minecraft:parrot",
-    "minecraft:ocelot"
+    "minecraft:ocelot",
+    "minecraft:fox",
+    "minecraft:bee"
   ]
 }

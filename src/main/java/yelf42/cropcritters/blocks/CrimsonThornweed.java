@@ -1,11 +1,14 @@
 package yelf42.cropcritters.blocks;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCollisionHandler;
+import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import yelf42.cropcritters.CropCritters;
 
@@ -13,6 +16,11 @@ public class CrimsonThornweed extends SpreadingWeekBlock {
 
     public CrimsonThornweed(Settings settings) {
         super(settings);
+    }
+
+    @Override
+    protected boolean canPlantOnTop(BlockState floor, BlockView world, BlockPos pos) {
+        return super.canPlantOnTop(floor, world, pos) || floor.isOf(Blocks.CRIMSON_NYLIUM) || floor.isOf(Blocks.WARPED_NYLIUM) || floor.isOf(Blocks.NETHERRACK);
     }
 
     @Override

@@ -28,9 +28,13 @@ public class ModEvents {
     public static void initialize() {
         CropCritters.LOGGER.info("Initializing events for " + CropCritters.MOD_ID);
         registerSoulSoilTilling();
+        registerSoulSandToSoil();
+
         registerDropLostSouls();
+
         registerTrimTallBush();
         registerTrimOrnamentalBush();
+        registerTrimBush();
     }
 
     private static void registerSoulSoilTilling() {
@@ -48,9 +52,60 @@ public class ModEvents {
                 if (state.isOf(Blocks.SOUL_SOIL)) {
                     world.setBlockState(pos, ModBlocks.SOUL_FARMLAND.getDefaultState(), Block.NOTIFY_ALL);
 
-                    if (!player.isCreative()) stack.damage(3, player, LivingEntity.getSlotForHand(hand));
+                    if (!player.isCreative()) stack.damage(1, player, LivingEntity.getSlotForHand(hand));
 
                     world.playSound(null, pos, SoundEvents.ITEM_HOE_TILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
+                    return ActionResult.SUCCESS;
+                }
+            }
+
+            return ActionResult.PASS;
+        });
+    }
+
+    private static void registerSoulSandToSoil() {
+        // Make soul soil tillable
+        UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
+            if (world.isClient) return ActionResult.PASS;
+
+            ItemStack stack = player.getStackInHand(hand);
+            Item item = stack.getItem();
+
+            if (item instanceof HoeItem) {
+                BlockPos pos = hitResult.getBlockPos();
+                BlockState state = world.getBlockState(pos);
+
+                if (state.isOf(Blocks.SOUL_SAND)) {
+                    world.setBlockState(pos, Blocks.SOUL_SOIL.getDefaultState(), Block.NOTIFY_ALL);
+
+                    if (!player.isCreative()) stack.damage(1, player, LivingEntity.getSlotForHand(hand));
+
+                    world.playSound(null, pos, SoundEvents.ITEM_HOE_TILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
+                    return ActionResult.SUCCESS;
+                }
+            }
+
+            return ActionResult.PASS;
+        });
+    }
+
+    private static void registerTrimBush() {
+        UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
+            if (world.isClient) return ActionResult.PASS;
+
+            ItemStack stack = player.getStackInHand(hand);
+            Item item = stack.getItem();
+
+            if (item instanceof ShearsItem) {
+                BlockPos pos = hitResult.getBlockPos();
+                BlockState state = world.getBlockState(pos);
+
+                if (state.isOf(Blocks.BUSH)) {
+                    world.setBlockState(pos, Blocks.DEAD_BUSH.getDefaultState(), Block.NOTIFY_ALL);
+
+                    if (!player.isCreative()) stack.damage(1, player, LivingEntity.getSlotForHand(hand));
+
+                    world.playSound(null, pos, SoundEvents.ITEM_SHEARS_SNIP, SoundCategory.PLAYERS, 1.0F, 1.0F);
                     return ActionResult.SUCCESS;
                 }
             }
@@ -76,7 +131,7 @@ public class ModEvents {
                     world.setBlockState(pos.up(), Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL);
                     TallPlantBlock.placeAt(world, ModBlocks.ORNAMENTAL_BUSH.getDefaultState(), pos, 3);
 
-                    if (!player.isCreative()) stack.damage(3, player, LivingEntity.getSlotForHand(hand));
+                    if (!player.isCreative()) stack.damage(1, player, LivingEntity.getSlotForHand(hand));
 
                     world.playSound(null, pos, SoundEvents.ITEM_SHEARS_SNIP, SoundCategory.PLAYERS, 1.0F, 1.0F);
                     return ActionResult.SUCCESS;
@@ -102,7 +157,7 @@ public class ModEvents {
                     pos = (world.getBlockState(pos.down()).isOf(ModBlocks.ORNAMENTAL_BUSH)) ? pos.down() : pos;
                     world.setBlockState(pos, Blocks.DEAD_BUSH.getDefaultState(), Block.NOTIFY_ALL);
 
-                    if (!player.isCreative()) stack.damage(3, player, LivingEntity.getSlotForHand(hand));
+                    if (!player.isCreative()) stack.damage(1, player, LivingEntity.getSlotForHand(hand));
 
                     world.playSound(null, pos, SoundEvents.ITEM_SHEARS_SNIP, SoundCategory.PLAYERS, 1.0F, 1.0F);
                     return ActionResult.SUCCESS;
@@ -116,11 +171,11 @@ public class ModEvents {
     private static void registerDropLostSouls() {
         ServerEntityCombatEvents.AFTER_KILLED_OTHER_ENTITY.register((world, entity, killedEntity) -> {
             if (world instanceof ServerWorld serverWorld
-                    && ((killedEntity.getType().isIn(CropCritters.CROP_CRITTERS)) || ((ThreadLocalRandom.current().nextInt(10) == 0) && (killedEntity.getType().isIn(EntityTypeTags.UNDEAD))))
+                    && (((ThreadLocalRandom.current().nextInt(5) == 0) && (killedEntity.getType().isIn(CropCritters.CROP_CRITTERS))) || ((ThreadLocalRandom.current().nextInt(10) == 0) && (killedEntity.getType().isIn(EntityTypeTags.UNDEAD))))
                     && (entity instanceof PlayerEntity playerEntity)) {
                 ItemStack stack = playerEntity.getMainHandStack();
                 Item item = stack.getItem();
-                if (item instanceof ShearsItem) {
+                if (item instanceof ShearsItem || item instanceof HoeItem) {
                     Vec3d pos = killedEntity.getPos();
                     ItemEntity ls = new ItemEntity(world, pos.x, pos.y, pos.z, new ItemStack(ModItems.LOST_SOUL));
                     serverWorld.spawnEntity(ls);
