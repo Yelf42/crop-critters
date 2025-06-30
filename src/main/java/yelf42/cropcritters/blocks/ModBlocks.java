@@ -5,6 +5,7 @@ import net.minecraft.block.*;
 import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroups;
 import net.minecraft.registry.*;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.util.Identifier;
@@ -113,6 +114,7 @@ public class ModBlocks {
                     .sounds(BlockSoundGroup.GLASS)
                     .luminance(state -> 15)
                     .nonOpaque()
+                    .ticksRandomly()
                     .pistonBehavior(PistonBehavior.DESTROY),
             true
     );
@@ -136,5 +138,17 @@ public class ModBlocks {
             itemGroup.add(ModBlocks.ORNAMENTAL_BUSH.asItem());
             itemGroup.add(ModBlocks.LOST_SOUL_IN_A_JAR.asItem());
         });
+
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.NATURAL).register((itemGroup) -> {
+            itemGroup.add(ModBlocks.CRAWL_THISTLE.asItem());
+            itemGroup.add(ModBlocks.CRIMSON_THORNWEED.asItem());
+            itemGroup.add(ModBlocks.TALL_BUSH.asItem());
+            itemGroup.add(ModBlocks.ORNAMENTAL_BUSH.asItem());
+        });
+
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register((itemGroup) -> {
+            itemGroup.add(ModBlocks.LOST_SOUL_IN_A_JAR.asItem());
+        });
+
     }
 }

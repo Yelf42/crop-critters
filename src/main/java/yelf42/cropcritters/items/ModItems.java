@@ -22,6 +22,13 @@ public class ModItems {
                     itemGroup.add(ModItems.LOST_SOUL);
                 });
 
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.INGREDIENTS)
+                .register((itemGroup) -> {
+                    itemGroup.add(ModItems.STRANGE_FERTILIZER);
+                    itemGroup.add(ModItems.LOST_SOUL);
+                });
+
+
         // Compostable
         CompostingChanceRegistry.INSTANCE.add(ModItems.STRANGE_FERTILIZER, 1.0f);
 

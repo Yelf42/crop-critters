@@ -6,7 +6,8 @@
       "minecraft:rotten_flesh",
       "minecraft:spider_eye",
       "minecraft:bone",
-      "minecraft:slime_ball"
+      "minecraft:slime_ball",
+      "minecraft:phantom_membrane"
     ],
     "#minecraft:leaves",
     "cropcritters:lost_soul"

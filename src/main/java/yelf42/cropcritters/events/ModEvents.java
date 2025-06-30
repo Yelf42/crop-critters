@@ -124,7 +124,6 @@ public class ModEvents {
                     Vec3d pos = killedEntity.getPos();
                     ItemEntity ls = new ItemEntity(world, pos.x, pos.y, pos.z, new ItemStack(ModItems.LOST_SOUL));
                     serverWorld.spawnEntity(ls);
-                    if (!playerEntity.isCreative()) stack.damage(3, playerEntity, EquipmentSlot.MAINHAND);
                 }
             }
         });

@@ -2,6 +2,8 @@ package yelf42.cropcritters.blocks;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.block.*;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
@@ -13,6 +15,8 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
+import org.jetbrains.annotations.Nullable;
+import yelf42.cropcritters.events.WeedGrowNotifier;
 
 public class SpreadingWeekBlock extends PlantBlock {
     public static final MapCodec<SpreadingWeekBlock> CODEC = createCodec(SpreadingWeekBlock::new);
@@ -95,7 +99,20 @@ public class SpreadingWeekBlock extends PlantBlock {
     public void setToWeed(World world, BlockPos pos) {
         BlockState blockState = this.getDefaultState();
         world.setBlockState(pos, blockState);
+        WeedGrowNotifier.notifyEvent(world, pos);
         world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, blockState));
+    }
+
+    @Override
+    public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
+        WeedGrowNotifier.notifyEvent(world, pos);
+        super.onPlaced(world, pos, state, placer, itemStack);
+    }
+
+    @Override
+    protected void onStateReplaced(BlockState state, ServerWorld world, BlockPos pos, boolean moved) {
+        WeedGrowNotifier.notifyRemoval(world, pos);
+        super.onStateReplaced(state, world, pos, moved);
     }
 
     @Override
