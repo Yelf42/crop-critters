@@ -7,31 +7,45 @@ import yelf42.cropcritters.CropCritters;
 import java.util.*;
 
 public class WeedGrowNotifier {
-    private static final Map<World, Set<BlockPos>> weedsToRing = new WeakHashMap<>();
+    private static final Map<World, Map<BlockPos, Long>> weedsToRing = new WeakHashMap<>();
     private static final int RADIUS = 128;
+    private static final long MAX_AGE_TICKS = 20 * 60;
 
     public static boolean checkWeedsToRing(World world, BlockPos bellPos) {
-        Set<BlockPos> positions = weedsToRing.get(world);
+        Map<BlockPos, Long> positions = weedsToRing.get(world);
         if (positions == null) return false;
-        for (BlockPos weedPos : positions) {
-            if (weedPos.isWithinDistance(bellPos, RADIUS)) {
-                positions.remove(weedPos);
+
+        long currentTime = world.getTime();
+        for (var entry : positions.entrySet()) {
+            // Position too old, delete
+            if (currentTime - entry.getValue() > MAX_AGE_TICKS) {
+                positions.remove(entry.getKey());
+                continue;
+            }
+
+            // Position close, delete and ring
+            if (entry.getKey().isWithinDistance(bellPos, RADIUS)) {
+                positions.remove(entry.getKey());
                 if (positions.isEmpty()) {
                     weedsToRing.remove(world);
                 }
                 return true;
             }
         }
+        if (positions.isEmpty()) {
+            weedsToRing.remove(world);
+        }
+
         return false;
     }
 
     public static void notifyEvent(World world, BlockPos eventPos) {
-        weedsToRing.computeIfAbsent(world, w -> new HashSet<>())
-                .add(eventPos.toImmutable());
+        weedsToRing.computeIfAbsent(world, w -> new HashMap<>())
+                .put(eventPos.toImmutable(), world.getTime());
     }
 
     public static void notifyRemoval(World world, BlockPos eventPos) {
-        Set<BlockPos> positions = weedsToRing.get(world);
+        Map<BlockPos, Long> positions = weedsToRing.get(world);
         if (positions == null) return;
         positions.remove(eventPos);
         if (positions.isEmpty()) {
