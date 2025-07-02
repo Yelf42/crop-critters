@@ -6,6 +6,7 @@ import net.minecraft.item.*;
 import net.minecraft.registry.*;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Rarity;
 import yelf42.cropcritters.CropCritters;
 
 import java.util.function.Function;
@@ -61,6 +62,6 @@ public class ModItems {
     // 2. Add textures.item item.png
     // 3. Add items item.json
     // 4. Add models.items item.json
-    public static final Item STRANGE_FERTILIZER = register("strange_fertilizer", StrangeFertilizerItem::new, new Item.Settings());
-    public static final Item LOST_SOUL = register("lost_soul", Item::new, new Item.Settings());
+    public static final Item STRANGE_FERTILIZER = register("strange_fertilizer", StrangeFertilizerItem::new, new Item.Settings().rarity(Rarity.UNCOMMON));
+    public static final Item LOST_SOUL = register("lost_soul", Item::new, new Item.Settings().rarity(Rarity.UNCOMMON));
 }
