@@ -13,5 +13,7 @@
   "block.cropcritters.ornamental_bush": "Ornamental Bush",
   "item.cropcritters.ornamental_bush": "Ornamental Bush",
   "block.cropcritters.lost_soul_in_a_jar": "Lost Soul in a Bottle",
-  "item.cropcritters.lost_soul_in_a_jar": "Lost Soul in a Bottle"
+  "item.cropcritters.lost_soul_in_a_jar": "Lost Soul in a Bottle",
+  "entity.cropcritters.wheat_critter": "Wheat Critter",
+  "item.cropcritters.wheat_critter_spawn_egg": "Wheat Critter Spawn Egg"
 }

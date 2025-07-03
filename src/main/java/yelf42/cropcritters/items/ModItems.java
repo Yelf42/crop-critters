@@ -2,12 +2,15 @@ package yelf42.cropcritters.items;
 
 import net.fabricmc.fabric.api.itemgroup.v1.*;
 import net.fabricmc.fabric.api.registry.*;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.*;
 import net.minecraft.registry.*;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
 import yelf42.cropcritters.CropCritters;
+import yelf42.cropcritters.entity.ModEntities;
 
 import java.util.function.Function;
 
@@ -21,6 +24,7 @@ public class ModItems {
                 .register((itemGroup) -> {
                     itemGroup.add(ModItems.STRANGE_FERTILIZER);
                     itemGroup.add(ModItems.LOST_SOUL);
+                    itemGroup.add(ModItems.WHEAT_CRITTER_SPAWN_EGG);
                 });
 
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.INGREDIENTS)
@@ -64,4 +68,17 @@ public class ModItems {
     // 4. Add models.items item.json
     public static final Item STRANGE_FERTILIZER = register("strange_fertilizer", StrangeFertilizerItem::new, new Item.Settings().rarity(Rarity.UNCOMMON));
     public static final Item LOST_SOUL = register("lost_soul", Item::new, new Item.Settings().rarity(Rarity.UNCOMMON));
+
+
+
+    public static Item registerSpawnEgg(String name, EntityType<? extends MobEntity> entityType) {
+        // Create the item key.
+        RegistryKey<Item> itemKey = RegistryKey.of(RegistryKeys.ITEM, Identifier.of(CropCritters.MOD_ID, name));
+
+        // Register the item.
+        return Registry.register(Registries.ITEM,
+                itemKey,
+                new SpawnEggItem(entityType, new Item.Settings().registryKey(itemKey)));
+    }
+    public static final Item WHEAT_CRITTER_SPAWN_EGG = registerSpawnEgg("wheat_critter_spawn_egg", ModEntities.WHEAT_CRITTER);
 }
