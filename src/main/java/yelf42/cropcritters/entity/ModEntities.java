@@ -1,7 +1,6 @@
 package yelf42.cropcritters.entity;
 
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.registry.Registries;
@@ -10,8 +9,6 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
 import yelf42.cropcritters.CropCritters;
-
-import java.util.function.Supplier;
 
 public class ModEntities {
 

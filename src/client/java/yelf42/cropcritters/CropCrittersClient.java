@@ -4,15 +4,10 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.color.world.BiomeColors;
 import net.minecraft.client.render.BlockRenderLayer;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
 import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.entity.ModEntities;
-import yelf42.cropcritters.entity.WheatCritterEntity;
 import yelf42.cropcritters.renderer.entity.WheatCritterRenderer;
 
 public class CropCrittersClient implements ClientModInitializer {
