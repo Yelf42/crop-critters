@@ -22,7 +22,7 @@ public class ModEntities {
     public static final EntityType<WheatCritterEntity> WHEAT_CRITTER = Registry.register(Registries.ENTITY_TYPE,
             Identifier.of(CropCritters.MOD_ID, "wheat_critter"),
             EntityType.Builder.create(WheatCritterEntity::new, SpawnGroup.MISC)
-                    .dimensions(1f, 1f).build(WHEAT_CRITTER_KEY));
+                    .dimensions(0.7f, 0.9f).build(WHEAT_CRITTER_KEY));
 
 
 }
