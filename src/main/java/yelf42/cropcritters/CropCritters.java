@@ -16,6 +16,7 @@ import net.minecraft.world.gen.GenerationStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import yelf42.cropcritters.blocks.ModBlocks;
+import yelf42.cropcritters.config.ConfigManager;
 import yelf42.cropcritters.entity.ModEntities;
 import yelf42.cropcritters.events.ModEvents;
 import yelf42.cropcritters.items.ModItems;
@@ -48,6 +49,9 @@ public class CropCritters implements ModInitializer {
 		// Proceed with mild caution.
 
 		LOGGER.info("Starting initialize of " + CropCritters.MOD_ID);
+		// Config load:
+		ConfigManager.load();
+
 		ModEntities.initialize();
 		ModItems.initialize();
 		ModBlocks.initialize();

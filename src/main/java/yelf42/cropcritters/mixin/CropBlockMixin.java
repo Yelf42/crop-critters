@@ -15,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import yelf42.cropcritters.blocks.ModBlocks;
+import yelf42.cropcritters.config.ConfigManager;
 
 @Mixin(CropBlock.class)
 public abstract class CropBlockMixin {
@@ -52,14 +53,14 @@ public abstract class CropBlockMixin {
         }
 
         BlockState soilCheck = world.getBlockState(pos.down());
-        if (soilCheck.isOf(Blocks.FARMLAND) && random.nextInt(100) < 2) {
+        if (soilCheck.isOf(Blocks.FARMLAND) && random.nextInt(100) + 1 < ConfigManager.CONFIG.thistle_chance) {
             BlockState weedState = ModBlocks.CRAWL_THISTLE.getDefaultState();
             world.setBlockState(pos, weedState);
             world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
             return;
         }
 
-        if (soilCheck.isOf(ModBlocks.SOUL_FARMLAND) && random.nextInt(100) < 2) {
+        if (soilCheck.isOf(ModBlocks.SOUL_FARMLAND) && random.nextInt(100) + 1 < ConfigManager.CONFIG.thornweed_chance) {
             BlockState weedState = ModBlocks.CRIMSON_THORNWEED.getDefaultState();
             world.setBlockState(pos, weedState);
             world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
