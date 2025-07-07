@@ -20,6 +20,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.blocks.ModBlocks;
+import yelf42.cropcritters.config.ConfigManager;
 import yelf42.cropcritters.items.ModItems;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -171,12 +172,13 @@ public class ModEvents {
     private static void registerDropLostSouls() {
         ServerEntityCombatEvents.AFTER_KILLED_OTHER_ENTITY.register((world, entity, killedEntity) -> {
             if (world instanceof ServerWorld serverWorld
-                    && (((ThreadLocalRandom.current().nextInt(5) == 0) && (killedEntity.getType().isIn(CropCritters.CROP_CRITTERS))) || ((ThreadLocalRandom.current().nextInt(10) == 0) && (killedEntity.getType().isIn(EntityTypeTags.UNDEAD))))
+                    && ((ThreadLocalRandom.current().nextInt(100) + 1 < ConfigManager.CONFIG.lost_soul_drop_chance) && (killedEntity.getType().isIn(CropCritters.HAS_LOST_SOUL)))
                     && (entity instanceof PlayerEntity playerEntity)) {
                 ItemStack stack = playerEntity.getMainHandStack();
                 Item item = stack.getItem();
                 if (item instanceof ShearsItem || item instanceof HoeItem) {
                     Vec3d pos = killedEntity.getPos();
+                    // TODO Play sfx and spawn particles
                     ItemEntity ls = new ItemEntity(world, pos.x, pos.y, pos.z, new ItemStack(ModItems.LOST_SOUL));
                     serverWorld.spawnEntity(ls);
                 }

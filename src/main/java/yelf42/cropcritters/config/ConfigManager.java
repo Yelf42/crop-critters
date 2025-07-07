@@ -31,8 +31,9 @@ public class ConfigManager {
                 String value = parts[1].trim();
 
                 switch (key) {
-                    case "thistleGrowChance" -> CONFIG.thistle_chance = Integer.parseInt(value);
-                    case "thornweedGrowChance" -> CONFIG.thornweed_chance = Integer.parseInt(value);
+                    case "thistleGrowChance" -> CONFIG.thistle_chance = Math.clamp(Integer.parseInt(value), 0, 100);
+                    case "thornweedGrowChance" -> CONFIG.thornweed_chance = Math.clamp(Integer.parseInt(value), 0, 100);
+                    case "lostSoulDropChance" -> CONFIG.lost_soul_drop_chance = Math.clamp(Integer.parseInt(value), 0, 100);
                 }
             }
         } catch (IOException e) {
@@ -48,6 +49,9 @@ public class ConfigManager {
             writer.write("# Weed percentage grow chances:\n");
             writer.write("thistleGrowChance = " + CONFIG.thistle_chance + "\n");
             writer.write("thornweedGrowChance = " + CONFIG.thornweed_chance + "\n");
+            writer.write("# \n");
+            writer.write("# Lost soul mob drop chance:\n");
+            writer.write("lostSoulDropChance = " + CONFIG.lost_soul_drop_chance + "\n");
         } catch (IOException e) {
             System.err.println("Failed to save config: " + e.getMessage());
         }
