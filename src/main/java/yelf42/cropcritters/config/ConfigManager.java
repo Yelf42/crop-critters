@@ -34,6 +34,7 @@ public class ConfigManager {
                     case "thistleGrowChance" -> CONFIG.thistle_chance = Math.clamp(Integer.parseInt(value), 0, 100);
                     case "thornweedGrowChance" -> CONFIG.thornweed_chance = Math.clamp(Integer.parseInt(value), 0, 100);
                     case "lostSoulDropChance" -> CONFIG.lost_soul_drop_chance = Math.clamp(Integer.parseInt(value), 0, 100);
+                    case "monocultureDampener" -> CONFIG.monoculture_dampener = Math.clamp(Integer.parseInt(value), 1, 1000);
                 }
             }
         } catch (IOException e) {
@@ -49,6 +50,9 @@ public class ConfigManager {
             writer.write("# Weed percentage grow chances:\n");
             writer.write("thistleGrowChance = " + CONFIG.thistle_chance + "\n");
             writer.write("thornweedGrowChance = " + CONFIG.thornweed_chance + "\n");
+            writer.write("# Strength monocultural crops have on weed chance:\n");
+            writer.write("# (Higher number means monoculture's have less impact)\n");
+            writer.write("monocultureDampener = " + CONFIG.monoculture_dampener + "\n");
             writer.write("# \n");
             writer.write("# Lost soul mob drop chance:\n");
             writer.write("lostSoulDropChance = " + CONFIG.lost_soul_drop_chance + "\n");
