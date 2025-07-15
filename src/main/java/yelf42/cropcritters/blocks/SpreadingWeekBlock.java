@@ -10,11 +10,14 @@ import net.minecraft.state.StateManager;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldView;
 import net.minecraft.world.event.GameEvent;
+import net.minecraft.world.tick.ScheduledTickView;
 import org.jetbrains.annotations.Nullable;
 import yelf42.cropcritters.events.WeedGrowNotifier;
 
@@ -23,6 +26,7 @@ public class SpreadingWeekBlock extends PlantBlock {
     public static final int MAX_AGE = 1;
     public static final IntProperty AGE = Properties.AGE_1;
     private static final VoxelShape[] SHAPES_BY_AGE = Block.createShapeArray(2, age -> Block.createColumnShape(16.0, 0.0, 8 + age * 8));
+    private boolean reachedMaxNeighbours = false;
 
     public SpreadingWeekBlock(AbstractBlock.Settings settings) {
         super(settings);
@@ -62,8 +66,14 @@ public class SpreadingWeekBlock extends PlantBlock {
     }
 
     @Override
+    protected BlockState getStateForNeighborUpdate(BlockState state, WorldView world, ScheduledTickView tickView, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, Random random) {
+        reachedMaxNeighbours = false;
+        return super.getStateForNeighborUpdate(state, world, tickView, pos, direction, neighborPos, neighborState, random);
+    }
+
+    @Override
     protected boolean hasRandomTicks(BlockState state) {
-        return true;
+        return !reachedMaxNeighbours;
     }
 
     @Override
@@ -89,6 +99,8 @@ public class SpreadingWeekBlock extends PlantBlock {
                 if (canPlantOnTop(targetState, world, targetPos) && (aboveTargetState.isAir() || aboveTargetState.isIn(BlockTags.MAINTAINS_FARMLAND) || aboveTargetState.isIn(BlockTags.FLOWERS))) {
                     setToWeed(world, targetPos.up());
                 }
+            } else {
+                reachedMaxNeighbours = true;
             }
         } else if (random.nextInt(2) == 0) {
             // 50% chance to mature per random tick

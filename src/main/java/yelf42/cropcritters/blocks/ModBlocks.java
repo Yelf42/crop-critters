@@ -76,6 +76,21 @@ public class ModBlocks {
             true
     );
 
+    public static final Block WITHERING_SPITEWEED = register(
+            "withering_spiteweed",
+            WitheringSpiteweed::new,
+            AbstractBlock.Settings.create()
+                    .mapColor(MapColor.BLACK)
+                    .noCollision()
+                    .requiresTool()
+                    .ticksRandomly()
+                    .strength(0.5f)
+                    .sounds(BlockSoundGroup.SWEET_BERRY_BUSH)
+                    .offset(AbstractBlock.OffsetType.XZ)
+                    .pistonBehavior(PistonBehavior.DESTROY),
+            true
+    );
+
     public static final Block TALL_BUSH = register(
             "tall_bush",
             TallBushBlock::new,
@@ -134,6 +149,7 @@ public class ModBlocks {
             itemGroup.add(ModBlocks.SOUL_FARMLAND.asItem());
             itemGroup.add(ModBlocks.CRAWL_THISTLE.asItem());
             itemGroup.add(ModBlocks.CRIMSON_THORNWEED.asItem());
+            itemGroup.add(ModBlocks.WITHERING_SPITEWEED.asItem());
             itemGroup.add(ModBlocks.TALL_BUSH.asItem());
             itemGroup.add(ModBlocks.ORNAMENTAL_BUSH.asItem());
             itemGroup.add(ModBlocks.LOST_SOUL_IN_A_JAR.asItem());
@@ -142,6 +158,7 @@ public class ModBlocks {
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.NATURAL).register((itemGroup) -> {
             itemGroup.add(ModBlocks.CRAWL_THISTLE.asItem());
             itemGroup.add(ModBlocks.CRIMSON_THORNWEED.asItem());
+            itemGroup.add(ModBlocks.WITHERING_SPITEWEED.asItem());
             itemGroup.add(ModBlocks.TALL_BUSH.asItem());
             itemGroup.add(ModBlocks.ORNAMENTAL_BUSH.asItem());
         });
