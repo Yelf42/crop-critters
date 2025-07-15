@@ -35,6 +35,8 @@ public class ConfigManager {
                     case "thornweedGrowChance" -> CONFIG.thornweed_chance = Math.clamp(Integer.parseInt(value), 0, 100);
                     case "spiteweedGrowChance" -> CONFIG.spiteweed_chance = Math.clamp(Integer.parseInt(value), 0, 100);
                     case "lostSoulDropChance" -> CONFIG.lost_soul_drop_chance = Math.clamp(Integer.parseInt(value), 0, 100);
+                    case "monoculturePenalize" -> CONFIG.monoculture_penalize = Boolean.parseBoolean(value);
+                    case "monocultureDampener" -> CONFIG.monoculture_dampener = Math.clamp(Integer.parseInt(value), 1, 1000);
                     case "critterSpawnChance" -> CONFIG.critter_spawn_chance = Math.clamp(Integer.parseInt(value), 0, 100);
                 }
             }
@@ -52,6 +54,11 @@ public class ConfigManager {
             writer.write("thistleGrowChance = " + CONFIG.thistle_chance + "\n");
             writer.write("thornweedGrowChance = " + CONFIG.thornweed_chance + "\n");
             writer.write("spiteweedGrowChance = " + CONFIG.spiteweed_chance + "\n");
+            writer.write("# Should monocultures have increased weed chances:\n");
+            writer.write("monoculturePenalize = " + CONFIG.monoculture_penalize + "\n");
+            writer.write("# Strength monocultural crops have on weed chance:\n");
+            writer.write("# (Higher number means monoculture's have less impact)\n");
+            writer.write("monocultureDampener = " + CONFIG.monoculture_dampener + "\n");
             writer.write("# \n");
             writer.write("# Lost soul mob drop chance:\n");
             writer.write("lostSoulDropChance = " + CONFIG.lost_soul_drop_chance + "\n");

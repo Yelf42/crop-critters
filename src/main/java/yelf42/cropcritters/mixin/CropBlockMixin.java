@@ -16,6 +16,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.event.GameEvent;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -92,6 +93,23 @@ public abstract class CropBlockMixin {
         if (state.getBlock() instanceof CropBlock cropBlock) {
             if (!cropBlock.isMature(state)) return;
         }
+
+        // Count how many neighbours are the same type of crop
+        // More identical crops increases chance of weed growth
+        float monoCount = 1F;
+        if (ConfigManager.CONFIG.monoculture_penalize) {
+            for (int i = -1; i <= 1; i++) {
+                for (int j = -1; j <= 1; j++) {
+                    if (i == j && j == 0) continue;
+                    BlockState cropToCheck = world.getBlockState(pos.add(i,0, j));
+                    monoCount += cropToCheck.isOf(state.getBlock()) ? 1F : 0F;
+                }
+            }
+            // Quadratic penalty increase for monocultural practices
+            monoCount = (monoCount * monoCount) / (float)ConfigManager.CONFIG.monoculture_dampener;
+        }
+        boolean growThistle = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.thistle_chance * monoCount;
+        boolean growThornweed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.thornweed_chance * monoCount;
 
         BlockState soilCheck = world.getBlockState(pos.down());
         if (Objects.equals(world.getBiome(pos).getIdAsString(), "minecraft:soul_sand_valley")) {
