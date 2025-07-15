@@ -46,7 +46,7 @@ public abstract class CropBlockMixin {
     private static void soulBasedMoisture(Block block, BlockView world, BlockPos pos, CallbackInfoReturnable<Float> cir) {
         BlockState blockState = world.getBlockState(pos.down());
         if (blockState.isOf(ModBlocks.SOUL_FARMLAND)) {
-            cir.setReturnValue(8.f);
+            cir.setReturnValue(18.f);
         }
     }
 
@@ -68,6 +68,7 @@ public abstract class CropBlockMixin {
         }
     }
 
+    // Spawn critter chance if air above
     // Stop aging if not on farmland
     @Inject(method = "randomTick", at = @At("HEAD"), cancellable = true)
     private static void stopGrowthOnDirtAndSpawnCritters(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
@@ -118,6 +119,7 @@ public abstract class CropBlockMixin {
             if (growSpiteweed && (soilCheck.isOf(Blocks.SOUL_SOIL) || soilCheck.isOf(Blocks.SOUL_SAND) || soilCheck.isOf(ModBlocks.SOUL_FARMLAND))) {
                 BlockState weedState = ModBlocks.WITHERING_SPITEWEED.getDefaultState();
                 world.setBlockState(pos, weedState);
+                world.setBlockState(pos.down(), Blocks.BLACKSTONE.getDefaultState(), Block.NOTIFY_LISTENERS);
                 world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
                 return;
             }

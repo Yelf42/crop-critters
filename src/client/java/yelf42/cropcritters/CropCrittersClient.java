@@ -17,6 +17,7 @@ public class CropCrittersClient implements ClientModInitializer {
 		BlockRenderLayerMap.putBlock(ModBlocks.LOST_SOUL_IN_A_JAR, BlockRenderLayer.CUTOUT);
 		BlockRenderLayerMap.putBlock(ModBlocks.CRAWL_THISTLE, BlockRenderLayer.CUTOUT);
 		BlockRenderLayerMap.putBlock(ModBlocks.CRIMSON_THORNWEED, BlockRenderLayer.CUTOUT);
+		BlockRenderLayerMap.putBlock(ModBlocks.WITHERING_SPITEWEED, BlockRenderLayer.CUTOUT);
 		BlockRenderLayerMap.putBlock(ModBlocks.TALL_BUSH, BlockRenderLayer.CUTOUT);
 		ColorProviderRegistry.BLOCK.register((state, world, pos, tintIndex) ->
 				world != null && pos != null
