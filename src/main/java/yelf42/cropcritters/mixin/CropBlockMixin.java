@@ -110,24 +110,26 @@ public abstract class CropBlockMixin {
         }
         boolean growThistle = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.thistle_chance * monoCount;
         boolean growThornweed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.thornweed_chance * monoCount;
+        boolean growSpiteweed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.spiteweed_chance * monoCount;
+
 
         BlockState soilCheck = world.getBlockState(pos.down());
         if (Objects.equals(world.getBiome(pos).getIdAsString(), "minecraft:soul_sand_valley")) {
-            if (random.nextInt(100) + 1 < ConfigManager.CONFIG.spiteweed_chance && (soilCheck.isOf(Blocks.SOUL_SOIL) || soilCheck.isOf(Blocks.SOUL_SAND) || soilCheck.isOf(ModBlocks.SOUL_FARMLAND))) {
+            if (growSpiteweed && (soilCheck.isOf(Blocks.SOUL_SOIL) || soilCheck.isOf(Blocks.SOUL_SAND) || soilCheck.isOf(ModBlocks.SOUL_FARMLAND))) {
                 BlockState weedState = ModBlocks.WITHERING_SPITEWEED.getDefaultState();
                 world.setBlockState(pos, weedState);
                 world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
                 return;
             }
         } else {
-            if (soilCheck.isOf(Blocks.FARMLAND) && random.nextInt(100) + 1 < ConfigManager.CONFIG.thistle_chance) {
+            if (growThistle && soilCheck.isOf(Blocks.FARMLAND)) {
                 BlockState weedState = ModBlocks.CRAWL_THISTLE.getDefaultState();
                 world.setBlockState(pos, weedState);
                 world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
                 return;
             }
 
-            if (soilCheck.isOf(ModBlocks.SOUL_FARMLAND) && random.nextInt(100) + 1 < ConfigManager.CONFIG.thornweed_chance) {
+            if (growThornweed && soilCheck.isOf(ModBlocks.SOUL_FARMLAND)) {
                 BlockState weedState = ModBlocks.CRIMSON_THORNWEED.getDefaultState();
                 world.setBlockState(pos, weedState);
                 world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
