@@ -33,6 +33,7 @@ public class ConfigManager {
                 switch (key) {
                     case "thistleGrowChance" -> CONFIG.thistle_chance = Math.clamp(Integer.parseInt(value), 0, 100);
                     case "thornweedGrowChance" -> CONFIG.thornweed_chance = Math.clamp(Integer.parseInt(value), 0, 100);
+                    case "waftgrassGrowChance" -> CONFIG.waftgrass_chance = Math.clamp(Integer.parseInt(value), 0, 100);
                     case "spiteweedGrowChance" -> CONFIG.spiteweed_chance = Math.clamp(Integer.parseInt(value), 0, 100);
                     case "lostSoulDropChance" -> CONFIG.lost_soul_drop_chance = Math.clamp(Integer.parseInt(value), 0, 100);
                     case "monoculturePenalize" -> CONFIG.monoculture_penalize = Boolean.parseBoolean(value);
@@ -53,6 +54,7 @@ public class ConfigManager {
             writer.write("# Weed percentage grow chances:\n");
             writer.write("thistleGrowChance = " + CONFIG.thistle_chance + "\n");
             writer.write("thornweedGrowChance = " + CONFIG.thornweed_chance + "\n");
+            writer.write("waftgrassGrowChance = " + CONFIG.waftgrass_chance + "\n");
             writer.write("spiteweedGrowChance = " + CONFIG.spiteweed_chance + "\n");
             writer.write("# Should monocultures have increased weed chances:\n");
             writer.write("monoculturePenalize = " + CONFIG.monoculture_penalize + "\n");

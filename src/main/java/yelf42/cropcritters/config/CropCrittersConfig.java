@@ -3,6 +3,7 @@ package yelf42.cropcritters.config;
 public class CropCrittersConfig {
     public int thistle_chance = 3;
     public int thornweed_chance = 5;
+    public int waftgrass_chance = 2;
     public int spiteweed_chance = 10;
     public int monoculture_dampener = 32;
     public boolean monoculture_penalize = true;

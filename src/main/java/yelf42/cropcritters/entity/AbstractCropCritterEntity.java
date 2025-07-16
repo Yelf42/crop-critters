@@ -57,17 +57,18 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
     private static final Predicate<Entity> NOTICEABLE_PLAYER_FILTER = (entity) -> !entity.isSneaky() && EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR.test(entity);
     private static final Predicate<Entity> FARM_ANIMALS_FILTER = (entity -> entity.getType().isIn(CropCritters.SCARE_CRITTERS));
 
-    private static final Predicate<BlockState> TARGET_BLOCK_FILTER = (blockState -> blockState.isOf(Blocks.COARSE_DIRT));
-    private static final int TARGET_OFFSET = 1; // For targeting the top of a solid block
-    private static final Block TARGET_BLOCK_CHANGED = Blocks.DIRT;
-    private static final Item HEALING_ITEM = Items.WHEAT;
+    // Override these methods
+    protected abstract Predicate<BlockState> getTargetBlockFilter();
+    protected abstract int getTargetOffset();
+    protected abstract BlockState getTargetBlockChanged(@Nullable Block target);
+    protected abstract Item getHealingItem();
+    protected abstract int resetTicksUntilCanWork();
 
     @Nullable
     BlockPos targetPos;
     TargetWorkGoal targetWorkGoal;
 
     int ticksUntilCanWork = 20 * 10;
-
 
     public AbstractCropCritterEntity(EntityType<? extends TameableEntity> entityType, World world) {
         super(entityType, world);
@@ -152,12 +153,11 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
 
     @Override
     protected void mobTick(ServerWorld world) {
-        for(PrioritizedGoal prioritizedGoal : this.goalSelector.getGoals()) {
-            if (prioritizedGoal.isRunning()) {
-                CropCritters.LOGGER.info(prioritizedGoal.getGoal().getClass().toString());
-            }
-        }
-        //CropCritters.LOGGER.info(String.valueOf(this.navigation.isIdle()));
+//        for(PrioritizedGoal prioritizedGoal : this.goalSelector.getGoals()) {
+//            if (prioritizedGoal.isRunning()) {
+//                CropCritters.LOGGER.info(prioritizedGoal.getGoal().getClass().toString());
+//            }
+//        }
         super.mobTick(world);
     }
 
@@ -187,7 +187,7 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
                 this.eat(player, hand, itemStack);
                 this.tryTame();
                 this.setPersistent();
-            } else if (itemStack.isOf(HEALING_ITEM) && (this.getHealth() < this.getMaxHealth())) {
+            } else if (itemStack.isOf(this.getHealingItem()) && (this.getHealth() < this.getMaxHealth())) {
                 this.eat(player, hand, itemStack);
                 this.heal(1.f);
                 this.getWorld().sendEntityStatus(this, (byte)7);
@@ -213,25 +213,20 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
 
     }
 
-    // Override for longer/shorter delays between jobs
-    private void resetTicksUntilCanWork() {
-        this.ticksUntilCanWork = MathHelper.nextInt(this.random, 100, 200);
-    }
-
     void clearTargetPos() {
         this.targetPos = null;
-        resetTicksUntilCanWork();
+        this.ticksUntilCanWork = resetTicksUntilCanWork();
     }
 
-    public static boolean isAttractive(@NotNull BlockState state) {
-        return TARGET_BLOCK_FILTER.test(state);
+    public boolean isAttractive(@NotNull BlockState state) {
+        return this.getTargetBlockFilter().test(state);
     }
 
     // Override for more complex objectives
     public void completeTargetGoal() {
         if (this.targetPos == null) return;
         this.playSound(SoundEvents.ITEM_HOE_TILL, 1.0F, 1.0F);
-        this.getWorld().setBlockState(this.targetPos, AbstractCropCritterEntity.TARGET_BLOCK_CHANGED.getDefaultState(), Block.NOTIFY_ALL_AND_REDRAW);
+        this.getWorld().setBlockState(this.targetPos, this.getTargetBlockChanged(null), Block.NOTIFY_ALL_AND_REDRAW);
         ((ServerWorld)this.getWorld()).spawnParticles(ParticleTypes.DUST_PLUME, this.targetPos.getX() + 0.5, this.targetPos.getY() + 1.0, this.targetPos.getZ() + 0.5, 10, 0.5, 0.5, 0.5, 0.0);
     }
 
@@ -254,7 +249,7 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
         public void stop() {
             this.running = false;
             AbstractCropCritterEntity.this.navigation.stop();
-            AbstractCropCritterEntity.this.resetTicksUntilCanWork();
+            AbstractCropCritterEntity.this.clearTargetPos();
         }
 
         @Override
@@ -279,10 +274,10 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
         public void tick() {
             if (AbstractCropCritterEntity.this.targetPos != null) {
                 ++this.ticks;
-                if (this.ticks > 600 || !(AbstractCropCritterEntity.isAttractive(AbstractCropCritterEntity.this.getWorld().getBlockState(AbstractCropCritterEntity.this.targetPos)))) {
+                if (this.ticks > 600 || !(isAttractive(AbstractCropCritterEntity.this.getWorld().getBlockState(AbstractCropCritterEntity.this.targetPos)))) {
                     AbstractCropCritterEntity.this.clearTargetPos();
                 } else {
-                    Vec3d vec3d = Vec3d.ofBottomCenter(AbstractCropCritterEntity.this.targetPos).add((double)0.0F, (double)TARGET_OFFSET, (double)0.0F);
+                    Vec3d vec3d = Vec3d.ofBottomCenter(AbstractCropCritterEntity.this.targetPos).add((double)0.0F, (double)getTargetOffset(), (double)0.0F);
                     if (vec3d.squaredDistanceTo(AbstractCropCritterEntity.this.getPos()) > (double)1.0F) {
                         this.nextTarget = vec3d;
                         this.moveToNextTarget();
@@ -322,7 +317,7 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
                 long l = this.unreachableTargetsPosCache.getOrDefault(blockPos.asLong(), Long.MIN_VALUE);
                 if (AbstractCropCritterEntity.this.getWorld().getTime() < l) {
                     long2LongOpenHashMap.put(blockPos.asLong(), l);
-                } else if (AbstractCropCritterEntity.isAttractive(AbstractCropCritterEntity.this.getWorld().getBlockState(blockPos)) && AbstractCropCritterEntity.this.getWorld().getBlockState(blockPos.up()).isAir()) {
+                } else if (isAttractive(AbstractCropCritterEntity.this.getWorld().getBlockState(blockPos)) && AbstractCropCritterEntity.this.getWorld().getBlockState(blockPos.up()).isAir()) {
                     Path path = AbstractCropCritterEntity.this.navigation.findPathTo(blockPos, 0);
                     if (path != null && path.reachesTarget()) {
                         return Optional.of(blockPos);

@@ -61,6 +61,7 @@ public class NetherWartBlockMixin {
             // Quadratic penalty increase for monocultural practices
             monoCount = (monoCount * monoCount) / (float)ConfigManager.CONFIG.monoculture_dampener;
         }
+        boolean growWaftgrass = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.waftgrass_chance * monoCount;
         boolean growThornweed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.thornweed_chance * monoCount;
         boolean growSpiteweed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.spiteweed_chance * monoCount;
 
@@ -73,12 +74,22 @@ public class NetherWartBlockMixin {
                 return;
             }
         } else {
-            if (growThornweed && soilCheck.isOf(ModBlocks.SOUL_FARMLAND)) {
+            if (growThornweed) {
                 BlockState weedState = ModBlocks.CRIMSON_THORNWEED.getDefaultState();
                 world.setBlockState(pos, weedState);
+                world.setBlockState(pos.down(),(random.nextInt(2) == 0) ? Blocks.SOUL_SOIL.getDefaultState() : Blocks.SOUL_SAND.getDefaultState(), Block.NOTIFY_LISTENERS);
                 world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
                 return;
             }
+
+            if (growWaftgrass) {
+                BlockState weedState = ModBlocks.WAFTGRASS.getDefaultState();
+                world.setBlockState(pos, weedState);
+                world.setBlockState(pos.down(),(random.nextInt(2) == 0) ? Blocks.SOUL_SOIL.getDefaultState() : Blocks.SOUL_SAND.getDefaultState(), Block.NOTIFY_LISTENERS);
+                world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
+                return;
+            }
+
         }
     }
 }

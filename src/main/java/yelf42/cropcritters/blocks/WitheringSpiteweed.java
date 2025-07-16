@@ -54,8 +54,10 @@ public class WitheringSpiteweed extends SpreadingWeekBlock {
                 && !(livingEntity.getType().isIn(CropCritters.CROP_CRITTERS))) {
             Vec3d vec3d = new Vec3d(0.9, 0.9F, 0.9);
             livingEntity.slowMovement(state, vec3d);
-            livingEntity.damage(serverWorld, world.getDamageSources().sweetBerryBush(), 1.0F);
-            livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.WITHER, 1));
+            if (!livingEntity.isInvulnerableTo(serverWorld, world.getDamageSources().wither())) {
+                livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.WITHER, 40));
+
+            }
         }
     }
 }

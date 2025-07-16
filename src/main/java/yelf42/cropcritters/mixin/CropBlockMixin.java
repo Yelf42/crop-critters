@@ -111,6 +111,7 @@ public abstract class CropBlockMixin {
         }
         boolean growThistle = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.thistle_chance * monoCount;
         boolean growThornweed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.thornweed_chance * monoCount;
+        boolean growWaftgrass = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.waftgrass_chance * monoCount;
         boolean growSpiteweed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.spiteweed_chance * monoCount;
 
 
@@ -127,15 +128,27 @@ public abstract class CropBlockMixin {
             if (growThistle && soilCheck.isOf(Blocks.FARMLAND)) {
                 BlockState weedState = ModBlocks.CRAWL_THISTLE.getDefaultState();
                 world.setBlockState(pos, weedState);
+                world.setBlockState(pos.down(), Blocks.COARSE_DIRT.getDefaultState(), Block.NOTIFY_LISTENERS);
                 world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
                 return;
             }
 
-            if (growThornweed && soilCheck.isOf(ModBlocks.SOUL_FARMLAND)) {
-                BlockState weedState = ModBlocks.CRIMSON_THORNWEED.getDefaultState();
-                world.setBlockState(pos, weedState);
-                world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
-                return;
+            if (soilCheck.isOf(ModBlocks.SOUL_FARMLAND)) {
+                if (growThornweed) {
+                    BlockState weedState = ModBlocks.CRIMSON_THORNWEED.getDefaultState();
+                    world.setBlockState(pos, weedState);
+                    world.setBlockState(pos.down(),(random.nextInt(2) == 0) ? Blocks.SOUL_SOIL.getDefaultState() : Blocks.SOUL_SAND.getDefaultState(), Block.NOTIFY_LISTENERS);
+                    world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
+                    return;
+                }
+
+                if (growWaftgrass) {
+                    BlockState weedState = ModBlocks.WAFTGRASS.getDefaultState();
+                    world.setBlockState(pos, weedState);
+                    world.setBlockState(pos.down(),(random.nextInt(2) == 0) ? Blocks.SOUL_SOIL.getDefaultState() : Blocks.SOUL_SAND.getDefaultState(), Block.NOTIFY_LISTENERS);
+                    world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
+                    return;
+                }
             }
         }
     }
