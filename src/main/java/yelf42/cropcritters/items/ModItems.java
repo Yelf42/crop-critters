@@ -24,7 +24,9 @@ public class ModItems {
                 .register((itemGroup) -> {
                     itemGroup.add(ModItems.STRANGE_FERTILIZER);
                     itemGroup.add(ModItems.LOST_SOUL);
+                    itemGroup.add(ModItems.SEED_BALL);
                     itemGroup.add(ModItems.WHEAT_CRITTER_SPAWN_EGG);
+                    itemGroup.add(ModItems.MELON_CRITTER_SPAWN_EGG);
                 });
 
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.INGREDIENTS)
@@ -36,10 +38,11 @@ public class ModItems {
 
         // Compostable
         CompostingChanceRegistry.INSTANCE.add(ModItems.STRANGE_FERTILIZER, 1.0f);
+        CompostingChanceRegistry.INSTANCE.add(ModItems.SEED_BALL, 0.8f);
 
         // Fuel
         FuelRegistryEvents.BUILD.register((builder, context) -> {
-            builder.add(ModItems.STRANGE_FERTILIZER, 80 * 20);
+            builder.add(ModItems.LOST_SOUL, 80 * 20);
         });
     }
     public static Item register(String name, Function<Item.Settings, Item> itemFactory, Item.Settings settings) {
@@ -68,6 +71,7 @@ public class ModItems {
     // 4. Add models.items item.json
     public static final Item STRANGE_FERTILIZER = register("strange_fertilizer", StrangeFertilizerItem::new, new Item.Settings().rarity(Rarity.UNCOMMON));
     public static final Item LOST_SOUL = register("lost_soul", Item::new, new Item.Settings().rarity(Rarity.UNCOMMON));
+    public static final Item SEED_BALL = register("seed_ball", SeedBallItem::new, new Item.Settings().maxCount(16));
 
 
 
@@ -81,4 +85,5 @@ public class ModItems {
                 new SpawnEggItem(entityType, new Item.Settings().registryKey(itemKey)));
     }
     public static final Item WHEAT_CRITTER_SPAWN_EGG = registerSpawnEgg("wheat_critter_spawn_egg", ModEntities.WHEAT_CRITTER);
+    public static final Item MELON_CRITTER_SPAWN_EGG = registerSpawnEgg("melon_critter_spawn_egg", ModEntities.MELON_CRITTER);
 }

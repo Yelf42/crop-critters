@@ -33,10 +33,10 @@ import java.util.Objects;
 @Mixin(CropBlock.class)
 public abstract class CropBlockMixin {
 
-    // Allows crops to exist on SOUL_FARMLAND and Dirt's
+    // Allows plants to be planted on SOUL_FARMLAND
     @Inject(method = "canPlantOnTop", at = @At("HEAD"), cancellable = true)
-    private void allowPlantOnSoulFarmlandAndDirt(BlockState floor, BlockView world, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
-        if (floor.isOf(ModBlocks.SOUL_FARMLAND) || floor.isIn(BlockTags.DIRT)) {
+    private void allowPlantOnSoulAndDirt(BlockState floor, BlockView world, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
+        if (floor.isIn(BlockTags.DIRT)) {
             cir.setReturnValue(true);
         }
     }

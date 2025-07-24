@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "cropcritters:wheat_critter"
+    "cropcritters:wheat_critter",
+    "cropcritters:melon_critter"
   ]
 }

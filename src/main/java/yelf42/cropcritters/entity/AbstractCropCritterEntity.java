@@ -1,9 +1,7 @@
 package yelf42.cropcritters.entity;
 
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.*;
@@ -22,19 +20,14 @@ import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.particle.ParticleTypes;
 import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
@@ -53,16 +46,19 @@ import java.util.function.Predicate;
 
 public abstract class AbstractCropCritterEntity extends TameableEntity implements GeoEntity {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
-    private static final TrackedData<Boolean> TRUSTING = DataTracker.registerData(AbstractCropCritterEntity.class, TrackedDataHandlerRegistry.BOOLEAN);;
+    private static final TrackedData<Boolean> TRUSTING = DataTracker.registerData(AbstractCropCritterEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final Predicate<Entity> NOTICEABLE_PLAYER_FILTER = (entity) -> !entity.isSneaky() && EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR.test(entity);
     private static final Predicate<Entity> FARM_ANIMALS_FILTER = (entity -> entity.getType().isIn(CropCritters.SCARE_CRITTERS));
 
     // Override these methods
     protected abstract Predicate<BlockState> getTargetBlockFilter();
     protected abstract int getTargetOffset();
-    protected abstract BlockState getTargetBlockChanged(@Nullable Block target);
-    protected abstract Item getHealingItem();
+    protected abstract boolean isHealingItem(ItemStack itemStack);
     protected abstract int resetTicksUntilCanWork();
+    public abstract void completeTargetGoal();
+
+    // Override for more complex behaviours
+    protected boolean canWork() {return this.isTrusting();}
 
     @Nullable
     BlockPos targetPos;
@@ -80,7 +76,7 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
         this.dataTracker.set(TRUSTING, trusting);
     }
     public boolean isTrusting() {
-        return (Boolean)this.dataTracker.get(TRUSTING);
+        return this.dataTracker.get(TRUSTING);
     }
 
     @Override
@@ -109,15 +105,15 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
 
     protected void initGoals() {
         net.minecraft.entity.ai.goal.TemptGoal temptGoal = new TemptGoal(this, 0.6, (stack) -> stack.isOf(ModItems.LOST_SOUL), true);
-        this.goalSelector.add(1, new SwimGoal(this));
+        this.goalSelector.add(0, new SwimGoal(this));
         this.goalSelector.add(2, temptGoal);
-        this.goalSelector.add(3, new FleeEntityGoal<>(this, AnimalEntity.class, 10.0F, 1.6, 1.4, FARM_ANIMALS_FILTER::test));
-        this.goalSelector.add(3, new FleeEntityGoal<>(this, PlayerEntity.class, 10.0F, 1.6, 1.4, (entity) -> NOTICEABLE_PLAYER_FILTER.test(entity) && !this.isTrusting()));
+        this.goalSelector.add(4, new FleeEntityGoal<>(this, AnimalEntity.class, 10.0F, 1.6, 1.4, FARM_ANIMALS_FILTER::test));
+        this.goalSelector.add(6, new FleeEntityGoal<>(this, PlayerEntity.class, 10.0F, 1.6, 1.4, (entity) -> NOTICEABLE_PLAYER_FILTER.test(entity) && !this.isTrusting()));
         this.targetWorkGoal = new TargetWorkGoal();
-        this.goalSelector.add(4, this.targetWorkGoal);
-        this.goalSelector.add(11, new WanderAroundGoal(this, 0.8));
-        this.goalSelector.add(16, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
-        this.goalSelector.add(16, new LookAroundGoal(this));
+        this.goalSelector.add(8, this.targetWorkGoal);
+        this.goalSelector.add(12, new WanderAroundGoal(this, 0.8));
+        this.goalSelector.add(20, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
+        this.goalSelector.add(20, new LookAroundGoal(this));
     }
 
     protected void initDataTracker(DataTracker.Builder builder) {
@@ -127,7 +123,7 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
 
     public static DefaultAttributeContainer.Builder createAttributes() {
         return MobEntity.createMobAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 18)
+                .add(EntityAttributes.MAX_HEALTH, 8)
                 .add(EntityAttributes.MOVEMENT_SPEED, 0.35)
                 .add(EntityAttributes.ATTACK_DAMAGE, 1)
                 .add(EntityAttributes.FOLLOW_RANGE, 20)
@@ -174,6 +170,10 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
     @Override
     public void tickMovement() {
         super.tickMovement();
+        handleTicksUntilCanWork();
+    }
+
+    protected void handleTicksUntilCanWork() {
         if (this.ticksUntilCanWork > 0) {
             --this.ticksUntilCanWork;
         }
@@ -187,7 +187,7 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
                 this.eat(player, hand, itemStack);
                 this.tryTame();
                 this.setPersistent();
-            } else if (itemStack.isOf(this.getHealingItem()) && (this.getHealth() < this.getMaxHealth())) {
+            } else if (this.isHealingItem(itemStack) && (this.getHealth() < this.getMaxHealth())) {
                 this.eat(player, hand, itemStack);
                 this.heal(1.f);
                 this.getWorld().sendEntityStatus(this, (byte)7);
@@ -203,10 +203,12 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
         return actionResult;
     }
 
-    private void tryTame() {
+    protected void tryTame() {
         if (this.random.nextInt(3) == 0) {
             this.setTrusting(true);
             this.getWorld().sendEntityStatus(this, (byte)7);
+            this.getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(24.0F);
+            this.setHealth(24.0F);
         } else {
             this.getWorld().sendEntityStatus(this, (byte)6);
         }
@@ -222,20 +224,11 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
         return this.getTargetBlockFilter().test(state);
     }
 
-    // Override for more complex objectives
-    public void completeTargetGoal() {
-        if (this.targetPos == null) return;
-        this.playSound(SoundEvents.ITEM_HOE_TILL, 1.0F, 1.0F);
-        this.getWorld().setBlockState(this.targetPos, this.getTargetBlockChanged(null), Block.NOTIFY_ALL_AND_REDRAW);
-        ((ServerWorld)this.getWorld()).spawnParticles(ParticleTypes.DUST_PLUME, this.targetPos.getX() + 0.5, this.targetPos.getY() + 1.0, this.targetPos.getZ() + 0.5, 10, 0.5, 0.5, 0.5, 0.0);
-    }
-
-
     class TargetWorkGoal extends Goal {
-        private Long2LongOpenHashMap unreachableTargetsPosCache = new Long2LongOpenHashMap();
-        private boolean running;
-        private int ticks;
-        private Vec3d nextTarget;
+        protected Long2LongOpenHashMap unreachableTargetsPosCache = new Long2LongOpenHashMap();
+        protected boolean running;
+        protected int ticks;
+        protected Vec3d nextTarget;
 
         TargetWorkGoal() {
             this.setControls(EnumSet.of(Control.MOVE));
@@ -255,10 +248,10 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
         @Override
         public boolean canStart() {
             if (AbstractCropCritterEntity.this.ticksUntilCanWork > 0) return false;
-            if (!AbstractCropCritterEntity.this.isTrusting()) return false;
+            if (!AbstractCropCritterEntity.this.canWork()) return false;
             Optional<BlockPos> optional = this.getTargetBlock();
             if (optional.isPresent()) {
-                AbstractCropCritterEntity.this.targetPos = (BlockPos)optional.get();
+                AbstractCropCritterEntity.this.targetPos = optional.get();
                 return true;
             } else {
                 AbstractCropCritterEntity.this.ticksUntilCanWork = 80;
@@ -277,7 +270,7 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
                 if (this.ticks > 600 || !(isAttractive(AbstractCropCritterEntity.this.getWorld().getBlockState(AbstractCropCritterEntity.this.targetPos)))) {
                     AbstractCropCritterEntity.this.clearTargetPos();
                 } else {
-                    Vec3d vec3d = Vec3d.ofBottomCenter(AbstractCropCritterEntity.this.targetPos).add((double)0.0F, (double)getTargetOffset(), (double)0.0F);
+                    Vec3d vec3d = Vec3d.ofBottomCenter(AbstractCropCritterEntity.this.targetPos).add(0.0F, getTargetOffset(), 0.0F);
                     if (vec3d.squaredDistanceTo(AbstractCropCritterEntity.this.getPos()) > (double)1.0F) {
                         this.nextTarget = vec3d;
                         this.moveToNextTarget();
@@ -294,22 +287,22 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
                             AbstractCropCritterEntity.this.completeTargetGoal();
                             AbstractCropCritterEntity.this.clearTargetPos();
                         } else {
-                            AbstractCropCritterEntity.this.getMoveControl().moveTo(this.nextTarget.getX(), this.nextTarget.getY(), this.nextTarget.getZ(), (double)1.2F);
+                            AbstractCropCritterEntity.this.getMoveControl().moveTo(this.nextTarget.getX(), this.nextTarget.getY(), this.nextTarget.getZ(), 1.2F);
                         }
                     }
                 }
             }
         }
 
-        private void moveToNextTarget() {
-            AbstractCropCritterEntity.this.navigation.startMovingAlong(AbstractCropCritterEntity.this.navigation.findPathTo(this.nextTarget.getX(), this.nextTarget.getY(), this.nextTarget.getZ(), 0), (double)1.2F);
+        protected void moveToNextTarget() {
+            AbstractCropCritterEntity.this.navigation.startMovingAlong(AbstractCropCritterEntity.this.navigation.findPathTo(this.nextTarget.getX(), this.nextTarget.getY(), this.nextTarget.getZ(), 0), 1.2F);
         }
 
         void cancel() {
             this.running = false;
         }
 
-        private Optional<BlockPos> getTargetBlock() {
+        protected Optional<BlockPos> getTargetBlock() {
             Iterable<BlockPos> iterable = BlockPos.iterateOutwards(AbstractCropCritterEntity.this.getBlockPos(), 6, 3, 6);
             Long2LongOpenHashMap long2LongOpenHashMap = new Long2LongOpenHashMap();
 
@@ -331,6 +324,8 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
             return Optional.empty();
         }
     }
+
+
 
     static class TemptGoal extends net.minecraft.entity.ai.goal.TemptGoal {
         @Nullable

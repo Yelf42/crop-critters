@@ -1,0 +1,47 @@
+package yelf42.cropcritters.mixin;
+
+import net.minecraft.block.*;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.random.Random;
+import net.minecraft.world.BlockView;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.gen.Accessor;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import yelf42.cropcritters.blocks.ModBlocks;
+import yelf42.cropcritters.config.ConfigManager;
+
+import java.util.Optional;
+
+@Mixin(StemBlock.class)
+public abstract class StemBlockMixin {
+
+    @Shadow @Final
+    private RegistryKey<Block> gourdBlock;
+
+    // Chance to spawn critter instead of make gourd
+    @Inject(method = "randomTick", at = @At(value = "INVOKE", target = "Ljava/util/Optional;isPresent()Z", shift = At.Shift.AFTER), cancellable = true)
+    private void spawnCritterOnGrow(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
+        BlockState airCheck = world.getBlockState(pos.up());
+        if (airCheck.isAir() && random.nextInt(100) + 1 < ConfigManager.CONFIG.critter_spawn_chance / 4F) {
+            Registry<Block> registry = world.getRegistryManager().getOrThrow(RegistryKeys.BLOCK);
+            Optional<Block> gourd = registry.getOptionalValue(this.gourdBlock);
+            if (gourd.isPresent()) {
+                if (gourd.get().getDefaultState().isOf(Blocks.PUMPKIN)) {
+                    ci.cancel();
+                } else if (gourd.get().getDefaultState().isOf(Blocks.MELON)) {
+                    ci.cancel();
+                }
+            }
+        }
+    }
+}

@@ -1,13 +1,23 @@
 package yelf42.cropcritters;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.client.color.world.BiomeColors;
 import net.minecraft.client.render.BlockRenderLayer;
+import net.minecraft.client.render.entity.FlyingItemEntityRenderer;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.SpawnReason;
+import net.minecraft.particle.ParticleTypes;
+import net.minecraft.util.math.Vec3d;
 import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.entity.ModEntities;
+import yelf42.cropcritters.particle.ModParticles;
+import yelf42.cropcritters.particle.WaterSprayParticle;
+import yelf42.cropcritters.renderer.entity.MelonCritterRenderer;
 import yelf42.cropcritters.renderer.entity.WheatCritterRenderer;
 
 public class CropCrittersClient implements ClientModInitializer {
@@ -34,13 +44,24 @@ public class CropCrittersClient implements ClientModInitializer {
 
 		// Entities
 		EntityRendererRegistry.register(ModEntities.WHEAT_CRITTER, WheatCritterRenderer::new);
+		EntityRendererRegistry.register(ModEntities.MELON_CRITTER, MelonCritterRenderer::new);
+		EntityRendererRegistry.register(ModEntities.SEED_BALL_PROJECTILE, FlyingItemEntityRenderer::new);
+		EntityRendererRegistry.register(ModEntities.SPIT_SEED_PROJECTILE, FlyingItemEntityRenderer::new);
 
-		// To make some parts of the block translucent (like ice, stained glass and portal)
-		//BlockRenderLayerMap.putBlock(TutorialBlocks.MY_BLOCK, BlockRenderLayer.TRANSLUCENT);
+		// Particles
+		ParticleFactoryRegistry.getInstance().register(ModParticles.WATER_SPRAY_PARTICLE, WaterSprayParticle.Factory::new);
+
+		// Packet Handling
+		ClientPlayNetworking.registerGlobalReceiver(CropCritters.WaterSprayS2CPayload.ID, (payload, context) -> {
+			ClientWorld world = context.client().world;
+
+			if (world == null) {
+				return;
+			}
+
+			Vec3d pos = payload.pos();
+			Vec3d dir = payload.dir();
+			world.addParticleClient(ModParticles.WATER_SPRAY_PARTICLE, pos.x, pos.y + 0.2, pos.z, dir.x, 0, dir.z);
+		});
 	}
-
-//	public static void registerRenderers(BiConsumer<EntityType<? extends Entity>, EntityRendererProvider> entityRenderers,
-//										 BiConsumer<BlockEntityType<? extends BlockEntity>, BlockEntityRendererProvider> blockEntityRenderers) {
-//		entityRenderers.accept(ModEntities.WHEAT_CRITTER, WheatCritterRenderer::new);
-//	}
 }

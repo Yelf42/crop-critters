@@ -13,34 +13,34 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import yelf42.cropcritters.CropCritters;
+import yelf42.cropcritters.blocks.ModBlocks;
 
 import java.util.function.Predicate;
 
-public class WheatCritterEntity extends AbstractCropCritterEntity {
-    public WheatCritterEntity(EntityType<? extends TameableEntity> entityType, World world) {
+public class PotatoCritterEntity extends AbstractCropCritterEntity {
+    public PotatoCritterEntity(EntityType<? extends TameableEntity> entityType, World world) {
         super(entityType, world);
     }
 
     @Override
     protected Predicate<BlockState> getTargetBlockFilter() {
-        return (blockState -> blockState.isIn(CropCritters.WEEDS));
+        return (blockState -> blockState.isOf(Blocks.COARSE_DIRT));
     }
 
     @Override
-    protected  int getTargetOffset() {return 0;}
+    protected  int getTargetOffset() {return 1;}
 
     @Override
     public void completeTargetGoal() {
         if (this.targetPos == null) return;
-        this.playSound(SoundEvents.ITEM_SHEARS_SNIP, 1.0F, 1.0F);
-        this.getWorld().setBlockState(this.targetPos, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL_AND_REDRAW);
-        ((ServerWorld)this.getWorld()).spawnParticles(ParticleTypes.HAPPY_VILLAGER, this.targetPos.getX() + 0.5, this.targetPos.getY() + 1.0, this.targetPos.getZ() + 0.5, 10, 0.5, 0.5, 0.5, 0.0);
+        this.playSound(SoundEvents.ITEM_HOE_TILL, 1.0F, 1.0F);
+        this.getWorld().setBlockState(this.targetPos, Blocks.DIRT.getDefaultState(), Block.NOTIFY_ALL_AND_REDRAW);
+        ((ServerWorld)this.getWorld()).spawnParticles(ParticleTypes.DUST_PLUME, this.targetPos.getX() + 0.5, this.targetPos.getY() + 1.0, this.targetPos.getZ() + 0.5, 10, 0.5, 0.5, 0.5, 0.0);
     }
 
     @Override
     protected boolean isHealingItem(ItemStack itemStack) {
-        return itemStack.isOf(Items.WHEAT);
+        return itemStack.isOf(Items.POTATO);
     }
 
     @Override
