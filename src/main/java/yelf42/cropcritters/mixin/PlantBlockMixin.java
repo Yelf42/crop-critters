@@ -18,8 +18,6 @@ public abstract class PlantBlockMixin {
     // Allows plants to be planted on SOUL_FARMLAND
     @Inject(method = "canPlantOnTop", at = @At("HEAD"), cancellable = true)
     private void allowPlantOnSoulAndDirt(BlockState floor, BlockView world, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
-        if (floor.isIn(BlockTags.DIRT)) {
-            cir.setReturnValue(true);
-        }
+        if (floor.isIn(BlockTags.DIRT)) cir.setReturnValue(true);
     }
 }

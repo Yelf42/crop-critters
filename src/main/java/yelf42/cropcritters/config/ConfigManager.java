@@ -65,7 +65,9 @@ public class ConfigManager {
             writer.write("# Lost soul mob drop chance:\n");
             writer.write("lostSoulDropChance = " + CONFIG.lost_soul_drop_chance + "\n");
             writer.write("# \n");
-            writer.write("# Crop critter spawn chance:\n");
+            writer.write("# Crop critter spawn chance on crop just matured\n");
+            writer.write("# or on randomTick in SoulSandValley.\n");
+            writer.write("# Chance doubled if on a 'Soul' block:\n");
             writer.write("critterSpawnChance = " + CONFIG.critter_spawn_chance + "\n");
         } catch (IOException e) {
             System.err.println("Failed to save config: " + e.getMessage());

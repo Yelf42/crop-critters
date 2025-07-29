@@ -66,6 +66,7 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
 
     @Override
     public void completeTargetGoal() {
+        // TODO test when implemented
         if (this.targetPos == null) return;
         double d = this.targetPos.getX() - this.getX();
         double e = this.targetPos.getY() - 0.4F;

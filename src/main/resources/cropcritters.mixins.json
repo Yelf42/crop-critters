@@ -5,6 +5,7 @@
   "mixins": [
     "CropBlockMixin",
     "NetherWartBlockMixin",
+    "PitcherCropBlockMixin",
     "PlantBlockMixin",
     "StemBlockMixin"
   ],

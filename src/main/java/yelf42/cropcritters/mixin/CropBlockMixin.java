@@ -14,6 +14,7 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.BiomeKeys;
 import net.minecraft.world.event.GameEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -36,9 +37,7 @@ public abstract class CropBlockMixin {
     // Allows plants to be planted on SOUL_FARMLAND
     @Inject(method = "canPlantOnTop", at = @At("HEAD"), cancellable = true)
     private void allowPlantOnSoulAndDirt(BlockState floor, BlockView world, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
-        if (floor.isIn(BlockTags.DIRT)) {
-            cir.setReturnValue(true);
-        }
+        if (floor.isIn(BlockTags.DIRT)) cir.setReturnValue(true);
     }
 
     // If SOUL_FARMLAND, ignore vanilla moisture stuff and just return 8.f
@@ -57,33 +56,35 @@ public abstract class CropBlockMixin {
     }
 
     // Replace farmland with a dirt if just matured
-    @Inject(method = "randomTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", shift = At.Shift.AFTER))
-    private static void removeNutrients(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
+    // Chance to spawn critter if just matured
+    @Inject(method = "randomTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", shift = At.Shift.AFTER), cancellable = true)
+    private static void removeNutrientsAndSpawnCritters(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
         if (state.getBlock() instanceof CropBlock cropBlock) {
             if (cropBlock.getAge(state) + 1 != cropBlock.getMaxAge()) return;
             BlockState soilCheck = world.getBlockState(pos.down());
-            if (soilCheck.isOf(Blocks.FARMLAND)) return;
-            BlockState toDirt = (random.nextInt(4) == 0) ? Blocks.DIRT.getDefaultState() : (random.nextInt(2) == 0) ? Blocks.ROOTED_DIRT.getDefaultState() : Blocks.COARSE_DIRT.getDefaultState();
-            world.setBlockState(pos.down(), toDirt, Block.NOTIFY_LISTENERS);
+            if (soilCheck.isOf(Blocks.FARMLAND)) {
+                BlockState toDirt = (random.nextInt(4) == 0) ? Blocks.DIRT.getDefaultState() : (random.nextInt(2) == 0) ? Blocks.ROOTED_DIRT.getDefaultState() : Blocks.COARSE_DIRT.getDefaultState();
+                world.setBlockState(pos.down(), toDirt, Block.NOTIFY_LISTENERS);
+            } else if (soilCheck.isOf(ModBlocks.SOUL_FARMLAND)){
+                BlockState toDirt = (random.nextInt(2) == 0) ? Blocks.SOUL_SOIL.getDefaultState() : Blocks.SOUL_SAND.getDefaultState();
+                world.setBlockState(pos.down(), toDirt, Block.NOTIFY_LISTENERS);
+            } else {
+                return;
+            }
+
+            if (spawnCritter(world, state, random, pos)) ci.cancel();
         }
     }
 
-    // Spawn critter chance if air above
+    // Spawn critter chance if air above AND soulsand_valley
     // Stop aging if not on farmland
     @Inject(method = "randomTick", at = @At("HEAD"), cancellable = true)
-    private static void stopGrowthOnDirtAndSpawnCritters(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
-        if (state.getBlock() instanceof CropBlock cropBlock && cropBlock.isMature(state)) {
-            BlockState airCheck = world.getBlockState(pos.up());
-            if (airCheck.isAir() && random.nextInt(100) + 1 < ConfigManager.CONFIG.critter_spawn_chance) {
-                if (world.getBlockState(pos).isOf(Blocks.WHEAT)) {
-                    ModEntities.WHEAT_CRITTER.spawn(world, pos, SpawnReason.NATURAL);
-                }
-                world.setBlockState(pos, Blocks.AIR.getDefaultState(), Block.NOTIFY_LISTENERS);
-                // TODO Particles, SFX
-                ci.cancel();
+    private static void stopGrowthOnDirtAndSpawnSoulSandValleyCritters(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
+        if (world.getBiome(pos).matchesKey(BiomeKeys.SOUL_SAND_VALLEY)) {
+            if (state.getBlock() instanceof CropBlock cropBlock && cropBlock.isMature(state)) {
+                if (spawnCritter(world, state, random, pos)) ci.cancel();
             }
         }
-
         BlockState soilCheck = world.getBlockState(pos.down());
         if (!(soilCheck.isOf(Blocks.FARMLAND) || soilCheck.isOf(ModBlocks.SOUL_FARMLAND))) ci.cancel();
     }
@@ -116,7 +117,7 @@ public abstract class CropBlockMixin {
 
 
         BlockState soilCheck = world.getBlockState(pos.down());
-        if (Objects.equals(world.getBiome(pos).getIdAsString(), "minecraft:soul_sand_valley")) {
+        if (world.getBiome(pos).matchesKey(BiomeKeys.SOUL_SAND_VALLEY)) {
             if (growSpiteweed && (soilCheck.isOf(Blocks.SOUL_SOIL) || soilCheck.isOf(Blocks.SOUL_SAND) || soilCheck.isOf(ModBlocks.SOUL_FARMLAND))) {
                 BlockState weedState = ModBlocks.WITHERING_SPITEWEED.getDefaultState();
                 world.setBlockState(pos, weedState);
@@ -151,5 +152,35 @@ public abstract class CropBlockMixin {
                 }
             }
         }
+    }
+
+    @Unique
+    private static boolean spawnCritter(ServerWorld world, BlockState state, Random random, BlockPos pos) {
+        BlockState soulCheck = world.getBlockState(pos.down());
+        boolean soulCheckBl = soulCheck.isOf(Blocks.SOUL_SOIL) || soulCheck.isOf(Blocks.SOUL_SAND) || soulCheck.isOf(ModBlocks.SOUL_FARMLAND);
+        boolean airCheck = world.getBlockState(pos.up()).isAir();
+        int spawnChance = ConfigManager.CONFIG.critter_spawn_chance;
+        spawnChance *= (soulCheckBl) ? 2 : 1;
+        if (airCheck && random.nextInt(100) + 1 < spawnChance) {
+            if (state.isOf(Blocks.WHEAT)) {
+                ModEntities.WHEAT_CRITTER.spawn(world, pos, SpawnReason.NATURAL);
+            } else if (state.isOf(Blocks.CARROTS)) {
+                // TODO carrot critter
+            } else if (state.isOf(Blocks.POTATOES)) {
+                // TODO potator critter
+                // Poisonous potato critter
+            } else if (state.isOf(Blocks.BEETROOTS)) {
+                // TODO beetroot critter
+            } else if (state.isOf(Blocks.TORCHFLOWER_CROP)) {
+                // TODO torchflower critter
+            } else {
+                return false;
+            }
+            world.setBlockState(pos, Blocks.AIR.getDefaultState(), Block.NOTIFY_LISTENERS);
+            // TODO Particles, SFX
+
+            return true;
+        }
+        return false;
     }
 }

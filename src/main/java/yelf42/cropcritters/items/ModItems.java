@@ -70,7 +70,7 @@ public class ModItems {
     // 3. Add items item.json
     // 4. Add models.items item.json
     public static final Item STRANGE_FERTILIZER = register("strange_fertilizer", StrangeFertilizerItem::new, new Item.Settings().rarity(Rarity.UNCOMMON));
-    public static final Item LOST_SOUL = register("lost_soul", Item::new, new Item.Settings().rarity(Rarity.UNCOMMON));
+    public static final Item LOST_SOUL = register("lost_soul", LostSoulItem::new, new Item.Settings().rarity(Rarity.UNCOMMON));
     public static final Item SEED_BALL = register("seed_ball", SeedBallItem::new, new Item.Settings().maxCount(16));
 
 

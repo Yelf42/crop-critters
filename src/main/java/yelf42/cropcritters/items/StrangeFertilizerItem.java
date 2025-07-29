@@ -82,9 +82,7 @@ public class StrangeFertilizerItem extends BoneMealItem {
         if (blockState.isOf(Blocks.BUSH) && world.getBlockState(blockPos.up()).isAir()) {
             TallBushBlock.placeAt(world, ModBlocks.TALL_BUSH.getDefaultState(), blockPos, 2);
 
-            if (playerEntity != null) {
-                itemStack.decrement(1);
-            }
+            itemStack.decrement(1);
 
             return ActionResult.SUCCESS;
         }
@@ -110,9 +108,7 @@ public class StrangeFertilizerItem extends BoneMealItem {
 
             world.setBlockState(blockPos, (BlockState) optional.get(), Block.NOTIFY_ALL_AND_REDRAW);
             world.emitGameEvent(GameEvent.BLOCK_CHANGE, blockPos, GameEvent.Emitter.of(playerEntity, (BlockState) optional.get()));
-            if (playerEntity != null) {
-                itemStack.damage(1, playerEntity, LivingEntity.getSlotForHand(context.getHand()));
-            }
+            itemStack.decrement(1);
 
             return ActionResult.SUCCESS;
         }
