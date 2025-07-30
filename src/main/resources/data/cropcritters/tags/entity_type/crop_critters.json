@@ -2,6 +2,11 @@
   "replace": false,
   "values": [
     "cropcritters:wheat_critter",
-    "cropcritters:melon_critter"
+    "cropcritters:melon_critter",
+    "cropcritters:carrot_critter",
+    "cropcritters:potato_critter",
+    "cropcritters:beetroot_critter",
+    "cropcritters:pumpkin_critter",
+    "cropcritters:nether_wart_critter"
   ]
 }

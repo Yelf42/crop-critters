@@ -22,5 +22,15 @@
   "entity.cropcritters.wheat_critter": "Wheat Critter",
   "item.cropcritters.wheat_critter_spawn_egg": "Wheat Critter Spawn Egg",
   "entity.cropcritters.melon_critter": "Melon Critter",
-  "item.cropcritters.melon_critter_spawn_egg": "Melon Critter Spawn Egg"
+  "item.cropcritters.melon_critter_spawn_egg": "Melon Critter Spawn Egg",
+  "entity.cropcritters.pumpkin_critter": "Pumpkin Critter",
+  "item.cropcritters.pumpkin_critter_spawn_egg": "Pumpkin Critter Spawn Egg",
+  "entity.cropcritters.carrot_critter": "Carrot Critter",
+  "item.cropcritters.carrot_critter_spawn_egg": "Carrot Critter Spawn Egg",
+  "entity.cropcritters.potato_critter": "Potato Critter",
+  "item.cropcritters.potato_critter_spawn_egg": "Potato Critter Spawn Egg",
+  "entity.cropcritters.beetroot_critter": "Beetroot Critter",
+  "item.cropcritters.beetroot_critter_spawn_egg": "Beetroot Critter Spawn Egg",
+  "entity.cropcritters.nether_wart_critter": "Nether Wart Critter",
+  "item.cropcritters.nether_wart_critter_spawn_egg": "Nether Wart Critter Spawn Egg"
 }

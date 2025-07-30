@@ -84,6 +84,7 @@ public class CropCritters implements ModInitializer {
 
 	}
 
+	// Custom packet payloads
 	public record WaterSprayS2CPayload(Vec3d pos, Vec3d dir) implements CustomPayload {
 		public static final Identifier WATER_SPRAY_PAYLOAD_ID = Identifier.of(CropCritters.MOD_ID, "water_spray_packet");
 		public static final CustomPayload.Id<WaterSprayS2CPayload> ID = new CustomPayload.Id<>(WATER_SPRAY_PAYLOAD_ID);

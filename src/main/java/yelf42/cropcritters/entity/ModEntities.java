@@ -2,6 +2,7 @@ package yelf42.cropcritters.entity;
 
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
@@ -19,43 +20,50 @@ public class ModEntities {
 
         FabricDefaultAttributeRegistry.register(ModEntities.WHEAT_CRITTER, WheatCritterEntity.createAttributes());
         FabricDefaultAttributeRegistry.register(ModEntities.MELON_CRITTER, MelonCritterEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(ModEntities.PUMPKIN_CRITTER, MelonCritterEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(ModEntities.POTATO_CRITTER, MelonCritterEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(ModEntities.CARROT_CRITTER, MelonCritterEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(ModEntities.BEETROOT_CRITTER, MelonCritterEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(ModEntities.NETHER_WART_CRITTER, MelonCritterEntity.createAttributes());
     }
 
-    private static final RegistryKey<EntityType<?>> SEED_BALL_PROJECTILE_KEY = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(CropCritters.MOD_ID,"seed_ball_projectile"));
     public static final EntityType<SeedBallProjectileEntity> SEED_BALL_PROJECTILE = Registry.register(
             Registries.ENTITY_TYPE,
             Identifier.of(CropCritters.MOD_ID, "seed_ball_projectile"),
             FabricEntityTypeBuilder.<SeedBallProjectileEntity>create(SpawnGroup.MISC, SeedBallProjectileEntity::new)
                     .dimensions(EntityDimensions.fixed(0.25F, 0.25F))
                     .trackRangeBlocks(4).trackedUpdateRate(10)
-                    .build(SEED_BALL_PROJECTILE_KEY)
+                    .build(RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(CropCritters.MOD_ID,"seed_ball_projectile")))
     );
 
-    private static final RegistryKey<EntityType<?>> SPIT_SEED_PROJECTILE_KEY = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(CropCritters.MOD_ID,"seed_ball_projectile"));
     public static final EntityType<SpitSeedProjectileEntity> SPIT_SEED_PROJECTILE = Registry.register(
             Registries.ENTITY_TYPE,
             Identifier.of(CropCritters.MOD_ID, "spit_ball_projectile"),
             FabricEntityTypeBuilder.<SpitSeedProjectileEntity>create(SpawnGroup.MISC, SpitSeedProjectileEntity::new)
                     .dimensions(EntityDimensions.fixed(0.25F, 0.25F))
                     .trackRangeBlocks(4).trackedUpdateRate(10)
-                    .build(SPIT_SEED_PROJECTILE_KEY)
+                    .build(RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(CropCritters.MOD_ID,"seed_ball_projectile")))
     );
 
-    private static final RegistryKey<EntityType<?>> WHEAT_CRITTER_KEY = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(CropCritters.MOD_ID,"wheat_critter"));
-    public static final EntityType<WheatCritterEntity> WHEAT_CRITTER = Registry.register(Registries.ENTITY_TYPE,
-            Identifier.of(CropCritters.MOD_ID, "wheat_critter"),
-            EntityType.Builder.create(WheatCritterEntity::new, SpawnGroup.MISC)
-                    .dimensions(0.5F, 0.9F)
-                    .eyeHeight(0.25F)
-                    .build(WHEAT_CRITTER_KEY));
+    public static final EntityType<MelonCritterEntity> MELON_CRITTER = registerCritter("melon_critter", MelonCritterEntity::new, 0.65f, 0.7f, 0.25f);
+    public static final EntityType<PumpkinCritterEntity> PUMPKIN_CRITTER = registerCritter("pumpkin_critter", PumpkinCritterEntity::new, 0.65f, 0.65f, 0.25f);
+    public static final EntityType<WheatCritterEntity> WHEAT_CRITTER = registerCritter("wheat_critter", WheatCritterEntity::new, 0.5f, 0.9f, 0.25f);
+    public static final EntityType<CarrotCritterEntity> CARROT_CRITTER = registerCritter("carrot_critter", CarrotCritterEntity::new, 0.5f, 0.8f, 0.25f);
+    public static final EntityType<PotatoCritterEntity> POTATO_CRITTER = registerCritter("potato_critter", PotatoCritterEntity::new, 0.5f, 0.6f, 0.25f);
+    public static final EntityType<BeetrootCritterEntity> BEETROOT_CRITTER = registerCritter("beetroot_critter", BeetrootCritterEntity::new, 0.5f, 0.6f, 0.25f);
+    public static final EntityType<NetherWartCritterEntity> NETHER_WART_CRITTER = registerCritter("nether_wart_critter", NetherWartCritterEntity::new, 0.3f, 0.5f, 0.15f);
 
-    private static final RegistryKey<EntityType<?>> MELON_CRITTER_KEY = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(CropCritters.MOD_ID,"melon_critter"));
-    public static final EntityType<MelonCritterEntity> MELON_CRITTER = Registry.register(Registries.ENTITY_TYPE,
-            Identifier.of(CropCritters.MOD_ID, "melon_critter"),
-            EntityType.Builder.create(MelonCritterEntity::new, SpawnGroup.MISC)
-                    .dimensions(0.7f, 0.9f)
-                    .eyeHeight(0.4f)
-                    .build(MELON_CRITTER_KEY));
 
+    public static <T extends Entity> EntityType<T> registerCritter(String name, EntityType.EntityFactory<T> factory, float width, float height, float eyeHeight) {
+        Identifier id = Identifier.of(CropCritters.MOD_ID, name);
+        return Registry.register(
+                Registries.ENTITY_TYPE,
+                id,
+                EntityType.Builder.create(factory, SpawnGroup.MISC)
+                        .dimensions(width, height)
+                        .eyeHeight(eyeHeight)
+                        .build(RegistryKey.of(RegistryKeys.ENTITY_TYPE, id))
+        );
+    }
 
 }
