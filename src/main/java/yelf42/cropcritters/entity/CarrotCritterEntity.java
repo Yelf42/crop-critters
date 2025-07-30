@@ -23,9 +23,8 @@ public class CarrotCritterEntity extends AbstractCropCritterEntity {
 
     @Override
     protected Predicate<BlockState> getTargetBlockFilter() {
-        return (blockState -> blockState.isOf(Blocks.DIRT)
-                                        ||blockState.isOf(Blocks.SOUL_SOIL)
-                                        ||blockState.isOf(Blocks.SOUL_SAND));
+        return (blockState -> blockState.isOf(Blocks.DIRT) || blockState.isOf(Blocks.GRASS_BLOCK)
+                                        || blockState.isOf(Blocks.SOUL_SOIL) || blockState.isOf(Blocks.SOUL_SAND));
     }
 
     @Override
@@ -36,7 +35,7 @@ public class CarrotCritterEntity extends AbstractCropCritterEntity {
         if (this.targetPos == null) return;
         this.playSound(SoundEvents.ITEM_HOE_TILL, 1.0F, 1.0F);
         BlockState target = this.getWorld().getBlockState(this.targetPos);
-        BlockState farmland = (target.isOf(Blocks.DIRT)) ? Blocks.FARMLAND.getDefaultState() : (target.isOf(Blocks.SOUL_SAND) || target.isOf(Blocks.SOUL_SOIL)) ? ModBlocks.SOUL_FARMLAND.getDefaultState() : null;
+        BlockState farmland = (target.isOf(Blocks.DIRT) || target.isOf(Blocks.GRASS_BLOCK)) ? Blocks.FARMLAND.getDefaultState() : (target.isOf(Blocks.SOUL_SAND) || target.isOf(Blocks.SOUL_SOIL)) ? ModBlocks.SOUL_FARMLAND.getDefaultState() : null;
         if (farmland == null) return;
         this.getWorld().setBlockState(this.targetPos, farmland, Block.NOTIFY_ALL_AND_REDRAW);
         ((ServerWorld)this.getWorld()).spawnParticles(ParticleTypes.DUST_PLUME, this.targetPos.getX() + 0.5, this.targetPos.getY() + 1.0, this.targetPos.getZ() + 0.5, 10, 0.5, 0.5, 0.5, 0.0);

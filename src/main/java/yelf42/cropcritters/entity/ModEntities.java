@@ -45,7 +45,9 @@ public class ModEntities {
     public static final EntityType<WheatCritterEntity> WHEAT_CRITTER = Registry.register(Registries.ENTITY_TYPE,
             Identifier.of(CropCritters.MOD_ID, "wheat_critter"),
             EntityType.Builder.create(WheatCritterEntity::new, SpawnGroup.MISC)
-                    .dimensions(0.7f, 0.9f).build(WHEAT_CRITTER_KEY));
+                    .dimensions(0.5F, 0.9F)
+                    .eyeHeight(0.25F)
+                    .build(WHEAT_CRITTER_KEY));
 
     private static final RegistryKey<EntityType<?>> MELON_CRITTER_KEY = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(CropCritters.MOD_ID,"melon_critter"));
     public static final EntityType<MelonCritterEntity> MELON_CRITTER = Registry.register(Registries.ENTITY_TYPE,

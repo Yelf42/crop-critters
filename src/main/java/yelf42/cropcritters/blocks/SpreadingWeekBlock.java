@@ -78,6 +78,16 @@ public class SpreadingWeekBlock extends PlantBlock {
 
     @Override
     protected void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
+        // Turn farmlands bad
+        BlockState soilCheck = world.getBlockState(pos.down());
+        if (soilCheck.isOf(Blocks.FARMLAND)) {
+            BlockState toDirt = (random.nextInt(4) == 0) ? Blocks.DIRT.getDefaultState() : (random.nextInt(2) == 0) ? Blocks.ROOTED_DIRT.getDefaultState() : Blocks.COARSE_DIRT.getDefaultState();
+            world.setBlockState(pos.down(), toDirt, Block.NOTIFY_LISTENERS);
+        } else if (soilCheck.isOf(ModBlocks.SOUL_FARMLAND)){
+            BlockState toDirt = (random.nextInt(2) == 0) ? Blocks.SOUL_SOIL.getDefaultState() : Blocks.SOUL_SAND.getDefaultState();
+            world.setBlockState(pos.down(), toDirt, Block.NOTIFY_LISTENERS);
+        }
+
         if (this.isMature(state)) {
             // Count neighbouring weeds
             int neighbouringWeeds = -1;
