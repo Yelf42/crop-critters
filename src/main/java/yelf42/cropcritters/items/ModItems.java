@@ -32,6 +32,7 @@ public class ModItems {
                     itemGroup.add(ModItems.POTATO_CRITTER_SPAWN_EGG);
                     itemGroup.add(ModItems.BEETROOT_CRITTER_SPAWN_EGG);
                     itemGroup.add(ModItems.NETHER_WART_CRITTER_SPAWN_EGG);
+                    itemGroup.add(ModItems.POISONOUS_POTATO_CRITTER_SPAWN_EGG);
                 });
 
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.INGREDIENTS)
@@ -96,6 +97,8 @@ public class ModItems {
     public static final Item POTATO_CRITTER_SPAWN_EGG = registerSpawnEgg("potato_critter_spawn_egg", ModEntities.POTATO_CRITTER);
     public static final Item BEETROOT_CRITTER_SPAWN_EGG = registerSpawnEgg("beetroot_critter_spawn_egg", ModEntities.BEETROOT_CRITTER);
     public static final Item NETHER_WART_CRITTER_SPAWN_EGG = registerSpawnEgg("nether_wart_critter_spawn_egg", ModEntities.NETHER_WART_CRITTER);
+    public static final Item POISONOUS_POTATO_CRITTER_SPAWN_EGG = registerSpawnEgg("poisonous_potato_critter_spawn_egg", ModEntities.POISONOUS_POTATO_CRITTER);
+
 
 
 

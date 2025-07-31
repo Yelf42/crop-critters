@@ -111,7 +111,7 @@ public class NetherWartBlockMixin {
         boolean airCheck = world.getBlockState(pos.up()).isAir();
         int spawnChance = ConfigManager.CONFIG.critter_spawn_chance * 2;
         if (airCheck && random.nextInt(100) + 1 < spawnChance) {
-            // TODO spawn netherwart critter
+            ModEntities.NETHER_WART_CRITTER.spawn(world, pos, SpawnReason.NATURAL);
             world.setBlockState(pos, Blocks.AIR.getDefaultState(), Block.NOTIFY_LISTENERS);
             // TODO Particles, SFX
             return true;

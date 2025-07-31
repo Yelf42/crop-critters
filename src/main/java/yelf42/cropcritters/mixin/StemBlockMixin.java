@@ -55,9 +55,9 @@ public abstract class StemBlockMixin {
         int spawnChance = (ConfigManager.CONFIG.critter_spawn_chance / 4) * ((soulCheck) ? 2 : 1) * ((soulSandValleyCheck) ? 2 : 1);
         if (random.nextInt(100) + 1 < spawnChance) {
             if (state.isOf(Blocks.MELON)) {
-                // TODO melon critter
+                ModEntities.MELON_CRITTER.spawn(world, pos, SpawnReason.NATURAL);
             } else if (state.isOf(Blocks.PUMPKIN)) {
-                // TODO pumpkin critter
+                ModEntities.PUMPKIN_CRITTER.spawn(world, pos, SpawnReason.NATURAL);
             } else {
                 return false;
             }

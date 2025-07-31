@@ -12,6 +12,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.BlockView;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeKeys;
@@ -165,12 +166,15 @@ public abstract class CropBlockMixin {
             if (state.isOf(Blocks.WHEAT)) {
                 ModEntities.WHEAT_CRITTER.spawn(world, pos, SpawnReason.NATURAL);
             } else if (state.isOf(Blocks.CARROTS)) {
-                // TODO carrot critter
+                ModEntities.CARROT_CRITTER.spawn(world, pos, SpawnReason.NATURAL);
             } else if (state.isOf(Blocks.POTATOES)) {
-                // TODO potator critter
-                // Poisonous potato critter
+                if (random.nextInt(100) + 1 < world.getDifficulty().getId() * 2) {
+                    ModEntities.POISONOUS_POTATO_CRITTER.spawn(world, pos, SpawnReason.NATURAL);
+                } else {
+                    ModEntities.POTATO_CRITTER.spawn(world, pos, SpawnReason.NATURAL);
+                }
             } else if (state.isOf(Blocks.BEETROOTS)) {
-                // TODO beetroot critter
+                ModEntities.BEETROOT_CRITTER.spawn(world, pos, SpawnReason.NATURAL);
             } else if (state.isOf(Blocks.TORCHFLOWER_CROP)) {
                 // TODO torchflower critter
             } else {

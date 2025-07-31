@@ -68,8 +68,6 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
 
     public AbstractCropCritterEntity(EntityType<? extends TameableEntity> entityType, World world) {
         super(entityType, world);
-        this.setPathfindingPenalty(PathNodeType.DANGER_OTHER, 0.0F);
-        this.setPathfindingPenalty(PathNodeType.DAMAGE_OTHER, 0.0F);
     }
 
     public void setTrusting(boolean trusting) {

@@ -32,5 +32,7 @@
   "entity.cropcritters.beetroot_critter": "Beetroot Critter",
   "item.cropcritters.beetroot_critter_spawn_egg": "Beetroot Critter Spawn Egg",
   "entity.cropcritters.nether_wart_critter": "Nether Wart Critter",
-  "item.cropcritters.nether_wart_critter_spawn_egg": "Nether Wart Critter Spawn Egg"
+  "item.cropcritters.nether_wart_critter_spawn_egg": "Nether Wart Critter Spawn Egg",
+  "entity.cropcritters.poisonous_potato_critter": "Poisonous Potato Critter",
+  "item.cropcritters.poisonous_potato_critter_spawn_egg": "Poisonous Potato Critter Spawn Egg"
 }

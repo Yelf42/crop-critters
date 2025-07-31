@@ -20,11 +20,12 @@ public class ModEntities {
 
         FabricDefaultAttributeRegistry.register(ModEntities.WHEAT_CRITTER, WheatCritterEntity.createAttributes());
         FabricDefaultAttributeRegistry.register(ModEntities.MELON_CRITTER, MelonCritterEntity.createAttributes());
-        FabricDefaultAttributeRegistry.register(ModEntities.PUMPKIN_CRITTER, MelonCritterEntity.createAttributes());
-        FabricDefaultAttributeRegistry.register(ModEntities.POTATO_CRITTER, MelonCritterEntity.createAttributes());
-        FabricDefaultAttributeRegistry.register(ModEntities.CARROT_CRITTER, MelonCritterEntity.createAttributes());
-        FabricDefaultAttributeRegistry.register(ModEntities.BEETROOT_CRITTER, MelonCritterEntity.createAttributes());
-        FabricDefaultAttributeRegistry.register(ModEntities.NETHER_WART_CRITTER, MelonCritterEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(ModEntities.PUMPKIN_CRITTER, PumpkinCritterEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(ModEntities.POTATO_CRITTER, PotatoCritterEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(ModEntities.CARROT_CRITTER, CarrotCritterEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(ModEntities.BEETROOT_CRITTER, BeetrootCritterEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(ModEntities.NETHER_WART_CRITTER, NetherWartCritterEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(ModEntities.POISONOUS_POTATO_CRITTER, PoisonousPotatoCritterEntity.createAttributes());
     }
 
     public static final EntityType<SeedBallProjectileEntity> SEED_BALL_PROJECTILE = Registry.register(
@@ -52,6 +53,7 @@ public class ModEntities {
     public static final EntityType<PotatoCritterEntity> POTATO_CRITTER = registerCritter("potato_critter", PotatoCritterEntity::new, 0.5f, 0.6f, 0.25f);
     public static final EntityType<BeetrootCritterEntity> BEETROOT_CRITTER = registerCritter("beetroot_critter", BeetrootCritterEntity::new, 0.5f, 0.6f, 0.25f);
     public static final EntityType<NetherWartCritterEntity> NETHER_WART_CRITTER = registerCritter("nether_wart_critter", NetherWartCritterEntity::new, 0.3f, 0.5f, 0.15f);
+    public static final EntityType<PoisonousPotatoCritterEntity> POISONOUS_POTATO_CRITTER = registerCritter("poisonous_potato_critter", PoisonousPotatoCritterEntity::new, 0.5f, 0.6f, 0.25f);
 
 
     public static <T extends Entity> EntityType<T> registerCritter(String name, EntityType.EntityFactory<T> factory, float width, float height, float eyeHeight) {
