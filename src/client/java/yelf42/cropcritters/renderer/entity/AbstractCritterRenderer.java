@@ -3,6 +3,7 @@ package yelf42.cropcritters.renderer.entity;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.state.LivingEntityRenderState;
 import net.minecraft.util.Identifier;
+import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.constant.dataticket.DataTicket;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 import software.bernie.geckolib.renderer.base.GeoRenderState;
@@ -31,6 +32,7 @@ public class AbstractCritterRenderer<R extends LivingEntityRenderState & GeoRend
     public void updateRenderState(AbstractCropCritterEntity entity, R entityRenderState, float partialTick) {
         super.updateRenderState(entity, entityRenderState, partialTick);
         entityRenderState.addGeckolibData(TEXTURE_PATH, entity.isTrusting() ? trustingTexture : texture);
+        entityRenderState.addGeckolibData(DataTickets.IS_SHAKING, entity.isShaking());
     }
 
     @Override

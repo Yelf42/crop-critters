@@ -35,6 +35,9 @@ import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
+import software.bernie.geckolib.animatable.processing.AnimationController;
+import software.bernie.geckolib.animation.PlayState;
+import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.constant.DefaultAnimations;
 import software.bernie.geckolib.util.GeckoLibUtil;
 import yelf42.cropcritters.CropCritters;
@@ -49,6 +52,7 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
     private static final TrackedData<Boolean> TRUSTING = DataTracker.registerData(AbstractCropCritterEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final Predicate<Entity> NOTICEABLE_PLAYER_FILTER = (entity) -> !entity.isSneaky() && EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR.test(entity);
     private static final Predicate<Entity> FARM_ANIMALS_FILTER = (entity -> entity.getType().isIn(CropCritters.SCARE_CRITTERS));
+    public static final RawAnimation SIT = RawAnimation.begin().thenLoop("animated.sit");
 
     // Override these methods
     protected abstract Predicate<BlockState> getTargetBlockFilter();
@@ -59,6 +63,7 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
 
     // Override for more complex behaviours
     protected boolean canWork() {return this.isTrusting();}
+    public boolean isShaking() {return false;}
 
     @Nullable
     BlockPos targetPos;
@@ -82,23 +87,25 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
         super.writeCustomData(view);
         view.putBoolean("Trusting", this.isTrusting());
         view.putInt("TicksUntilCanWork", this.ticksUntilCanWork);
-        view.putNullable("target_pos", BlockPos.CODEC, this.targetPos);
     }
 
     @Override
     protected void readCustomData(ReadView view) {
         super.readCustomData(view);
         this.setTrusting(view.getBoolean("Trusting", false));
+        this.ticksUntilCanWork = view.getInt("TicksUntilCanWork", resetTicksUntilCanWork());
+        this.targetPos = null;
     }
 
     @Override
-    public @Nullable PassiveEntity createChild(ServerWorld world, PassiveEntity entity) {
-        return null;
-    }
+    public @Nullable PassiveEntity createChild(ServerWorld world, PassiveEntity entity) {return null;}
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
-        controllerRegistrar.add(DefaultAnimations.genericWalkIdleController());
+        controllerRegistrar.add(
+                new AnimationController<>("Sit", test -> this.isSitting() ? (test.setAndContinue(SIT)) : PlayState.STOP),
+                DefaultAnimations.genericWalkIdleController()
+        );
     }
 
     protected void initGoals() {
@@ -122,9 +129,9 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
     public static DefaultAttributeContainer.Builder createAttributes() {
         return MobEntity.createMobAttributes()
                 .add(EntityAttributes.MAX_HEALTH, 8)
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.35)
+                .add(EntityAttributes.MOVEMENT_SPEED, 0.3)
                 .add(EntityAttributes.ATTACK_DAMAGE, 1)
-                .add(EntityAttributes.FOLLOW_RANGE, 20)
+                .add(EntityAttributes.FOLLOW_RANGE, 10)
                 .add(EntityAttributes.TEMPT_RANGE, 10);
     }
 
@@ -145,22 +152,24 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
         return false;
     }
 
+/*
     @Override
     protected void mobTick(ServerWorld world) {
-//        for(PrioritizedGoal prioritizedGoal : this.goalSelector.getGoals()) {
-//            if (prioritizedGoal.isRunning()) {
-//                CropCritters.LOGGER.info(prioritizedGoal.getGoal().getClass().toString());
-//            }
-//        }
+        for(PrioritizedGoal prioritizedGoal : this.goalSelector.getGoals()) {
+            if (prioritizedGoal.isRunning()) {
+                CropCritters.LOGGER.info(prioritizedGoal.getGoal().getClass().toString());
+            }
+        }
         super.mobTick(world);
     }
+*/
 
     @Override
     public boolean damage(ServerWorld world, DamageSource source, float amount) {
         if (this.isInvulnerableTo(world, source)) {
             return false;
         } else {
-            this.targetWorkGoal.cancel();
+            if (this.targetWorkGoal != null) this.targetWorkGoal.cancel();
             return super.damage(world, source, amount);
         }
     }
@@ -183,34 +192,32 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
         if (!this.getWorld().isClient()) {
             if (itemStack.isOf(ModItems.LOST_SOUL) && !this.isTrusting()) {
                 this.eat(player, hand, itemStack);
-                this.tryTame();
+                this.tryTame(player);
                 this.setPersistent();
+                return ActionResult.SUCCESS;
             } else if (this.isHealingItem(itemStack) && (this.getHealth() < this.getMaxHealth())) {
                 this.eat(player, hand, itemStack);
-                this.heal(1.f);
+                this.heal(4.f);
                 this.getWorld().sendEntityStatus(this, (byte)7);
+                this.setPersistent();
+                return ActionResult.SUCCESS;
             }
-            return ActionResult.SUCCESS;
         }
 
-        ActionResult actionResult = super.interactMob(player, hand);
-        if (actionResult.isAccepted()) {
-            this.setPersistent();
-        }
-
-        return actionResult;
+        return ActionResult.PASS;
     }
 
-    protected void tryTame() {
+    protected void tryTame(PlayerEntity player) {
         if (this.random.nextInt(3) == 0) {
             this.setTrusting(true);
+            this.setTamedBy(player);
             this.getWorld().sendEntityStatus(this, (byte)7);
-            this.getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(24.0F);
-            this.setHealth(24.0F);
+            float newHealth = this.getMaxHealth() * 2F;
+            this.getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(newHealth);
+            this.setHealth(newHealth);
         } else {
             this.getWorld().sendEntityStatus(this, (byte)6);
         }
-
     }
 
     void clearTargetPos() {

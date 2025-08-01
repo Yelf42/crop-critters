@@ -1,6 +1,47 @@
 {
 	"format_version": "1.8.0",
 	"animations": {
+		"animated.sit": {
+			"loop": true,
+			"animation_length": 2.5,
+			"bones": {
+				"right_leg": {
+					"position": {
+						"vector": [0, -1, -2]
+					}
+				},
+				"left_leg": {
+					"position": {
+						"vector": [0, -1, -2]
+					}
+				},
+				"body": {
+					"rotation": {
+						"0.0": {
+							"post": {
+								"vector": [0, 0, -5]
+							},
+							"lerp_mode": "catmullrom"
+						},
+						"1.2": {
+							"post": {
+								"vector": [0, 0, 5]
+							},
+							"lerp_mode": "catmullrom"
+						},
+						"2.5": {
+							"post": {
+								"vector": [0, 0, -5]
+							},
+							"lerp_mode": "catmullrom"
+						}
+					},
+					"position": {
+						"vector": [0, -1.25, 0]
+					}
+				}
+			}
+		},
 		"misc.idle": {
 			"loop": true,
 			"animation_length": 1.28,
@@ -617,6 +658,5 @@
 				}
 			}
 		}
-	},
-	"geckolib_format_version": 2
+	}
 }

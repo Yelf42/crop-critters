@@ -149,6 +149,18 @@ public class ModBlocks {
             true
     );
 
+    public static final Block TORCHFLOWER_SPARK = register(
+            "torchflower_spark",
+            TorchflowerSparkBlock::new,
+            AbstractBlock.Settings.create()
+                    .luminance((state) -> 12)
+                    .replaceable()
+                    .noCollision()
+                    .dropsNothing()
+                    .air(),
+            true
+    );
+
     private static RegistryKey<Block> keyOfBlock(String name) {
         return RegistryKey.of(RegistryKeys.BLOCK, Identifier.of(CropCritters.MOD_ID, name));
     }

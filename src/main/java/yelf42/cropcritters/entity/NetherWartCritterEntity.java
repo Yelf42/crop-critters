@@ -4,7 +4,11 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.TameableEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.particle.ParticleTypes;
@@ -27,6 +31,15 @@ public class NetherWartCritterEntity extends AbstractCropCritterEntity {
     public NetherWartCritterEntity(EntityType<? extends TameableEntity> entityType, World world) {
         super(entityType, world);
         this.lifespan = 1200;
+    }
+
+    public static DefaultAttributeContainer.Builder createAttributes() {
+        return MobEntity.createMobAttributes()
+                .add(EntityAttributes.MAX_HEALTH, 6)
+                .add(EntityAttributes.MOVEMENT_SPEED, 0.25)
+                .add(EntityAttributes.ATTACK_DAMAGE, 1)
+                .add(EntityAttributes.FOLLOW_RANGE, 10)
+                .add(EntityAttributes.TEMPT_RANGE, 10);
     }
 
     @Override
@@ -70,8 +83,13 @@ public class NetherWartCritterEntity extends AbstractCropCritterEntity {
     }
 
     @Override
-    protected void tryTame() {
-        if (this.lifespan >= this.GO_CRAZY) super.tryTame();
+    public boolean isShaking() {
+        return this.lifespan < this.GO_CRAZY;
+    }
+
+    @Override
+    protected void tryTame(PlayerEntity player) {
+        if (this.lifespan >= this.GO_CRAZY) super.tryTame(null);
     }
 
     @Override

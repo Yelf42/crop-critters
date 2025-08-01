@@ -13,7 +13,10 @@ import net.minecraft.entity.ai.RangedAttackMob;
 import net.minecraft.entity.ai.TargetPredicate;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.ai.pathing.Path;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
@@ -54,6 +57,15 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
         this.goalSelector.add(12, new WanderAroundGoal(this, 0.8));
         this.goalSelector.add(20, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
         this.goalSelector.add(20, new LookAroundGoal(this));
+    }
+
+    public static DefaultAttributeContainer.Builder createAttributes() {
+        return MobEntity.createMobAttributes()
+                .add(EntityAttributes.MAX_HEALTH, 16)
+                .add(EntityAttributes.MOVEMENT_SPEED, 0.15)
+                .add(EntityAttributes.ATTACK_DAMAGE, 1)
+                .add(EntityAttributes.FOLLOW_RANGE, 10)
+                .add(EntityAttributes.TEMPT_RANGE, 10);
     }
 
     @Override
