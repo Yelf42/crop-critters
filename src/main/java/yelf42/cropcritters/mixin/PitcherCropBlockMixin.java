@@ -2,6 +2,7 @@ package yelf42.cropcritters.mixin;
 
 import net.minecraft.block.*;
 import net.minecraft.block.enums.DoubleBlockHalf;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.EnumProperty;
@@ -20,6 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.config.ConfigManager;
+import yelf42.cropcritters.entity.ModEntities;
 
 @Mixin(PitcherCropBlock.class)
 public abstract class PitcherCropBlockMixin {
@@ -64,7 +66,7 @@ public abstract class PitcherCropBlockMixin {
         boolean soulSandValley = (world.getBiome(pos).matchesKey(BiomeKeys.SOUL_SAND_VALLEY));
         int spawnChance = ConfigManager.CONFIG.critter_spawn_chance * ((soulCheck) ? 2 : 1) * ((soulSandValley) ? 2 : 1);
         if (bottomHalf && random.nextInt(100) + 1 < spawnChance) {
-            // TODO spawn pitcher critter
+            ModEntities.PITCHER_CRITTER.spawn(world, pos, SpawnReason.NATURAL);
             world.setBlockState(pos, Blocks.AIR.getDefaultState(), Block.NOTIFY_LISTENERS);
             // TODO Particles, SFX
             return true;

@@ -57,7 +57,7 @@ public class ModEntities {
     public static final EntityType<NetherWartCritterEntity> NETHER_WART_CRITTER = registerCritter("nether_wart_critter", NetherWartCritterEntity::new, 0.3f, 0.5f, 0.15f);
     public static final EntityType<PoisonousPotatoCritterEntity> POISONOUS_POTATO_CRITTER = registerCritter("poisonous_potato_critter", PoisonousPotatoCritterEntity::new, 0.5f, 0.6f, 0.25f);
     public static final EntityType<TorchflowerCritterEntity> TORCHFLOWER_CRITTER = registerCritter("torchflower_critter", TorchflowerCritterEntity::new, 0.5f, 0.6f, 0.25f);
-    public static final EntityType<PitcherCritterEntity> PITCHER_CRITTER = registerCritter("pitcher_critter", PitcherCritterEntity::new, 0.7f, 0.9f, 0.6f);
+    public static final EntityType<PitcherCritterEntity> PITCHER_CRITTER = registerCritter("pitcher_critter", PitcherCritterEntity::new, 0.85f, 1.1f, 0.7f);
 
 
     public static <T extends Entity> EntityType<T> registerCritter(String name, EntityType.EntityFactory<T> factory, float width, float height, float eyeHeight) {

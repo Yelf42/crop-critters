@@ -28,7 +28,12 @@ import java.util.function.Predicate;
 public class PitcherCritterEntity extends AbstractCropCritterEntity {
 
     private final TargetPredicate.EntityPredicate CAN_EAT = (entity, world) -> {
-        if (this.consume > 0 || (entity.getBoundingBox().getLengthX() > 1.0) || (entity.getBoundingBox().getLengthY() > 1.0) || entity.isInvulnerable()) return false;
+        if (this.consume > 0
+                || entity instanceof PitcherCritterEntity
+                || (entity.getBoundingBox().getLengthX() > 1.0)
+                || (entity.getBoundingBox().getLengthY() > 1.0)
+                || entity.isInvulnerable())
+            return false;
         if (this.isTrusting()) {
             return !entity.hasCustomName() && (!(entity instanceof TameableEntity tameableEntity) || !tameableEntity.isTamed());
         }
@@ -48,7 +53,7 @@ public class PitcherCritterEntity extends AbstractCropCritterEntity {
         net.minecraft.entity.ai.goal.TemptGoal temptGoal = new TemptGoal(this, 0.6, (stack) -> stack.isOf(ModItems.LOST_SOUL), false);
         this.goalSelector.add(0, new SwimGoal(this));
         this.goalSelector.add(2, temptGoal);
-        this.goalSelector.add(4, new ActiveTargetGoal<>(this, LivingEntity.class, 0, true, true, CAN_EAT));
+        this.goalSelector.add(4, new ActiveTargetGoal<>(this, LivingEntity.class, 0, true, true, (entity, world) -> CAN_EAT.test(entity, world)));
         this.goalSelector.add(4, new AttackGoal(this));
         this.goalSelector.add(12, new WanderAroundGoal(this, 0.8));
         this.goalSelector.add(20, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
@@ -91,7 +96,6 @@ public class PitcherCritterEntity extends AbstractCropCritterEntity {
     public void tick() {
         super.tick();
         if (this.getWorld().isClient) return;
-        //CropCritters.LOGGER.info("Consume: " + this.consume + "   timeToConsume: " + this.timeToConsume);
         if (this.consumptionTarget == null) {
             this.consume = 0;
             this.timeToConsume = false;

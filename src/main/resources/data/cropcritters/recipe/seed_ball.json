@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": [
+      "minecraft:wheat_seeds",
+      "minecraft:carrot",
+      "minecraft:beetroot_seeds",
+      "minecraft:potato",
+      "minecraft:poisonous_potato"
+    ],
+    "M": "minecraft:mud"
+  },
+  "pattern": [
+    "###",
+    "#M#",
+    "###"
+  ],
+  "result": {
+    "count": 1,
+    "id": "cropcritters:seed_ball"
+  }
+}

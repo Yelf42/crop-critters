@@ -4,6 +4,8 @@
     "#cropcritters:crop_critters",
     "#minecraft:undead",
     "minecraft:allay",
-    "minecraft:vex"
+    "minecraft:vex",
+    "minecraft:snow_golem",
+    "minecraft:iron_golem"
   ]
 }

@@ -176,7 +176,7 @@ public abstract class CropBlockMixin {
             } else if (state.isOf(Blocks.BEETROOTS)) {
                 ModEntities.BEETROOT_CRITTER.spawn(world, pos, SpawnReason.NATURAL);
             } else if (state.isOf(Blocks.TORCHFLOWER_CROP)) {
-                // TODO torchflower critter
+                ModEntities.TORCHFLOWER_CRITTER.spawn(world, pos, SpawnReason.NATURAL);
             } else {
                 return false;
             }

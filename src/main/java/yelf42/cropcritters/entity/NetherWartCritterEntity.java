@@ -6,33 +6,36 @@ import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.data.DataTracker;
+import net.minecraft.entity.data.TrackedData;
+import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.particle.EntityEffectParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.ColorHelper;
 import net.minecraft.world.World;
 import yelf42.cropcritters.blocks.ModBlocks;
 
 import java.util.function.Predicate;
 
-// TODO override isShaking() in the Render class
-
 public class NetherWartCritterEntity extends AbstractCropCritterEntity {
 
-    private final int GO_CRAZY = 400;
-    int lifespan;
+    private static final EntityEffectParticleEffect PARTICLE_EFFECT = EntityEffectParticleEffect.create(ParticleTypes.ENTITY_EFFECT, ColorHelper.withAlpha(1F, 16073282));
+    private static final int GO_CRAZY = 400;
+    private static final TrackedData<Integer> LIFESPAN = DataTracker.registerData(NetherWartCritterEntity.class, TrackedDataHandlerRegistry.INTEGER);
+
 
     public NetherWartCritterEntity(EntityType<? extends TameableEntity> entityType, World world) {
         super(entityType, world);
-        this.lifespan = 1200;
     }
 
     public static DefaultAttributeContainer.Builder createAttributes() {
@@ -42,6 +45,12 @@ public class NetherWartCritterEntity extends AbstractCropCritterEntity {
                 .add(EntityAttributes.ATTACK_DAMAGE, 1)
                 .add(EntityAttributes.FOLLOW_RANGE, 10)
                 .add(EntityAttributes.TEMPT_RANGE, 10);
+    }
+
+    @Override
+    protected void initDataTracker(DataTracker.Builder builder) {
+        super.initDataTracker(builder);
+        builder.add(LIFESPAN, 1200);
     }
 
     @Override
@@ -91,19 +100,27 @@ public class NetherWartCritterEntity extends AbstractCropCritterEntity {
 
     @Override
     public boolean isShaking() {
-        return this.lifespan < this.GO_CRAZY;
+        return this.dataTracker.get(LIFESPAN) < GO_CRAZY;
     }
 
     @Override
     protected void tryTame(PlayerEntity player) {
-        if (this.lifespan >= this.GO_CRAZY) super.tryTame(null);
+        if (!isShaking()) super.tryTame(null);
     }
 
     @Override
-    protected void mobTick(ServerWorld world) {
-        super.mobTick(world);
-        if (!this.isTrusting()) lifespan--;
-        if (lifespan <= 0) explode();
+    public void tick() {
+        super.tick();
+        if (!this.getWorld().isClient) {
+            if (!this.isTrusting()) this.dataTracker.set(LIFESPAN, this.dataTracker.get(LIFESPAN) - 1);
+            if (this.dataTracker.get(LIFESPAN) <= 0) explode();
+        } else if (this.isShaking()) {
+            if (this.getWorld().random.nextInt(10) != 0) return;
+            double x = this.getX() + (this.random.nextDouble() - 0.5) * this.getWidth();
+            double y = this.getY() + this.getHeight() * 0.5;
+            double z = this.getZ() + (this.random.nextDouble() - 0.5) * this.getWidth();
+            this.getWorld().addParticleClient(PARTICLE_EFFECT, x, y, z, 0, 0, 0);
+        }
     }
 
     private void explode() {
