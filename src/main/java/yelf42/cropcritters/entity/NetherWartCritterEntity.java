@@ -9,11 +9,13 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
@@ -70,6 +72,11 @@ public class NetherWartCritterEntity extends AbstractCropCritterEntity {
     @Override
     protected boolean isHealingItem(ItemStack itemStack) {
         return itemStack.isOf(Items.NETHER_WART);
+    }
+
+    @Override
+    protected Pair<Item, Integer> getLoot() {
+        return new Pair<>(Items.NETHER_WART, 3);
     }
 
     @Override

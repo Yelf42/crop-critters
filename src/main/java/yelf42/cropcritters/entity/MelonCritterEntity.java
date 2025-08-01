@@ -17,11 +17,13 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -96,8 +98,13 @@ public class MelonCritterEntity extends AbstractCropCritterEntity implements Ran
     }
 
     @Override
+    protected Pair<Item, Integer> getLoot() {
+        return new Pair<>(Items.MELON_SLICE, 8);
+    }
+
+    @Override
     protected boolean isHealingItem(ItemStack itemStack) {
-        return itemStack.isOf(Items.MELON_SLICE);
+        return itemStack.isOf(Items.MELON_SLICE) || itemStack.isOf(Items.MELON) || itemStack.isOf(Items.MELON_SEEDS);
     }
 
     @Override

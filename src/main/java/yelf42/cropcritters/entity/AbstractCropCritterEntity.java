@@ -20,13 +20,17 @@ import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.predicate.entity.EntityPredicates;
+import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -60,6 +64,7 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
     protected abstract boolean isHealingItem(ItemStack itemStack);
     protected abstract int resetTicksUntilCanWork();
     public abstract void completeTargetGoal();
+    protected abstract Pair<Item, Integer> getLoot();
 
     // Override for more complex behaviours
     protected boolean canWork() {return this.isTrusting();}
@@ -170,8 +175,27 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
             return false;
         } else {
             if (this.targetWorkGoal != null) this.targetWorkGoal.cancel();
+            if (source.getAttacker() instanceof PlayerEntity && source.getWeaponStack() != null && source.getWeaponStack().isIn(ItemTags.HOES)) amount *= 3;
             return super.damage(world, source, amount);
         }
+    }
+
+    @Override
+    protected void drop(ServerWorld world, DamageSource damageSource) {
+        Pair<Item, Integer> loot = getLoot();
+        int quantity = 1;
+        if (loot.getRight() > 1 && damageSource.getAttacker() instanceof PlayerEntity) {
+            boolean withHoe = damageSource.getWeaponStack() != null && damageSource.getWeaponStack().isIn(ItemTags.HOES);
+            if (withHoe) quantity = world.random.nextInt(loot.getRight()) + 1;
+        }
+        ItemStack toDrop = new ItemStack(loot.getLeft(), quantity);
+        this.dropStack(world, toDrop);
+        this.dropExperience(world, damageSource.getAttacker());
+    }
+
+    @Override
+    protected int getExperienceToDrop(ServerWorld world) {
+        return super.getExperienceToDrop(world) + (this.isTrusting() ? 3 : 0);
     }
 
     @Override

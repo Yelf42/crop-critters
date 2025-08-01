@@ -20,11 +20,13 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -105,8 +107,13 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
     }
 
     @Override
+    protected Pair<Item, Integer> getLoot() {
+        return new Pair<>(Items.PUMPKIN, 1);
+    }
+
+    @Override
     protected boolean isHealingItem(ItemStack itemStack) {
-        return itemStack.isOf(Items.PUMPKIN);
+        return itemStack.isOf(Items.PUMPKIN) || itemStack.isOf(Items.PUMPKIN_SEEDS) || itemStack.isOf(Items.CARVED_PUMPKIN);
     }
 
     @Override

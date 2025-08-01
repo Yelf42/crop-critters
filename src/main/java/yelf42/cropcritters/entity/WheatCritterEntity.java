@@ -11,6 +11,7 @@ import net.minecraft.item.Items;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import yelf42.cropcritters.CropCritters;
@@ -39,8 +40,13 @@ public class WheatCritterEntity extends AbstractCropCritterEntity {
     }
 
     @Override
+    protected Pair<Item, Integer> getLoot() {
+        return new Pair<>(Items.WHEAT, 4);
+    }
+
+    @Override
     protected boolean isHealingItem(ItemStack itemStack) {
-        return itemStack.isOf(Items.WHEAT);
+        return itemStack.isOf(Items.WHEAT) || itemStack.isOf(Items.WHEAT_SEEDS);
     }
 
     @Override

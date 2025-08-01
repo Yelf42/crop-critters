@@ -3,6 +3,7 @@ package yelf42.cropcritters.events;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityCombatEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.block.TallPlantBlock;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -11,7 +12,9 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.registry.tag.EnchantmentTags;
 import net.minecraft.registry.tag.EntityTypeTags;
+import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
@@ -39,14 +42,12 @@ public class ModEvents {
     }
 
     private static void registerSoulSoilTilling() {
-        // Make soul soil tillable
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
             if (world.isClient) return ActionResult.PASS;
 
             ItemStack stack = player.getStackInHand(hand);
-            Item item = stack.getItem();
 
-            if (item instanceof HoeItem) {
+            if (stack.isIn(ItemTags.HOES)) {
                 BlockPos pos = hitResult.getBlockPos();
                 BlockState state = world.getBlockState(pos);
 
@@ -65,14 +66,12 @@ public class ModEvents {
     }
 
     private static void registerSoulSandToSoil() {
-        // Make soul soil tillable
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
             if (world.isClient) return ActionResult.PASS;
 
             ItemStack stack = player.getStackInHand(hand);
-            Item item = stack.getItem();
 
-            if (item instanceof HoeItem) {
+            if (stack.isIn(ItemTags.HOES)) {
                 BlockPos pos = hitResult.getBlockPos();
                 BlockState state = world.getBlockState(pos);
 
@@ -95,9 +94,8 @@ public class ModEvents {
             if (world.isClient) return ActionResult.PASS;
 
             ItemStack stack = player.getStackInHand(hand);
-            Item item = stack.getItem();
 
-            if (item instanceof ShearsItem) {
+            if (stack.isOf(Items.SHEARS)) {
                 BlockPos pos = hitResult.getBlockPos();
                 BlockState state = world.getBlockState(pos);
 
@@ -120,9 +118,8 @@ public class ModEvents {
             if (world.isClient) return ActionResult.PASS;
 
             ItemStack stack = player.getStackInHand(hand);
-            Item item = stack.getItem();
 
-            if (item instanceof ShearsItem) {
+            if (stack.isOf(Items.SHEARS)) {
                 BlockPos pos = hitResult.getBlockPos();
                 BlockState state = world.getBlockState(pos);
 
@@ -148,9 +145,8 @@ public class ModEvents {
             if (world.isClient) return ActionResult.PASS;
 
             ItemStack stack = player.getStackInHand(hand);
-            Item item = stack.getItem();
 
-            if (item instanceof ShearsItem) {
+            if (stack.isOf(Items.SHEARS)) {
                 BlockPos pos = hitResult.getBlockPos();
                 BlockState state = world.getBlockState(pos);
 
@@ -169,17 +165,17 @@ public class ModEvents {
         });
     }
 
+    // Lost soul drops for undead and critters on kill with Hoes
     private static void registerDropLostSouls() {
         ServerEntityCombatEvents.AFTER_KILLED_OTHER_ENTITY.register((world, entity, killedEntity) -> {
             if (world instanceof ServerWorld serverWorld
                     && ((ThreadLocalRandom.current().nextInt(100) + 1 < ConfigManager.CONFIG.lost_soul_drop_chance) && (killedEntity.getType().isIn(CropCritters.HAS_LOST_SOUL)))
                     && (entity instanceof PlayerEntity playerEntity)) {
                 ItemStack stack = playerEntity.getMainHandStack();
-                Item item = stack.getItem();
-                if (item instanceof ShearsItem || item instanceof HoeItem) {
+                if (stack.isIn(ItemTags.HOES)) {
                     Vec3d pos = killedEntity.getPos();
-                    // TODO Play sfx and spawn particles
                     ItemEntity ls = new ItemEntity(world, pos.x, pos.y, pos.z, new ItemStack(ModItems.LOST_SOUL));
+                    ls.setToDefaultPickupDelay();
                     serverWorld.spawnEntity(ls);
                 }
             }

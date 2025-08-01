@@ -11,12 +11,14 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.tick.TickPriority;
@@ -39,8 +41,15 @@ public class TorchflowerCritterEntity extends AbstractCropCritterEntity {
     protected Predicate<BlockState> getTargetBlockFilter() {return null;}
     @Override
     protected int getTargetOffset() {return 0;}
+
+    @Override
+    protected Pair<Item, Integer> getLoot() {
+        return new Pair<>(Items.TORCHFLOWER, 1);
+    }
+
     @Override
     protected boolean isHealingItem(ItemStack itemStack) {return itemStack.isOf(Items.TORCHFLOWER);}
+
     @Override
     protected int resetTicksUntilCanWork() {return 0;}
     @Override

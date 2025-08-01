@@ -9,11 +9,12 @@
       "minecraft:slime_ball",
       "minecraft:phantom_membrane"
     ],
+    "#minecaft:dirt",
     "#minecraft:leaves",
     "cropcritters:lost_soul"
   ],
   "result": {
     "id": "cropcritters:strange_fertilizer",
-    "count": 3
+    "count": 8
   }
 }

@@ -10,11 +10,14 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.Monster;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.particle.EntityEffectParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
@@ -53,6 +56,11 @@ public class PoisonousPotatoCritterEntity extends AbstractCropCritterEntity impl
     @Override
     protected int getTargetOffset() {
         return 1;
+    }
+
+    @Override
+    protected Pair<Item, Integer> getLoot() {
+        return new Pair<>(Items.POISONOUS_POTATO, 2);
     }
 
     @Override
