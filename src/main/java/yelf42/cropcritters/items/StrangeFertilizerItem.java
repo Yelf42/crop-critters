@@ -167,7 +167,7 @@ public class StrangeFertilizerItem extends BoneMealItem {
                 }
             }
 
-            if (blockState.canPlaceAt(world, blockPos2)) {
+            if (!blockState.isIn(CropCritters.IGNORE_STRANGE_FERTILIZERS) && blockState.canPlaceAt(world, blockPos2)) {
                 BlockState blockState2 = world.getBlockState(blockPos2);
                 if (blockState2.isOf(Blocks.WATER) && world.getFluidState(blockPos2).getLevel() == 8) {
                     world.setBlockState(blockPos2, blockState, Block.NOTIFY_ALL);

@@ -47,16 +47,11 @@ public class CropCritters implements ModInitializer {
 	public static final TagKey<Block> WEEDS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "weeds"));
 	public static final TagKey<Block> SEED_BALL_CROPS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "seed_ball_crops"));
 
-	public static final Identifier DEAD_CORAL_SHELF_ID = Identifier.of("cropcritters", "dead_coral_shelf");
-	public static final Identifier CRIMSON_THORNWEED_SPAWN_ID = Identifier.of("cropcritters", "crimson_thornweed");
 
 	@Override
 	public void onInitialize() {
-		// This code runs as soon as Minecraft is in a mod-load-ready state.
-		// However, some things (like resources) may still be uninitialized.
-		// Proceed with mild caution.
-
 		LOGGER.info("Starting initialize of " + CropCritters.MOD_ID);
+
 		// Config load:
 		ConfigManager.load();
 
@@ -68,16 +63,35 @@ public class CropCritters implements ModInitializer {
 
 		// Vanilla biome mods
 		LOGGER.info("Starting biome changes for " + CropCritters.MOD_ID);
-		BiomeModifications.addFeature(
-				BiomeSelectors.tag(BiomeTags.IS_BEACH),
-				GenerationStep.Feature.UNDERGROUND_ORES,
-				RegistryKey.of(RegistryKeys.PLACED_FEATURE, DEAD_CORAL_SHELF_ID)
-		);
-		BiomeModifications.addFeature(
-				BiomeSelectors.includeByKey(BiomeKeys.CRIMSON_FOREST),
-				GenerationStep.Feature.VEGETAL_DECORATION,
-				RegistryKey.of(RegistryKeys.PLACED_FEATURE, CRIMSON_THORNWEED_SPAWN_ID)
-		);
+		if (ConfigManager.CONFIG.deadCoralGeneration) {
+			BiomeModifications.addFeature(
+					BiomeSelectors.tag(BiomeTags.IS_BEACH),
+					GenerationStep.Feature.UNDERGROUND_ORES,
+					RegistryKey.of(RegistryKeys.PLACED_FEATURE, Identifier.of("cropcritters", "dead_coral_shelf"))
+			);
+		}
+		if (ConfigManager.CONFIG.thornweedGeneration) {
+			BiomeModifications.addFeature(
+					BiomeSelectors.includeByKey(BiomeKeys.CRIMSON_FOREST),
+					GenerationStep.Feature.VEGETAL_DECORATION,
+					RegistryKey.of(RegistryKeys.PLACED_FEATURE, Identifier.of("cropcritters", "crimson_thornweed"))
+			);
+		}
+		if (ConfigManager.CONFIG.waftgrassGeneration) {
+			BiomeModifications.addFeature(
+					BiomeSelectors.includeByKey(BiomeKeys.WARPED_FOREST),
+					GenerationStep.Feature.VEGETAL_DECORATION,
+					RegistryKey.of(RegistryKeys.PLACED_FEATURE, Identifier.of("cropcritters", "waftgrass"))
+			);
+		}
+		if (ConfigManager.CONFIG.spiteweedGeneration) {
+			BiomeModifications.addFeature(
+					BiomeSelectors.includeByKey(BiomeKeys.SOUL_SAND_VALLEY),
+					GenerationStep.Feature.SURFACE_STRUCTURES,
+					RegistryKey.of(RegistryKeys.PLACED_FEATURE, Identifier.of("cropcritters", "withering_spiteweed"))
+			);
+		}
+
 
 		// S2C Packets
 		PayloadTypeRegistry.playS2C().register(WaterSprayS2CPayload.ID, WaterSprayS2CPayload.CODEC);

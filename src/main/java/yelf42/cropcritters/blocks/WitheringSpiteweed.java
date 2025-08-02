@@ -12,6 +12,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -32,6 +33,15 @@ public class WitheringSpiteweed extends SpreadingWeekBlock {
                 || floor.isOf(Blocks.CRIMSON_NYLIUM)
                 || floor.isOf(Blocks.WARPED_NYLIUM)
                 || floor.isOf(Blocks.NETHERRACK);
+    }
+
+    @Override
+    protected void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
+        BlockState soilCheck = world.getBlockState(pos.down());
+        if (!soilCheck.isOf(Blocks.BLACKSTONE) && (soilCheck.isOf(Blocks.SOUL_SAND) || soilCheck.isOf(Blocks.SOUL_SOIL) || soilCheck.isOf(ModBlocks.SOUL_FARMLAND))) {
+            world.setBlockState(pos.down(), Blocks.BLACKSTONE.getDefaultState(), Block.NOTIFY_LISTENERS);
+        }
+        super.randomTick(state, world, pos, random);
     }
 
     @Override

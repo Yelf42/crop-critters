@@ -67,7 +67,7 @@ public abstract class PitcherCropBlockMixin {
         boolean bottomHalf = world.getBlockState(pos).get(HALF) == DoubleBlockHalf.LOWER;
         boolean soulCheck = soil.isOf(Blocks.SOUL_SOIL) || soil.isOf(Blocks.SOUL_SAND) || soil.isOf(ModBlocks.SOUL_FARMLAND);
         boolean soulSandValley = (world.getBiome(pos).matchesKey(BiomeKeys.SOUL_SAND_VALLEY));
-        int spawnChance = ConfigManager.CONFIG.critter_spawn_chance * ((soulCheck) ? 2 : 1) * ((soulSandValley) ? 2 : 1);
+        int spawnChance = ConfigManager.CONFIG.critterSpawnChance * ((soulCheck) ? 2 : 1) * ((soulSandValley) ? 2 : 1);
         if (bottomHalf && random.nextInt(100) + 1 < spawnChance) {
             ModEntities.PITCHER_CRITTER.spawn(world, pos, SpawnReason.NATURAL);
             world.setBlockState(pos, Blocks.AIR.getDefaultState(), Block.NOTIFY_LISTENERS);

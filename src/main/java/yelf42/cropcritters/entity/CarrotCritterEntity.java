@@ -10,6 +10,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Pair;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import yelf42.cropcritters.blocks.ModBlocks;
@@ -53,5 +54,12 @@ public class CarrotCritterEntity extends AbstractCropCritterEntity {
     @Override
     protected int resetTicksUntilCanWork() {
         return MathHelper.nextInt(this.random, 100, 200);
+    }
+
+    @Override
+    public boolean isAttractive(BlockPos pos) {
+        BlockState target = this.getWorld().getBlockState(pos);
+        BlockState above = this.getWorld().getBlockState(pos.up());
+        return this.getTargetBlockFilter().test(target) && above.getCollisionShape(null, pos.up()).isEmpty();
     }
 }

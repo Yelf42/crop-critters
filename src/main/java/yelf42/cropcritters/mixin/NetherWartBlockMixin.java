@@ -67,7 +67,7 @@ public class NetherWartBlockMixin {
         // Count how many neighbours are the same type of crop
         // More identical crops increases chance of weed growth
         float monoCount = 1F;
-        if (ConfigManager.CONFIG.monoculture_penalize) {
+        if (ConfigManager.CONFIG.monoculturePenalize) {
             for (int i = -1; i <= 1; i++) {
                 for (int j = -1; j <= 1; j++) {
                     if (i == j && j == 0) continue;
@@ -76,11 +76,11 @@ public class NetherWartBlockMixin {
                 }
             }
             // Quadratic penalty increase for monocultural practices
-            monoCount = (monoCount * monoCount) / (float)ConfigManager.CONFIG.monoculture_dampener;
+            monoCount = (monoCount * monoCount) / 32F;
         }
-        boolean growWaftgrass = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.waftgrass_chance * monoCount;
-        boolean growThornweed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.thornweed_chance * monoCount;
-        boolean growSpiteweed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.spiteweed_chance * monoCount;
+        boolean growWaftgrass = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.waftgrassChance * monoCount;
+        boolean growThornweed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.thornweedChance * monoCount;
+        boolean growSpiteweed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.spiteweedChance * monoCount;
 
         if (Objects.equals(world.getBiome(pos).getIdAsString(), "minecraft:soul_sand_valley")) {
             if (growSpiteweed && (soilCheck.isOf(Blocks.SOUL_SOIL) || soilCheck.isOf(Blocks.SOUL_SAND) || soilCheck.isOf(ModBlocks.SOUL_FARMLAND))) {
@@ -112,7 +112,7 @@ public class NetherWartBlockMixin {
     @Unique
     private static boolean spawnCritter(ServerWorld world, Random random, BlockPos pos) {
         boolean airCheck = world.getBlockState(pos.up()).isAir();
-        int spawnChance = ConfigManager.CONFIG.critter_spawn_chance * 2;
+        int spawnChance = ConfigManager.CONFIG.critterSpawnChance * 2;
         if (airCheck && random.nextInt(100) + 1 < spawnChance) {
             for (int i = 0; i <= world.random.nextInt(3); i++) {
                 ModEntities.NETHER_WART_CRITTER.spawn(world, pos, SpawnReason.NATURAL);

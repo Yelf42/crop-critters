@@ -3,8 +3,9 @@ package yelf42.cropcritters.events;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityCombatEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.block.TallPlantBlock;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
@@ -12,8 +13,8 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.registry.tag.EnchantmentTags;
-import net.minecraft.registry.tag.EntityTypeTags;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -26,7 +27,7 @@ import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.config.ConfigManager;
 import yelf42.cropcritters.items.ModItems;
 
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Optional;
 
 public class ModEvents {
     public static void initialize() {
@@ -169,10 +170,25 @@ public class ModEvents {
     private static void registerDropLostSouls() {
         ServerEntityCombatEvents.AFTER_KILLED_OTHER_ENTITY.register((world, entity, killedEntity) -> {
             if (world instanceof ServerWorld serverWorld
-                    && ((ThreadLocalRandom.current().nextInt(100) + 1 < ConfigManager.CONFIG.lost_soul_drop_chance) && (killedEntity.getType().isIn(CropCritters.HAS_LOST_SOUL)))
+                    && (killedEntity.getType().isIn(CropCritters.HAS_LOST_SOUL))
                     && (entity instanceof PlayerEntity playerEntity)) {
                 ItemStack stack = playerEntity.getMainHandStack();
+                int dropChance = 0;
                 if (stack.isIn(ItemTags.HOES)) {
+                    dropChance += ConfigManager.CONFIG.lostSoulDropChance;
+                    Optional<RegistryEntry.Reference<Enchantment>> e = world.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getEntry(Enchantments.SILK_TOUCH.getValue());
+                    if (e.isPresent()) {
+                        dropChance += (EnchantmentHelper.getLevel(e.get(), stack) > 0) ? ConfigManager.CONFIG.lostSoulDropChance : 0;
+                    }
+                    dropChance += (killedEntity.getType().isIn(CropCritters.CROP_CRITTERS)) ? ConfigManager.CONFIG.lostSoulDropChance : 0;
+                }
+                if (stack.isIn(ItemTags.SWORDS)) {
+                    Optional<RegistryEntry.Reference<Enchantment>> e = world.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getEntry(Enchantments.LOOTING.getValue());
+                    if (e.isPresent()) {
+                        dropChance += (ConfigManager.CONFIG.lostSoulDropChance / 2) * EnchantmentHelper.getLevel(e.get(), stack);
+                    }
+                }
+                if (serverWorld.random.nextInt(100) + 1 < dropChance) {
                     Vec3d pos = killedEntity.getPos();
                     ItemEntity ls = new ItemEntity(world, pos.x, pos.y, pos.z, new ItemStack(ModItems.LOST_SOUL));
                     ls.setToDefaultPickupDelay();

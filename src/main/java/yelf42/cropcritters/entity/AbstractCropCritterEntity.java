@@ -2,6 +2,7 @@ package yelf42.cropcritters.entity;
 
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.*;
@@ -247,8 +248,10 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
         this.ticksUntilCanWork = resetTicksUntilCanWork();
     }
 
-    public boolean isAttractive(@NotNull BlockState state) {
-        return this.getTargetBlockFilter().test(state);
+    public boolean isAttractive(BlockPos pos) {
+        BlockState target = this.getWorld().getBlockState(pos);
+        BlockState above = this.getWorld().getBlockState(pos.up());
+        return this.getTargetBlockFilter().test(target) && above.isOf(Blocks.AIR);
     }
 
     class TargetWorkGoal extends Goal {
@@ -294,7 +297,7 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
         public void tick() {
             if (AbstractCropCritterEntity.this.targetPos != null) {
                 ++this.ticks;
-                if (this.ticks > 600 || !(isAttractive(AbstractCropCritterEntity.this.getWorld().getBlockState(AbstractCropCritterEntity.this.targetPos)))) {
+                if (this.ticks > 600 || !(isAttractive(AbstractCropCritterEntity.this.targetPos))) {
                     AbstractCropCritterEntity.this.clearTargetPos();
                 } else {
                     Vec3d vec3d = Vec3d.ofBottomCenter(AbstractCropCritterEntity.this.targetPos).add(0.0F, getTargetOffset(), 0.0F);
@@ -337,7 +340,7 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
                 long l = this.unreachableTargetsPosCache.getOrDefault(blockPos.asLong(), Long.MIN_VALUE);
                 if (AbstractCropCritterEntity.this.getWorld().getTime() < l) {
                     long2LongOpenHashMap.put(blockPos.asLong(), l);
-                } else if (isAttractive(AbstractCropCritterEntity.this.getWorld().getBlockState(blockPos)) && AbstractCropCritterEntity.this.getWorld().getBlockState(blockPos.up()).isAir()) {
+                } else if (isAttractive(blockPos)) {
                     Path path = AbstractCropCritterEntity.this.navigation.findPathTo(blockPos, 0);
                     if (path != null && path.reachesTarget()) {
                         return Optional.of(blockPos);

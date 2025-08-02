@@ -70,8 +70,8 @@ public abstract class CropBlockMixin {
         }
     }
 
-    // Spawn critter chance if air above AND soulsand_valley
-    // Stop aging if not on farmland
+    // Try spawn critter if soulsand_valley
+    // Stop ticking / aging if not on farmland
     @Inject(method = "randomTick", at = @At("HEAD"), cancellable = true)
     private static void stopGrowthOnDirtAndSpawnSoulSandValleyCritters(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
         if (world.getBiome(pos).matchesKey(BiomeKeys.SOUL_SAND_VALLEY)) {
@@ -86,14 +86,12 @@ public abstract class CropBlockMixin {
     // Inject into randomTicks to turn into weed if mature
     @Inject(method = "randomTick", at = @At("TAIL"))
     private static void injectWeedsIntoRandomTick(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
-        if (state.getBlock() instanceof CropBlock cropBlock) {
-            if (!cropBlock.isMature(state)) return;
-        }
+        if (state.getBlock() instanceof CropBlock cropBlock && !cropBlock.isMature(state)) return;
 
         // Count how many neighbours are the same type of crop
         // More identical crops increases chance of weed growth
         float monoCount = 1F;
-        if (ConfigManager.CONFIG.monoculture_penalize) {
+        if (ConfigManager.CONFIG.monoculturePenalize) {
             for (int i = -1; i <= 1; i++) {
                 for (int j = -1; j <= 1; j++) {
                     if (i == j && j == 0) continue;
@@ -102,12 +100,12 @@ public abstract class CropBlockMixin {
                 }
             }
             // Quadratic penalty increase for monocultural practices
-            monoCount = (monoCount * monoCount) / (float)ConfigManager.CONFIG.monoculture_dampener;
+            monoCount = (monoCount * monoCount) / 16F;
         }
-        boolean growThistle = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.thistle_chance * monoCount;
-        boolean growThornweed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.thornweed_chance * monoCount;
-        boolean growWaftgrass = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.waftgrass_chance * monoCount;
-        boolean growSpiteweed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.spiteweed_chance * monoCount;
+        boolean growThistle = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.thistleChance * monoCount;
+        boolean growThornweed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.thornweedChance * monoCount;
+        boolean growWaftgrass = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.waftgrassChance * monoCount;
+        boolean growSpiteweed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.spiteweedChance * monoCount;
 
 
         BlockState soilCheck = world.getBlockState(pos.down());
@@ -153,7 +151,7 @@ public abstract class CropBlockMixin {
         BlockState soulCheck = world.getBlockState(pos.down());
         boolean soulCheckBl = soulCheck.isOf(Blocks.SOUL_SOIL) || soulCheck.isOf(Blocks.SOUL_SAND) || soulCheck.isOf(ModBlocks.SOUL_FARMLAND);
         boolean airCheck = world.getBlockState(pos.up()).isAir();
-        int spawnChance = ConfigManager.CONFIG.critter_spawn_chance;
+        int spawnChance = ConfigManager.CONFIG.critterSpawnChance;
         spawnChance *= (soulCheckBl) ? 2 : 1;
         if (airCheck && random.nextInt(100) + 1 < spawnChance) {
             if (state.isOf(Blocks.WHEAT)) {

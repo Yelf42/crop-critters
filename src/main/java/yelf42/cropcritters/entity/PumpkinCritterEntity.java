@@ -144,7 +144,7 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
         public void tick() {
             if (PumpkinCritterEntity.this.targetPos != null) {
                 ++this.ticks;
-                if (this.ticks > 600 || !(isAttractive(PumpkinCritterEntity.this.getWorld().getBlockState(PumpkinCritterEntity.this.targetPos)))) {
+                if (this.ticks > 600 || !(isAttractive(PumpkinCritterEntity.this.targetPos))) {
                     PumpkinCritterEntity.this.clearTargetPos();
                 } else {
                     Vec3d vec3d = Vec3d.ofBottomCenter(PumpkinCritterEntity.this.targetPos).add(0.0F, getTargetOffset(), 0.0F);
@@ -185,7 +185,7 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
                 long l = this.unreachableTargetsPosCache.getOrDefault(blockPos.asLong(), Long.MIN_VALUE);
                 if (PumpkinCritterEntity.this.getWorld().getTime() < l) {
                     long2LongOpenHashMap.put(blockPos.asLong(), l);
-                } else if (isAttractive(PumpkinCritterEntity.this.getWorld().getBlockState(blockPos)) && PumpkinCritterEntity.this.getWorld().getBlockState(blockPos.up()).isAir()) {
+                } else if (isAttractive(blockPos)) {
                     Path path = PumpkinCritterEntity.this.navigation.findPathTo(blockPos, 0);
                     if (path != null && path.reachesTarget()) {
                         return Optional.of(blockPos);

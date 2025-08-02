@@ -35,7 +35,7 @@ public abstract class StemBlockMixin {
     @Inject(method = "randomTick", at = @At(value = "INVOKE", target = "Ljava/util/Optional;isPresent()Z", shift = At.Shift.AFTER), cancellable = true)
     private void spawnCritterOnGrow(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
         BlockState airCheck = world.getBlockState(pos.up());
-        if (airCheck.isAir() && random.nextInt(100) + 1 < ConfigManager.CONFIG.critter_spawn_chance / 4F) {
+        if (airCheck.isAir() && random.nextInt(100) + 1 < ConfigManager.CONFIG.critterSpawnChance / 4F) {
             Registry<Block> registry = world.getRegistryManager().getOrThrow(RegistryKeys.BLOCK);
             Optional<Block> gourd = registry.getOptionalValue(this.gourdBlock);
             if (gourd.isPresent()) {
@@ -51,7 +51,7 @@ public abstract class StemBlockMixin {
         BlockState soil = world.getBlockState(pos.down());
         boolean soulCheck = soil.isOf(Blocks.SOUL_SOIL) || soil.isOf(Blocks.SOUL_SAND) || soil.isOf(ModBlocks.SOUL_FARMLAND);
         boolean soulSandValleyCheck = world.getBiome(pos).matchesKey(BiomeKeys.SOUL_SAND_VALLEY);
-        int spawnChance = (ConfigManager.CONFIG.critter_spawn_chance / 4) * ((soulCheck) ? 2 : 1) * ((soulSandValleyCheck) ? 2 : 1);
+        int spawnChance = (ConfigManager.CONFIG.critterSpawnChance / 4) * ((soulCheck) ? 2 : 1) * ((soulSandValleyCheck) ? 2 : 1);
         if (random.nextInt(100) + 1 < spawnChance) {
             if (state.isOf(Blocks.MELON)) {
                 ModEntities.MELON_CRITTER.spawn(world, pos, SpawnReason.NATURAL);

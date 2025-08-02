@@ -31,14 +31,18 @@ public class ConfigManager {
                 String value = parts[1].trim();
 
                 switch (key) {
-                    case "thistleGrowChance" -> CONFIG.thistle_chance = Math.clamp(Integer.parseInt(value), 0, 100);
-                    case "thornweedGrowChance" -> CONFIG.thornweed_chance = Math.clamp(Integer.parseInt(value), 0, 100);
-                    case "waftgrassGrowChance" -> CONFIG.waftgrass_chance = Math.clamp(Integer.parseInt(value), 0, 100);
-                    case "spiteweedGrowChance" -> CONFIG.spiteweed_chance = Math.clamp(Integer.parseInt(value), 0, 100);
-                    case "lostSoulDropChance" -> CONFIG.lost_soul_drop_chance = Math.clamp(Integer.parseInt(value), 0, 100);
-                    case "monoculturePenalize" -> CONFIG.monoculture_penalize = Boolean.parseBoolean(value);
-                    case "monocultureDampener" -> CONFIG.monoculture_dampener = Math.clamp(Integer.parseInt(value), 1, 1000);
-                    case "critterSpawnChance" -> CONFIG.critter_spawn_chance = Math.clamp(Integer.parseInt(value), 0, 100);
+                    case "thistleGrowChance" -> CONFIG.thistleChance = Math.clamp(Integer.parseInt(value), 0, 100);
+                    case "thornweedGrowChance" -> CONFIG.thornweedChance = Math.clamp(Integer.parseInt(value), 0, 100);
+                    case "waftgrassGrowChance" -> CONFIG.waftgrassChance = Math.clamp(Integer.parseInt(value), 0, 100);
+                    case "spiteweedGrowChance" -> CONFIG.spiteweedChance = Math.clamp(Integer.parseInt(value), 0, 100);
+                    case "lostSoulDropChance" -> CONFIG.lostSoulDropChance = Math.clamp(Integer.parseInt(value), 0, 100);
+                    case "monoculturePenalize" -> CONFIG.monoculturePenalize = Boolean.parseBoolean(value);
+                    case "critterSpawnChance" -> CONFIG.critterSpawnChance = Math.clamp(Integer.parseInt(value), 0, 100);
+                    case "deadCoralGeneration" -> CONFIG.deadCoralGeneration = Boolean.parseBoolean(value);
+                    case "thornweedGeneration" -> CONFIG.thornweedGeneration = Boolean.parseBoolean(value);
+                    case "waftgrassGeneration" -> CONFIG.waftgrassGeneration = Boolean.parseBoolean(value);
+                    case "spiteweedGeneration" -> CONFIG.spiteweedGeneration = Boolean.parseBoolean(value);
+
                 }
             }
         } catch (IOException e) {
@@ -52,23 +56,27 @@ public class ConfigManager {
             writer.write("# Config changes only apply on restart\n");
             writer.write("# \n");
             writer.write("# Weed percentage grow chances:\n");
-            writer.write("thistleGrowChance = " + CONFIG.thistle_chance + "\n");
-            writer.write("thornweedGrowChance = " + CONFIG.thornweed_chance + "\n");
-            writer.write("waftgrassGrowChance = " + CONFIG.waftgrass_chance + "\n");
-            writer.write("spiteweedGrowChance = " + CONFIG.spiteweed_chance + "\n");
+            writer.write("thistleGrowChance = " + CONFIG.thistleChance + "\n");
+            writer.write("thornweedGrowChance = " + CONFIG.thornweedChance + "\n");
+            writer.write("waftgrassGrowChance = " + CONFIG.waftgrassChance + "\n");
+            writer.write("spiteweedGrowChance = " + CONFIG.spiteweedChance + "\n");
             writer.write("# Should monocultures have increased weed chances:\n");
-            writer.write("monoculturePenalize = " + CONFIG.monoculture_penalize + "\n");
+            writer.write("monoculturePenalize = " + CONFIG.monoculturePenalize + "\n");
             writer.write("# Strength monocultural crops have on weed chance:\n");
-            writer.write("# (Higher number means monoculture's have less impact)\n");
-            writer.write("monocultureDampener = " + CONFIG.monoculture_dampener + "\n");
             writer.write("# \n");
             writer.write("# Lost soul mob drop chance:\n");
-            writer.write("lostSoulDropChance = " + CONFIG.lost_soul_drop_chance + "\n");
+            writer.write("lostSoulDropChance = " + CONFIG.lostSoulDropChance + "\n");
             writer.write("# \n");
             writer.write("# Crop critter spawn chance on crop just matured\n");
             writer.write("# or on randomTick in SoulSandValley.\n");
             writer.write("# Chance doubled if on a 'Soul' block:\n");
-            writer.write("critterSpawnChance = " + CONFIG.critter_spawn_chance + "\n");
+            writer.write("critterSpawnChance = " + CONFIG.critterSpawnChance + "\n");
+            writer.write("# \n");
+            writer.write("# Biome generation toggles: \n");
+            writer.write("deadCoralGeneration = " + CONFIG.deadCoralGeneration + "\n");
+            writer.write("thornweedGeneration = " + CONFIG.thornweedGeneration + "\n");
+            writer.write("waftgrassGeneration = " + CONFIG.waftgrassGeneration + "\n");
+            writer.write("spiteweedGeneration = " + CONFIG.spiteweedGeneration + "\n");
         } catch (IOException e) {
             System.err.println("Failed to save config: " + e.getMessage());
         }
