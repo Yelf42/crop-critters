@@ -49,9 +49,7 @@ public class LostSoulInAJarBlock extends LanternBlock {
             double d = (double)pos.getX() + random.nextDouble() * (double)10.0F - (double)5.0F;
             double e = (double)pos.getY() - 3;
             double f = (double)pos.getZ() + random.nextDouble() * (double)10.0F - (double)5.0F;
-            if (!world.getBlockState(BlockPos.ofFloored(d,e+1,f)).isAir()) e++;
-            if (!world.getBlockState(BlockPos.ofFloored(d,e+1,f)).isAir()) e = world.getTopY(Heightmap.Type.WORLD_SURFACE, (int)d, (int)f);
-            world.addParticleClient(ParticleTypes.GLOW, d, e, f, (double)0.0F, (double)1.0F, (double)0.0F);
+            world.addParticleClient(ParticleTypes.GLOW, d, world.getTopY(Heightmap.Type.WORLD_SURFACE, (int)d, (int)f), f, (double)0.0F, (double)1.0F, (double)0.0F);
         }
 
     }

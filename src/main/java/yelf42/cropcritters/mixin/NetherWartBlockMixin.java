@@ -44,7 +44,7 @@ public class NetherWartBlockMixin {
         if ((wartAge >= 3) && spawnCritter(world, random, pos)) ci.cancel();
     }
 
-        // Inject into randomTicks to turn into weed if mature
+    // Inject into randomTicks to turn into weed if mature
     // Grow faster on soul farmland
     @Inject(method = "randomTick", at = @At("TAIL"), cancellable = true)
     private static void injectIntoRandomTicksTail(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
@@ -78,8 +78,8 @@ public class NetherWartBlockMixin {
             // Quadratic penalty increase for monocultural practices
             monoCount = (monoCount * monoCount) / 32F;
         }
-        boolean growWaftgrass = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.waftgrassChance * monoCount;
-        boolean growThornweed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.thornweedChance * monoCount;
+        boolean growWaftgrass = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.netherWeedChance * monoCount;
+        boolean growThornweed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.netherWeedChance * monoCount;
         boolean growSpiteweed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.spiteweedChance * monoCount;
 
         if (Objects.equals(world.getBiome(pos).getIdAsString(), "minecraft:soul_sand_valley")) {

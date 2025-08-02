@@ -21,6 +21,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.config.ConfigManager;
 import yelf42.cropcritters.entity.ModEntities;
@@ -70,24 +71,25 @@ public abstract class CropBlockMixin {
         }
     }
 
-    // Try spawn critter if soulsand_valley
+    // Try spawn critter if soul_sand_valley
+    // Try to generate weed if on correct blocks
     // Stop ticking / aging if not on farmland
     @Inject(method = "randomTick", at = @At("HEAD"), cancellable = true)
     private static void stopGrowthOnDirtAndSpawnSoulSandValleyCritters(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
-        if (world.getBiome(pos).matchesKey(BiomeKeys.SOUL_SAND_VALLEY)) {
-            if (state.getBlock() instanceof CropBlock cropBlock && cropBlock.isMature(state)) {
+        BlockState soilCheck = world.getBlockState(pos.down());
+        if (state.getBlock() instanceof CropBlock cropBlock && cropBlock.isMature(state)) {
+            if (world.getBiome(pos).matchesKey(BiomeKeys.SOUL_SAND_VALLEY)) {
                 if (spawnCritter(world, state, random, pos)) ci.cancel();
             }
+            if (soilCheck.isIn(CropCritters.CAN_GROW_WEEDS)) {
+                generateWeed(state, world, pos, random, (soilCheck.isOf(Blocks.SOUL_SOIL) || soilCheck.isOf(Blocks.SOUL_SAND) || soilCheck.isOf(ModBlocks.SOUL_FARMLAND)));
+            }
         }
-        BlockState soilCheck = world.getBlockState(pos.down());
         if (!(soilCheck.isOf(Blocks.FARMLAND) || soilCheck.isOf(ModBlocks.SOUL_FARMLAND))) ci.cancel();
     }
 
-    // Inject into randomTicks to turn into weed if mature
-    @Inject(method = "randomTick", at = @At("TAIL"))
-    private static void injectWeedsIntoRandomTick(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
-        if (state.getBlock() instanceof CropBlock cropBlock && !cropBlock.isMature(state)) return;
-
+    @Unique
+    private static void generateWeed(BlockState state, ServerWorld world, BlockPos pos, Random random, boolean nether) {
         // Count how many neighbours are the same type of crop
         // More identical crops increases chance of weed growth
         float monoCount = 1F;
@@ -102,15 +104,13 @@ public abstract class CropBlockMixin {
             // Quadratic penalty increase for monocultural practices
             monoCount = (monoCount * monoCount) / 16F;
         }
-        boolean growThistle = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.thistleChance * monoCount;
-        boolean growThornweed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.thornweedChance * monoCount;
-        boolean growWaftgrass = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.waftgrassChance * monoCount;
+        boolean growThistle = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.regularWeedChance * monoCount;
+        boolean growThornweed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.netherWeedChance * monoCount;
+        boolean growWaftgrass = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.netherWeedChance * monoCount;
         boolean growSpiteweed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.spiteweedChance * monoCount;
 
-
-        BlockState soilCheck = world.getBlockState(pos.down());
         if (world.getBiome(pos).matchesKey(BiomeKeys.SOUL_SAND_VALLEY)) {
-            if (growSpiteweed && (soilCheck.isOf(Blocks.SOUL_SOIL) || soilCheck.isOf(Blocks.SOUL_SAND) || soilCheck.isOf(ModBlocks.SOUL_FARMLAND))) {
+            if (growSpiteweed && nether) {
                 BlockState weedState = ModBlocks.WITHERING_SPITEWEED.getDefaultState();
                 world.setBlockState(pos, weedState);
                 world.setBlockState(pos.down(), Blocks.BLACKSTONE.getDefaultState(), Block.NOTIFY_LISTENERS);
@@ -118,7 +118,7 @@ public abstract class CropBlockMixin {
                 return;
             }
         } else {
-            if (growThistle && soilCheck.isOf(Blocks.FARMLAND)) {
+            if (growThistle && !nether) {
                 BlockState weedState = ModBlocks.CRAWL_THISTLE.getDefaultState();
                 world.setBlockState(pos, weedState);
                 world.setBlockState(pos.down(), Blocks.COARSE_DIRT.getDefaultState(), Block.NOTIFY_LISTENERS);
@@ -126,11 +126,11 @@ public abstract class CropBlockMixin {
                 return;
             }
 
-            if (soilCheck.isOf(ModBlocks.SOUL_FARMLAND)) {
+            if (nether) {
                 if (growThornweed) {
                     BlockState weedState = ModBlocks.CRIMSON_THORNWEED.getDefaultState();
                     world.setBlockState(pos, weedState);
-                    world.setBlockState(pos.down(),(random.nextInt(2) == 0) ? Blocks.SOUL_SOIL.getDefaultState() : Blocks.SOUL_SAND.getDefaultState(), Block.NOTIFY_LISTENERS);
+                    world.setBlockState(pos.down(), (random.nextInt(2) == 0) ? Blocks.SOUL_SOIL.getDefaultState() : Blocks.SOUL_SAND.getDefaultState(), Block.NOTIFY_LISTENERS);
                     world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
                     return;
                 }
@@ -138,7 +138,7 @@ public abstract class CropBlockMixin {
                 if (growWaftgrass) {
                     BlockState weedState = ModBlocks.WAFTGRASS.getDefaultState();
                     world.setBlockState(pos, weedState);
-                    world.setBlockState(pos.down(),(random.nextInt(2) == 0) ? Blocks.SOUL_SOIL.getDefaultState() : Blocks.SOUL_SAND.getDefaultState(), Block.NOTIFY_LISTENERS);
+                    world.setBlockState(pos.down(), (random.nextInt(2) == 0) ? Blocks.SOUL_SOIL.getDefaultState() : Blocks.SOUL_SAND.getDefaultState(), Block.NOTIFY_LISTENERS);
                     world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
                     return;
                 }

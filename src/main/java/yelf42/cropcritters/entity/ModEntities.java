@@ -60,7 +60,7 @@ public class ModEntities {
     public static final EntityType<PoisonousPotatoCritterEntity> POISONOUS_POTATO_CRITTER = registerCritter("poisonous_potato_critter", PoisonousPotatoCritterEntity::new, 0.5f, 0.6f, 0.25f);
     public static final EntityType<TorchflowerCritterEntity> TORCHFLOWER_CRITTER = registerCritter("torchflower_critter", TorchflowerCritterEntity::new, 0.5f, 0.6f, 0.25f);
     public static final EntityType<PitcherCritterEntity> PITCHER_CRITTER = registerCritter("pitcher_critter", PitcherCritterEntity::new, 0.85f, 1.1f, 0.7f);
-    public static final EntityType<CocoaCritterEntity> COCOA_CRITTER = registerCritter("cocoa_critter", CocoaCritterEntity::new, 0.5f, 0.6f, 0.25f);
+    public static final EntityType<CocoaCritterEntity> COCOA_CRITTER = registerCritter("cocoa_critter", CocoaCritterEntity::new, 0.5f, 0.75f, 0.25f);
 
     public static <T extends Entity> EntityType<T> registerCritter(String name, EntityType.EntityFactory<T> factory, float width, float height, float eyeHeight) {
         Identifier id = Identifier.of(CropCritters.MOD_ID, name);

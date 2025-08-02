@@ -21,6 +21,9 @@ import net.minecraft.world.tick.ScheduledTickView;
 import org.jetbrains.annotations.Nullable;
 import yelf42.cropcritters.events.WeedGrowNotifier;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SpreadingWeekBlock extends PlantBlock {
     public static final MapCodec<SpreadingWeekBlock> CODEC = createCodec(SpreadingWeekBlock::new);
     public static final int MAX_AGE = 1;
@@ -89,26 +92,27 @@ public class SpreadingWeekBlock extends PlantBlock {
         }
 
         if (this.isMature(state)) {
-            // Count neighbouring weeds
+            // Count neighbouring weeds and finding spots to spread to
+            List<BlockPos> canSpreadTo = new ArrayList<>();
             int neighbouringWeeds = -1;
             for (int i = -1; i <= 1; i++) {
                 for (int j = -1; j <= 1; j++) {
-                    BlockPos checkPos = pos.add(i, 0, j);
-                    BlockState checkState = world.getBlockState(checkPos);
-                    if (checkState.isOf(this)) neighbouringWeeds++;
+                    for (int k = -1; k <= 1; k++) {
+                        BlockPos checkPos = pos.add(i, k, j);
+                        BlockState checkState = world.getBlockState(checkPos);
+                        if (checkState.isOf(this)) neighbouringWeeds++;
+                        BlockState checkBelowState = world.getBlockState(checkPos.down());
+                        if (canPlantOnTop(checkBelowState, world, checkPos.down()) && (checkState.isAir() || (!(checkState.getBlock() instanceof SpreadingWeekBlock) && checkState.getBlock() instanceof PlantBlock))) {
+                            canSpreadTo.add(checkPos);
+                        }
+                    }
                 }
             }
 
             // Place new weed if mature and <2 neighbouring weeds and target is plantable
-            if (neighbouringWeeds < getMaxNeighbours()) {
-                int i = random.nextInt(3) - 1;
-                int j = (i == 0) ? 1 + -2 * random.nextInt(2) : 0;
-                BlockPos targetPos = pos.add(i, -1, j);
-                BlockState targetState = world.getBlockState(targetPos);
-                BlockState aboveTargetState = world.getBlockState(targetPos.up());
-                if (canPlantOnTop(targetState, world, targetPos) && (aboveTargetState.isAir() || aboveTargetState.isIn(BlockTags.MAINTAINS_FARMLAND) || aboveTargetState.isIn(BlockTags.FLOWERS))) {
-                    setToWeed(world, targetPos.up());
-                }
+            if (neighbouringWeeds < getMaxNeighbours() && !canSpreadTo.isEmpty()) {
+                BlockPos targetPos = canSpreadTo.get(random.nextInt(canSpreadTo.size()));
+                setToWeed(world, targetPos);
             } else {
                 reachedMaxNeighbours = true;
             }

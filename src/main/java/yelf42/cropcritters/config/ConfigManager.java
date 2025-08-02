@@ -31,9 +31,8 @@ public class ConfigManager {
                 String value = parts[1].trim();
 
                 switch (key) {
-                    case "thistleGrowChance" -> CONFIG.thistleChance = Math.clamp(Integer.parseInt(value), 0, 100);
-                    case "thornweedGrowChance" -> CONFIG.thornweedChance = Math.clamp(Integer.parseInt(value), 0, 100);
-                    case "waftgrassGrowChance" -> CONFIG.waftgrassChance = Math.clamp(Integer.parseInt(value), 0, 100);
+                    case "regularWeedsGrowChance" -> CONFIG.regularWeedChance = Math.clamp(Integer.parseInt(value), 0, 100);
+                    case "netherWeedsGrowChance" -> CONFIG.netherWeedChance = Math.clamp(Integer.parseInt(value), 0, 100);
                     case "spiteweedGrowChance" -> CONFIG.spiteweedChance = Math.clamp(Integer.parseInt(value), 0, 100);
                     case "lostSoulDropChance" -> CONFIG.lostSoulDropChance = Math.clamp(Integer.parseInt(value), 0, 100);
                     case "monoculturePenalize" -> CONFIG.monoculturePenalize = Boolean.parseBoolean(value);
@@ -42,7 +41,6 @@ public class ConfigManager {
                     case "thornweedGeneration" -> CONFIG.thornweedGeneration = Boolean.parseBoolean(value);
                     case "waftgrassGeneration" -> CONFIG.waftgrassGeneration = Boolean.parseBoolean(value);
                     case "spiteweedGeneration" -> CONFIG.spiteweedGeneration = Boolean.parseBoolean(value);
-
                 }
             }
         } catch (IOException e) {
@@ -56,9 +54,8 @@ public class ConfigManager {
             writer.write("# Config changes only apply on restart\n");
             writer.write("# \n");
             writer.write("# Weed percentage grow chances:\n");
-            writer.write("thistleGrowChance = " + CONFIG.thistleChance + "\n");
-            writer.write("thornweedGrowChance = " + CONFIG.thornweedChance + "\n");
-            writer.write("waftgrassGrowChance = " + CONFIG.waftgrassChance + "\n");
+            writer.write("regularWeedsGrowChance = " + CONFIG.regularWeedChance + "\n");
+            writer.write("netherWeedsGrowChance = " + CONFIG.netherWeedChance + "\n");
             writer.write("spiteweedGrowChance = " + CONFIG.spiteweedChance + "\n");
             writer.write("# Should monocultures have increased weed chances:\n");
             writer.write("monoculturePenalize = " + CONFIG.monoculturePenalize + "\n");
