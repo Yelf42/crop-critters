@@ -128,7 +128,7 @@ public class MelonCritterEntity extends AbstractCropCritterEntity implements Ran
             ItemStack itemStack = new ItemStack(Items.MELON_SEEDS);
             ProjectileEntity.spawn(new SpitSeedProjectileEntity(serverWorld, this, itemStack), serverWorld, itemStack, (entity) -> entity.setVelocity(d, e + g - entity.getY(), f, 1.2F, 3.0F));
         }
-        this.playSound(SoundEvents.UI_HUD_BUBBLE_POP, 9.0F, 0.4F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
+        this.playSound(SoundEvents.UI_HUD_BUBBLE_POP, 2.0F, 0.4F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
     }
 
     class WateringGoal extends Goal {

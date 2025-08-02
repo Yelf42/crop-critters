@@ -38,12 +38,13 @@ public class PitcherCritterEntity extends AbstractCropCritterEntity {
     private final TargetPredicate.EntityPredicate CAN_EAT = (entity, world) -> {
         if (this.consume > 0
                 || entity instanceof PitcherCritterEntity
-                || (entity.getBoundingBox().getLengthX() > 1.0)
-                || (entity.getBoundingBox().getLengthY() > 1.0)
-                || entity.isInvulnerable())
+                || (entity.getBoundingBox().getLengthX() >= 0.8)
+                || (entity.getBoundingBox().getLengthY() >= 0.8)
+                || entity.isInvulnerable()
+                || entity.hasCustomName())
             return false;
-        if (this.isTrusting()) {
-            return !entity.hasCustomName() && (!(entity instanceof TameableEntity tameableEntity) || !tameableEntity.isTamed());
+        if (this.isTrusting() && (entity instanceof TameableEntity tameableEntity)) {
+            return (!tameableEntity.isTamed());
         }
         return true;
     };
@@ -79,7 +80,7 @@ public class PitcherCritterEntity extends AbstractCropCritterEntity {
     public static DefaultAttributeContainer.Builder createAttributes() {
         return MobEntity.createMobAttributes()
                 .add(EntityAttributes.MAX_HEALTH, 16)
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.15)
+                .add(EntityAttributes.MOVEMENT_SPEED, 0.21)
                 .add(EntityAttributes.ATTACK_DAMAGE, 1)
                 .add(EntityAttributes.FOLLOW_RANGE, 10)
                 .add(EntityAttributes.TEMPT_RANGE, 10);
@@ -132,6 +133,10 @@ public class PitcherCritterEntity extends AbstractCropCritterEntity {
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
         if (this.consume > 0) return false;
+        if (!CAN_EAT.test((LivingEntity) target, world)) {
+            this.setTarget(null);
+            return false;
+        }
         target.noClip = true;
         target.setSilent(true);
         target.setInvulnerable(true);
@@ -143,7 +148,8 @@ public class PitcherCritterEntity extends AbstractCropCritterEntity {
         Vec3d dir = mouth.subtract(this.consumptionTarget.getPos()).normalize().multiply(0.2);
         this.lookAtPreyAngle = (float)(MathHelper.atan2(-dir.z, -dir.x) * (180F / Math.PI)) - 90F;
         triggerAnim("eat_controller", "eat");
-        this.playSound(SoundEvents.ENTITY_FROG_EAT, 1F, 1F);
+        this.playSound(SoundEvents.ENTITY_FROG_EAT, 2F, 1F);
+        this.playSound(SoundEvents.ENTITY_PANDA_EAT, 2F, 1F);
         return true;
     }
 

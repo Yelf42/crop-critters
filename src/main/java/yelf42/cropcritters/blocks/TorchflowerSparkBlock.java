@@ -3,9 +3,6 @@ package yelf42.cropcritters.blocks;
 import net.minecraft.block.AirBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.ItemStack;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -14,8 +11,6 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 import net.minecraft.world.tick.TickPriority;
-import org.jetbrains.annotations.Nullable;
-import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.entity.TorchflowerCritterEntity;
 
 import java.util.List;
