@@ -17,6 +17,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -142,7 +143,7 @@ public class PitcherCritterEntity extends AbstractCropCritterEntity {
         Vec3d dir = mouth.subtract(this.consumptionTarget.getPos()).normalize().multiply(0.2);
         this.lookAtPreyAngle = (float)(MathHelper.atan2(-dir.z, -dir.x) * (180F / Math.PI)) - 90F;
         triggerAnim("eat_controller", "eat");
-        // TODO SFX and Particles
+        this.playSound(SoundEvents.ENTITY_FROG_EAT, 1F, 1F);
         return true;
     }
 

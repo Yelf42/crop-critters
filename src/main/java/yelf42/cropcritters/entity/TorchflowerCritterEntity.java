@@ -4,10 +4,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.*;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -82,7 +78,6 @@ public class TorchflowerCritterEntity extends AbstractCropCritterEntity {
     @Override
     public ActionResult interactMob(PlayerEntity player, Hand hand) {
         ActionResult actionResult = super.interactMob(player, hand);
-        CropCritters.LOGGER.info("Owner? " + this.isOwner(player));
         if (!actionResult.isAccepted() && this.isTrusting() && this.isOwner(player)) {
             this.setSitting(!this.isSitting());
             return ActionResult.SUCCESS;

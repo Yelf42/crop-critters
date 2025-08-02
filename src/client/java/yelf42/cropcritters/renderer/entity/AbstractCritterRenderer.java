@@ -7,6 +7,7 @@ import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.constant.dataticket.DataTicket;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 import software.bernie.geckolib.renderer.base.GeoRenderState;
+import software.bernie.geckolib.renderer.layer.ItemInHandGeoLayer;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.entity.AbstractCropCritterEntity;
 import yelf42.cropcritters.model.entity.AbstractCritterModel;
@@ -21,6 +22,9 @@ public class AbstractCritterRenderer<R extends LivingEntityRenderState & GeoRend
         super(context, new AbstractCritterModel(id, basicAnimation));
         this.texture = Identifier.of(CropCritters.MOD_ID,"textures/entity/" + id.getPath() + ".png");
         this.trustingTexture = Identifier.of(CropCritters.MOD_ID,"textures/entity/" + id.getPath() + "_trusting.png");
+        if (id.getPath().equals("cocoa_critter")) {
+            addRenderLayer(new ItemInHandGeoLayer<>(this));
+        }
     }
 
     @Override

@@ -8,6 +8,9 @@
     "cropcritters:poisonous_potato_critter",
     "cropcritters:beetroot_critter",
     "cropcritters:pumpkin_critter",
-    "cropcritters:nether_wart_critter"
+    "cropcritters:nether_wart_critter",
+    "cropcritters:pitcher_critter",
+    "cropcritters:torchflower_critter",
+    "cropcritters:cocoa_critter"
   ]
 }

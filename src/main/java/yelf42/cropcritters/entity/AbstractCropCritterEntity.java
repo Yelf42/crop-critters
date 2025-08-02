@@ -115,8 +115,8 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
         net.minecraft.entity.ai.goal.TemptGoal temptGoal = new TemptGoal(this, 0.6, (stack) -> stack.isOf(ModItems.LOST_SOUL), true);
         this.goalSelector.add(0, new SwimGoal(this));
         this.goalSelector.add(2, temptGoal);
-        this.goalSelector.add(4, new FleeEntityGoal<>(this, AnimalEntity.class, 10.0F, 1.6, 1.4, FARM_ANIMALS_FILTER::test));
-        this.goalSelector.add(6, new FleeEntityGoal<>(this, PlayerEntity.class, 10.0F, 1.6, 1.4, (entity) -> NOTICEABLE_PLAYER_FILTER.test(entity) && !this.isTrusting()));
+        this.goalSelector.add(4, new FleeEntityGoal<>(this, AnimalEntity.class, 10.0F, 1.2, 1.4, FARM_ANIMALS_FILTER::test));
+        this.goalSelector.add(6, new FleeEntityGoal<>(this, PlayerEntity.class, 10.0F, 1.2, 1.4, (entity) -> NOTICEABLE_PLAYER_FILTER.test(entity) && !this.isTrusting()));
         this.targetWorkGoal = new TargetWorkGoal();
         this.goalSelector.add(8, this.targetWorkGoal);
         this.goalSelector.add(12, new WanderAroundGoal(this, 0.8));

@@ -2,7 +2,10 @@ package yelf42.cropcritters.mixin;
 
 import net.minecraft.block.*;
 import net.minecraft.entity.SpawnReason;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
@@ -115,7 +118,8 @@ public class NetherWartBlockMixin {
                 ModEntities.NETHER_WART_CRITTER.spawn(world, pos, SpawnReason.NATURAL);
             }
             world.setBlockState(pos, Blocks.AIR.getDefaultState(), Block.NOTIFY_LISTENERS);
-            // TODO Particles, SFX
+            world.playSound(null, pos, SoundEvents.ENTITY_ALLAY_AMBIENT_WITH_ITEM, SoundCategory.BLOCKS, 1F, 1F);
+            world.spawnParticles(ParticleTypes.SOUL_FIRE_FLAME, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 10, 0.5, 0.5, 0.5, 0F);
             return true;
         }
         return false;

@@ -51,7 +51,7 @@ public class MelonCritterEntity extends AbstractCropCritterEntity implements Ran
         this.goalSelector.add(3, this.targetWorkGoal);
         this.goalSelector.add(4, new WateringGoal());
         this.targetSelector.add(7, new MelonActiveTargetGoal());
-        this.goalSelector.add(7, new ProjectileAttackGoal(this, (double)1.25F, 20, 10.0F));
+        this.goalSelector.add(7, new ProjectileAttackGoal(this, 1.25F, 20, 10.0F));
         this.goalSelector.add(12, new WanderAroundGoal(this, 0.8));
         this.goalSelector.add(20, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
         this.goalSelector.add(20, new LookAroundGoal(this));
@@ -60,7 +60,7 @@ public class MelonCritterEntity extends AbstractCropCritterEntity implements Ran
     public static DefaultAttributeContainer.Builder createAttributes() {
         return MobEntity.createMobAttributes()
                 .add(EntityAttributes.MAX_HEALTH, 16)
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.15)
+                .add(EntityAttributes.MOVEMENT_SPEED, 0.2)
                 .add(EntityAttributes.ATTACK_DAMAGE, 1)
                 .add(EntityAttributes.FOLLOW_RANGE, 10)
                 .add(EntityAttributes.TEMPT_RANGE, 10);
@@ -128,8 +128,7 @@ public class MelonCritterEntity extends AbstractCropCritterEntity implements Ran
             ItemStack itemStack = new ItemStack(Items.MELON_SEEDS);
             ProjectileEntity.spawn(new SpitSeedProjectileEntity(serverWorld, this, itemStack), serverWorld, itemStack, (entity) -> entity.setVelocity(d, e + g - entity.getY(), f, 1.2F, 3.0F));
         }
-
-        this.playSound(SoundEvents.ENTITY_LLAMA_SPIT, 1.0F, 0.4F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
+        this.playSound(SoundEvents.UI_HUD_BUBBLE_POP, 9.0F, 0.4F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
     }
 
     class WateringGoal extends Goal {
@@ -165,7 +164,6 @@ public class MelonCritterEntity extends AbstractCropCritterEntity implements Ran
         public void tick() {
             MelonCritterEntity.this.wateringDuration--;
             MelonCritterEntity.this.navigation.stop();
-            //CropCritters.LOGGER.info("WateringDuration: " + MelonCritterEntity.this.wateringDuration);
             if (MelonCritterEntity.this.random.nextInt(10) == 0) {
                 BlockPos toWater = wateringTargets.get(MelonCritterEntity.this.random.nextInt(wateringTargets.size()));
                 World world = MelonCritterEntity.this.getWorld();
@@ -180,8 +178,8 @@ public class MelonCritterEntity extends AbstractCropCritterEntity implements Ran
                     }
                 }
             }
-            Vec3d facing = MelonCritterEntity.this.getFacing().getDoubleVector().normalize().multiply(3);
-            Vec3d start = MelonCritterEntity.this.getPos().add(0, 0.4, 0);
+            Vec3d facing = MelonCritterEntity.this.getRotationVector().normalize().multiply(3);
+            Vec3d start = MelonCritterEntity.this.getPos().add(0F, 0.1F, 0F);
 
             CropCritters.WaterSprayS2CPayload payload = new CropCritters.WaterSprayS2CPayload(start, facing);
 
@@ -190,6 +188,8 @@ public class MelonCritterEntity extends AbstractCropCritterEntity implements Ran
                     ServerPlayNetworking.send(player, payload);
                 }
             }
+            MelonCritterEntity.this.playSound(SoundEvents.WEATHER_RAIN, 0.1F, 0.8F / (MelonCritterEntity.this.getRandom().nextFloat() * 0.4F + 0.8F));
+
         }
 
         private void findWateringTargets() {

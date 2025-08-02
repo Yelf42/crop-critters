@@ -39,5 +39,7 @@
   "entity.cropcritters.torchflower_critter": "Torchflower Critter",
   "item.cropcritters.torchflower_critter_spawn_egg": "Torchflower Critter Spawn Egg",
   "entity.cropcritters.pitcher_critter": "Pitcher Critter",
-  "item.cropcritters.pitcher_critter_spawn_egg": "Pitcher Critter Spawn Egg"
+  "item.cropcritters.pitcher_critter_spawn_egg": "Pitcher Critter Spawn Egg",
+  "entity.cropcritters.cocoa_critter": "Cocoa Critter",
+  "item.cropcritters.cocoa_critter_spawn_egg": "Cocoa Critter Spawn Egg"
 }

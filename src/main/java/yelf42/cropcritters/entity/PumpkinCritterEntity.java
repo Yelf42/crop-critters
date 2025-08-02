@@ -1,12 +1,8 @@
 package yelf42.cropcritters.entity;
 
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.CropBlock;
 import net.minecraft.block.FarmlandBlock;
-import net.minecraft.block.Fertilizable;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.RangedAttackMob;
@@ -23,7 +19,6 @@ import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Pair;
@@ -31,17 +26,22 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import software.bernie.geckolib.animatable.manager.AnimatableManager;
+import software.bernie.geckolib.animatable.processing.AnimationController;
+import software.bernie.geckolib.animation.PlayState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.constant.DefaultAnimations;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.blocks.SoulFarmland;
 import yelf42.cropcritters.items.ModItems;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
 public class PumpkinCritterEntity extends AbstractCropCritterEntity implements RangedAttackMob {
+
+    public static final RawAnimation LOB_SEEDS = RawAnimation.begin().thenPlay("plant");
+
 
     public PumpkinCritterEntity(EntityType<? extends TameableEntity> entityType, World world) {
         super(entityType, world);
@@ -55,7 +55,7 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
         this.targetWorkGoal = new PumpkinTargetWorkGoal();
         this.goalSelector.add(3, this.targetWorkGoal);
         this.targetSelector.add(7, new MelonActiveTargetGoal());
-        this.goalSelector.add(7, new ProjectileAttackGoal(this, (double)1.25F, 20, 10.0F));
+        this.goalSelector.add(7, new ProjectileAttackGoal(this, 1.25F, 20, 10.0F));
         this.goalSelector.add(12, new WanderAroundGoal(this, 0.8));
         this.goalSelector.add(20, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
         this.goalSelector.add(20, new LookAroundGoal(this));
@@ -64,10 +64,17 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
     public static DefaultAttributeContainer.Builder createAttributes() {
         return MobEntity.createMobAttributes()
                 .add(EntityAttributes.MAX_HEALTH, 16)
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.15)
+                .add(EntityAttributes.MOVEMENT_SPEED, 0.2)
                 .add(EntityAttributes.ATTACK_DAMAGE, 1)
                 .add(EntityAttributes.FOLLOW_RANGE, 10)
                 .add(EntityAttributes.TEMPT_RANGE, 10);
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
+        controllerRegistrar.add(DefaultAnimations.genericWalkIdleController(),
+                new AnimationController<>("plant_controller", animTest -> PlayState.STOP)
+                        .triggerableAnim("plant", LOB_SEEDS));
     }
 
     @Override
@@ -80,20 +87,15 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
 
     @Override
     public void completeTargetGoal() {
-        // TODO test when implemented
         if (this.targetPos == null) return;
-        double d = this.targetPos.getX() - this.getX();
-        double e = this.targetPos.getY() - 0.4F;
-        double f = this.targetPos.getZ() - this.getZ();
-        double g = Math.sqrt(d * d + f * f) * (double)0.2F;
-        World var12 = this.getWorld();
-        if (var12 instanceof ServerWorld serverWorld) {
+        triggerAnim("plant_controller", "plant");
+        Vec3d dir = this.getRotationVector();
+        World world = this.getWorld();
+        if (world instanceof ServerWorld serverWorld) {
             ItemStack itemStack = new ItemStack(ModItems.SEED_BALL);
-            ProjectileEntity.spawn(new SeedBallProjectileEntity(serverWorld, this, itemStack), serverWorld, itemStack, (entity) -> entity.setVelocity(d, e + g - entity.getY(), f, 1.2F, 3.0F));
+            ProjectileEntity.spawn(new SeedBallProjectileEntity(serverWorld, this, itemStack), serverWorld, itemStack, (entity) -> entity.setVelocity(dir.x, 1.8F, dir.z, 0.4F, 0.0F));
         }
-
-        this.playSound(SoundEvents.ENTITY_LLAMA_SPIT, 1.0F, 0.4F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
-
+        this.playSound(SoundEvents.UI_HUD_BUBBLE_POP, 9.0F, 0.4F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
     }
 
     @Override
@@ -118,7 +120,8 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
 
     @Override
     protected int resetTicksUntilCanWork() {
-        return MathHelper.nextInt(this.random, 9600, 12000);
+        return 150;
+        //return MathHelper.nextInt(this.random, 9600, 12000);
     }
 
     @Override
@@ -132,8 +135,7 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
             ItemStack itemStack = new ItemStack(Items.PUMPKIN_SEEDS);
             ProjectileEntity.spawn(new SpitSeedProjectileEntity(serverWorld, this, itemStack), serverWorld, itemStack, (entity) -> entity.setVelocity(d, e + g - entity.getY(), f, 1.2F, 3.0F));
         }
-
-        this.playSound(SoundEvents.ENTITY_LLAMA_SPIT, 1.0F, 0.4F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
+        this.playSound(SoundEvents.UI_HUD_BUBBLE_POP, 9.0F, 0.4F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
     }
 
 
@@ -153,11 +155,12 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
                         if (this.nextTarget == null) {
                             this.nextTarget = vec3d;
                         }
+                        PumpkinCritterEntity.this.setBodyYaw((float)MathHelper.lerpAngleDegrees(0.2, PumpkinCritterEntity.this.getBodyYaw(), targetYaw(vec3d)));
                         boolean bl = PumpkinCritterEntity.this.getPos().distanceTo(this.nextTarget) <= 5.0;
+                        boolean bl2 = PumpkinCritterEntity.this.getPos().distanceTo(this.nextTarget) < 1.5 || MathHelper.abs(MathHelper.wrapDegrees(PumpkinCritterEntity.this.getBodyYaw() - targetYaw(vec3d))) < 5F;
                         if (!bl && this.ticks > 600) {
                             PumpkinCritterEntity.this.clearTargetPos();
-                        } else if (bl) {
-                            // At target pos
+                        } else if (bl && bl2) {
                             PumpkinCritterEntity.this.completeTargetGoal();
                             PumpkinCritterEntity.this.clearTargetPos();
                         } else {
@@ -166,6 +169,11 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
                     }
                 }
             }
+        }
+
+        protected float targetYaw(Vec3d target) {
+            Vec3d d = target.subtract(PumpkinCritterEntity.this.getPos());
+            return (float)(MathHelper.atan2(d.z, d.x) * (180.0 / Math.PI)) - 90.0F;
         }
 
         @Override

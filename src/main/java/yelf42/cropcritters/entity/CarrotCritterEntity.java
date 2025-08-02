@@ -8,8 +8,6 @@ import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
@@ -39,7 +37,7 @@ public class CarrotCritterEntity extends AbstractCropCritterEntity {
         BlockState farmland = (target.isOf(Blocks.DIRT) || target.isOf(Blocks.GRASS_BLOCK)) ? Blocks.FARMLAND.getDefaultState() : (target.isOf(Blocks.SOUL_SAND) || target.isOf(Blocks.SOUL_SOIL)) ? ModBlocks.SOUL_FARMLAND.getDefaultState() : null;
         if (farmland == null) return;
         this.getWorld().setBlockState(this.targetPos, farmland, Block.NOTIFY_ALL_AND_REDRAW);
-        ((ServerWorld)this.getWorld()).spawnParticles(ParticleTypes.DUST_PLUME, this.targetPos.getX() + 0.5, this.targetPos.getY() + 1.0, this.targetPos.getZ() + 0.5, 10, 0.5, 0.5, 0.5, 0.0);
+        this.getWorld().syncWorldEvent(this, 2001, this.targetPos, Block.getRawIdFromState(this.getWorld().getBlockState(this.targetPos)));
     }
 
     @Override

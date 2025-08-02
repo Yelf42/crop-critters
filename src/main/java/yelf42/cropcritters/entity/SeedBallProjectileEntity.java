@@ -2,7 +2,6 @@ package yelf42.cropcritters.entity;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -13,7 +12,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.thrown.ThrownItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.particle.ItemStackParticleEffect;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
@@ -46,7 +44,7 @@ public class SeedBallProjectileEntity extends ThrownItemEntity {
     @Environment(EnvType.CLIENT)
     private ParticleEffect getParticleParameters() {
         ItemStack itemStack = this.getStack();
-        return (ParticleEffect)(itemStack.isEmpty() ? ParticleTypes.SPLASH : new ItemStackParticleEffect(ParticleTypes.ITEM, itemStack));
+        return (itemStack.isEmpty() ? ParticleTypes.SPLASH : new ItemStackParticleEffect(ParticleTypes.ITEM, itemStack));
     }
 
     @Environment(EnvType.CLIENT)
@@ -62,12 +60,11 @@ public class SeedBallProjectileEntity extends ThrownItemEntity {
 
 
     @Override
-    protected void onEntityHit(EntityHitResult entityHitResult) { // called on entity hit.
+    protected void onEntityHit(EntityHitResult entityHitResult) {
         super.onEntityHit(entityHitResult);
-        Entity entity = entityHitResult.getEntity(); // sets a new Entity instance as the EntityHitResult (victim)
-        entity.serverDamage(this.getDamageSources().thrown(this, this.getOwner()), 3F);
-        if (entity instanceof PlayerEntity player) { // checks if entity is an instance of LivingEntity (meaning it is not a boat or minecart)
-            player.addStatusEffect((new StatusEffectInstance(StatusEffects.BLINDNESS, 20 * 3, 0)));
+        Entity entity = entityHitResult.getEntity();
+        if (entity instanceof PlayerEntity player) {
+            player.addStatusEffect((new StatusEffectInstance(StatusEffects.BLINDNESS, 20 * 8, 0)));
         }
         if (!this.getWorld().isClient) {
             this.getWorld().sendEntityStatus(this, (byte)3);
@@ -81,11 +78,11 @@ public class SeedBallProjectileEntity extends ThrownItemEntity {
         Iterable<BlockPos> iterable = BlockPos.iterateOutwards(this.getBlockPos(), 2, 3, 2);
         for(BlockPos blockPos : iterable) {
             BlockState blockState = world.getBlockState(blockPos);
-            blockState = (BlockState) Registries.BLOCK
+            blockState = Registries.BLOCK
                     .getRandomEntry(CropCritters.SEED_BALL_CROPS, world.random)
-                    .map(blockEntry -> ((Block)blockEntry.value()).getDefaultState())
+                    .map(blockEntry -> (blockEntry.value()).getDefaultState())
                     .orElse(blockState);
-            if (world.random.nextInt(2) == 0 && blockState.canPlaceAt(world, blockPos) && world.getBlockState(blockPos).isAir()) {
+            if ((world.random.nextInt(2) == 0 || blockPos == this.getBlockPos()) && blockState.canPlaceAt(world, blockPos) && world.getBlockState(blockPos).isAir()) {
                 world.setBlockState(blockPos, blockState);
             }
         }
