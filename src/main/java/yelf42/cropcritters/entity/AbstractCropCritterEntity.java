@@ -25,6 +25,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
 import net.minecraft.util.ActionResult;
@@ -137,6 +139,41 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
                 .add(EntityAttributes.ATTACK_DAMAGE, 1)
                 .add(EntityAttributes.FOLLOW_RANGE, 10)
                 .add(EntityAttributes.TEMPT_RANGE, 10);
+    }
+
+    @Override
+    public void playAmbientSound() {
+        if (this.getBoundingBox().getLengthX() > 0.51) {
+            // Big
+            playSound(SoundEvents.ENTITY_ALLAY_ITEM_GIVEN, 1F, 0.6F);
+        } else {
+            // Smol
+            playSound(SoundEvents.ENTITY_ALLAY_ITEM_GIVEN);
+        }
+    }
+
+    @Override
+    protected void playHurtSound(DamageSource damageSource) {
+        if (this.getBoundingBox().getLengthX() > 0.51) {
+            // Big
+            playSound(SoundEvents.ENTITY_ALLAY_HURT, 1F, 0.6F);
+        } else {
+            // Smol
+            playSound(SoundEvents.ENTITY_ALLAY_HURT);
+        }
+    }
+
+    @Override
+    protected @Nullable SoundEvent getDeathSound() {
+        if (this.getBoundingBox().getLengthX() > 0.51) {
+            // Big
+            playSound(SoundEvents.ENTITY_GLOW_SQUID_DEATH, 1F, 1.1F);
+            return SoundEvents.ENTITY_ALLAY_DEATH;
+        } else {
+            // Smol
+            playSound(SoundEvents.ENTITY_AXOLOTL_DEATH);
+            return SoundEvents.ENTITY_ALLAY_DEATH;
+        }
     }
 
     @Override

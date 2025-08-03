@@ -38,8 +38,8 @@ public class PitcherCritterEntity extends AbstractCropCritterEntity {
     private final TargetPredicate.EntityPredicate CAN_EAT = (entity, world) -> {
         if (this.consume > 0
                 || entity instanceof PitcherCritterEntity
-                || (entity.getBoundingBox().getLengthX() >= 0.8)
-                || (entity.getBoundingBox().getLengthY() >= 0.8)
+                || (entity.getBoundingBox().getLengthX() > this.getBoundingBox().getLengthX())
+                || (entity.getBoundingBox().getLengthY() > this.getBoundingBox().getLengthY())
                 || entity.isInvulnerable()
                 || entity.hasCustomName())
             return false;
@@ -148,7 +148,7 @@ public class PitcherCritterEntity extends AbstractCropCritterEntity {
         Vec3d dir = mouth.subtract(this.consumptionTarget.getPos()).normalize().multiply(0.2);
         this.lookAtPreyAngle = (float)(MathHelper.atan2(-dir.z, -dir.x) * (180F / Math.PI)) - 90F;
         triggerAnim("eat_controller", "eat");
-        this.playSound(SoundEvents.ENTITY_FROG_EAT, 2F, 1F);
+        this.playSound(SoundEvents.ENTITY_DOLPHIN_EAT, 2F, 1F);
         this.playSound(SoundEvents.ENTITY_PANDA_EAT, 2F, 1F);
         return true;
     }
