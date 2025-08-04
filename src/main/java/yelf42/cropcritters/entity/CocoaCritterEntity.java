@@ -1,10 +1,7 @@
 package yelf42.cropcritters.entity;
 
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.CropBlock;
+import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
@@ -48,8 +45,22 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
     private static final Set<Item> DEFAULT_KNOWN_ITEMS = new HashSet<>();
 
     static {
-        DEFAULT_KNOWN_ITEMS.add(Items.COCOA_BEANS);
         DEFAULT_KNOWN_ITEMS.add(ModItems.STRANGE_FERTILIZER);
+        DEFAULT_KNOWN_ITEMS.add(ModItems.LOST_SOUL);
+        DEFAULT_KNOWN_ITEMS.add(Items.COCOA_BEANS);
+        DEFAULT_KNOWN_ITEMS.add(Items.WHEAT_SEEDS);
+        DEFAULT_KNOWN_ITEMS.add(Items.WHEAT);
+        DEFAULT_KNOWN_ITEMS.add(Items.CARROT);
+        DEFAULT_KNOWN_ITEMS.add(Items.POTATO);
+        DEFAULT_KNOWN_ITEMS.add(Items.POISONOUS_POTATO);
+        DEFAULT_KNOWN_ITEMS.add(Items.MELON_SLICE);
+        DEFAULT_KNOWN_ITEMS.add(Items.MELON_SEEDS);
+        DEFAULT_KNOWN_ITEMS.add(Items.PUMPKIN_SEEDS);
+        DEFAULT_KNOWN_ITEMS.add(Items.TORCHFLOWER);
+        DEFAULT_KNOWN_ITEMS.add(Items.TORCHFLOWER_SEEDS);
+        DEFAULT_KNOWN_ITEMS.add(Items.PITCHER_PLANT);
+        DEFAULT_KNOWN_ITEMS.add(Items.PITCHER_POD);
+        DEFAULT_KNOWN_ITEMS.add(Items.NETHER_WART);
     }
 
     public CocoaCritterEntity(EntityType<? extends TameableEntity> entityType, World world) {
@@ -81,7 +92,8 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
 
     @Override
     protected Predicate<BlockState> getTargetBlockFilter() {
-        return (blockState -> blockState.getBlock() instanceof CropBlock cropBlock && cropBlock.isMature(blockState));
+        return (blockState -> ((blockState.getBlock() instanceof CropBlock cropBlock && cropBlock.isMature(blockState)))
+                || (blockState.getBlock() instanceof NetherWartBlock && blockState.get(NetherWartBlock.AGE, 0) >= NetherWartBlock.MAX_AGE));
     }
 
     @Override

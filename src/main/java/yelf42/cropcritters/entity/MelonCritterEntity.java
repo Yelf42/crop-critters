@@ -199,6 +199,7 @@ public class MelonCritterEntity extends AbstractCropCritterEntity implements Ran
             for (int i = 0; i < 10; i++) {
                 Vec3d offset = facing.multiply(i * stepSize);
                 BlockPos check = start.add(Math.round((float)offset.x), 0 , Math.round((float)offset.z));
+                if (!MelonCritterEntity.this.getWorld().getBlockState(check).getCollisionShape(MelonCritterEntity.this.getWorld(), check).isEmpty()) return;
                 if (!wateringTargets.contains(check)) wateringTargets.add(check);
             }
         }

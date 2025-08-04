@@ -11,6 +11,7 @@ import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.passive.PufferfishEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -37,11 +38,12 @@ public class PitcherCritterEntity extends AbstractCropCritterEntity {
 
     private final TargetPredicate.EntityPredicate CAN_EAT = (entity, world) -> {
         if (this.consume > 0
-                || entity instanceof PitcherCritterEntity
-                || (entity.getBoundingBox().getLengthX() > this.getBoundingBox().getLengthX())
-                || (entity.getBoundingBox().getLengthY() > this.getBoundingBox().getLengthY())
+                || (entity.getBoundingBox().getLengthX() >= this.getBoundingBox().getLengthX())
+                || (entity.getBoundingBox().getLengthY() >= this.getBoundingBox().getLengthY())
                 || entity.isInvulnerable()
-                || entity.hasCustomName())
+                || entity.hasCustomName()
+                || entity instanceof PoisonousPotatoCritterEntity
+                || entity instanceof PufferfishEntity)
             return false;
         if (this.isTrusting() && (entity instanceof TameableEntity tameableEntity)) {
             return (!tameableEntity.isTamed());
@@ -155,11 +157,15 @@ public class PitcherCritterEntity extends AbstractCropCritterEntity {
 
     private void consume(World world, Entity target) {
         if (world.isClient) return;
+        if (target instanceof AbstractCropCritterEntity critter) {
+            critter.drop((ServerWorld) world, target.getDamageSources().genericKill());
+        } else {
+            Vec3d pos = target.getPos();
+            ItemEntity item = new ItemEntity(world, pos.x, pos.y, pos.z, new ItemStack(ModItems.STRANGE_FERTILIZER));
+            world.spawnEntity(item);
+        }
         target.discard();
-        Vec3d pos = target.getPos();
         this.heal(1.f);
-        ItemEntity item = new ItemEntity(world, pos.x, pos.y, pos.z, new ItemStack(ModItems.STRANGE_FERTILIZER));
-        world.spawnEntity(item);
         this.timeToConsume = false;
         this.consumptionTarget = null;
     }

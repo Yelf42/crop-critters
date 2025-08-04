@@ -43,7 +43,7 @@ public class NetherWartBlockMixin {
     @Inject(method = "randomTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", shift = At.Shift.AFTER), cancellable = true)
     private static void spawnCritterOnJustMatured(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
         int wartAge = state.get(AGE, 0);
-        if ((wartAge >= 3) && spawnCritter(world, random, pos)) ci.cancel();
+        if ((wartAge >= NetherWartBlock.MAX_AGE) && spawnCritter(world, random, pos)) ci.cancel();
     }
 
     // Inject into randomTicks to turn into weed if mature
@@ -53,7 +53,7 @@ public class NetherWartBlockMixin {
         // Grow faster on soul farmland
         BlockState soilCheck = world.getBlockState(pos.down());
         int wartAge = state.get(AGE, 0);
-        if (wartAge < 3) {
+        if (wartAge < NetherWartBlock.MAX_AGE) {
             if (soilCheck.isOf(ModBlocks.SOUL_FARMLAND) && (random.nextInt(7) == 0)) {
                 state = state.with(AGE, wartAge + 1);
                 world.setBlockState(pos, state, 2);
