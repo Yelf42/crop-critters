@@ -31,6 +31,9 @@ public class LostSoulItem extends Item {
         BlockState state = world.getBlockState(blockPos);
         ItemStack itemStack = context.getStack();
         if (!spawnCritter(world, blockPos, state)) return ActionResult.PASS;
+        if (state.get(PitcherCropBlock.HALF, DoubleBlockHalf.LOWER) == DoubleBlockHalf.UPPER) {
+            world.setBlockState(blockPos.down(), Blocks.AIR.getDefaultState(), Block.NOTIFY_LISTENERS);
+        }
         world.setBlockState(blockPos, Blocks.AIR.getDefaultState(), Block.NOTIFY_LISTENERS);
         PlayerEntity playerEntity = context.getPlayer();
         world.playSound(null, blockPos, SoundEvents.ENTITY_ALLAY_AMBIENT_WITH_ITEM, SoundCategory.BLOCKS, 1F, 1F);

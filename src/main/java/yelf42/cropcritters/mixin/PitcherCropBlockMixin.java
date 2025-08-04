@@ -26,6 +26,8 @@ import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.config.ConfigManager;
 import yelf42.cropcritters.entity.ModEntities;
 
+import static net.minecraft.block.Block.pushEntitiesUpBeforeBlockChange;
+
 @Mixin(PitcherCropBlock.class)
 public abstract class PitcherCropBlockMixin {
 
@@ -39,25 +41,28 @@ public abstract class PitcherCropBlockMixin {
 
     // Stop growth on non-farmland
     @Inject(method = "randomTick", at = @At("HEAD"), cancellable = true)
-    private static void cancelGrowth(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
-        if (!(world.getBlockState(pos.down()).isOf(Blocks.FARMLAND)) && !(world.getBlockState(pos.down()).isOf(Blocks.FARMLAND))) ci.cancel();
+    private void cancelGrowth(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
+        if (!(world.getBlockState(pos.down()).isOf(Blocks.FARMLAND) || world.getBlockState(pos.down()).isOf(ModBlocks.SOUL_FARMLAND))) ci.cancel();
     }
 
-    // Chance to spawn critter on just matured
-    @Inject(method = "tryGrow", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/PitcherCropBlock;isDoubleTallAtAge(I)Z", shift = At.Shift.BY, by = 2), cancellable = true)
-    private static void removeNutrientsAndSpawnCritters(ServerWorld world, BlockState state, BlockPos pos, int amount, CallbackInfo ci) {
+    @Inject(method = "randomTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/PitcherCropBlock;tryGrow(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;I)V", shift = At.Shift.AFTER), cancellable = true)
+    private void removeNutrientsAndSpawnCritters(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
+        state = world.getBlockState(pos);
         if (state.get(AGE, 0) <= 3) return;
 
         BlockState soilCheck = world.getBlockState(pos.down());
         if (soilCheck.isOf(Blocks.FARMLAND)) {
+            pushEntitiesUpBeforeBlockChange(Blocks.FARMLAND.getDefaultState(), Blocks.DIRT.getDefaultState(), world, pos.down());
             BlockState toDirt = (world.random.nextInt(4) == 0) ? Blocks.DIRT.getDefaultState() : (world.random.nextInt(2) == 0) ? Blocks.ROOTED_DIRT.getDefaultState() : Blocks.COARSE_DIRT.getDefaultState();
             world.setBlockState(pos.down(), toDirt, Block.NOTIFY_LISTENERS);
         } else if (soilCheck.isOf(ModBlocks.SOUL_FARMLAND)){
+            pushEntitiesUpBeforeBlockChange(ModBlocks.SOUL_FARMLAND.getDefaultState(), Blocks.SOUL_SOIL.getDefaultState(), world, pos.down());
             BlockState toDirt = (world.random.nextInt(2) == 0) ? Blocks.SOUL_SOIL.getDefaultState() : Blocks.SOUL_SAND.getDefaultState();
             world.setBlockState(pos.down(), toDirt, Block.NOTIFY_LISTENERS);
         } else {
             return;
         }
+
         if (spawnCritter(world, world.random, pos)) ci.cancel();
     }
 

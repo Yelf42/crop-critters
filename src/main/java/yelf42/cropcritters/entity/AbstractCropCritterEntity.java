@@ -156,6 +156,7 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
     protected void playHurtSound(DamageSource damageSource) {
         if (this.getBoundingBox().getLengthX() > 0.51) {
             // Big
+            playSound(SoundEvents.ENTITY_GLOW_SQUID_DEATH, 1F, 1.1F);
             playSound(SoundEvents.ENTITY_ALLAY_HURT, 1F, 0.6F);
         } else {
             // Smol

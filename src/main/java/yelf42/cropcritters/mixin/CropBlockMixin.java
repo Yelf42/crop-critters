@@ -26,6 +26,8 @@ import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.config.ConfigManager;
 import yelf42.cropcritters.entity.ModEntities;
 
+import static net.minecraft.block.Block.pushEntitiesUpBeforeBlockChange;
+
 @Mixin(CropBlock.class)
 public abstract class CropBlockMixin {
 
@@ -58,9 +60,11 @@ public abstract class CropBlockMixin {
             if (cropBlock.getAge(state) + 1 != cropBlock.getMaxAge()) return;
             BlockState soilCheck = world.getBlockState(pos.down());
             if (soilCheck.isOf(Blocks.FARMLAND)) {
+                pushEntitiesUpBeforeBlockChange(Blocks.FARMLAND.getDefaultState(), Blocks.DIRT.getDefaultState(), world, pos.down());
                 BlockState toDirt = (random.nextInt(4) == 0) ? Blocks.DIRT.getDefaultState() : (random.nextInt(2) == 0) ? Blocks.ROOTED_DIRT.getDefaultState() : Blocks.COARSE_DIRT.getDefaultState();
                 world.setBlockState(pos.down(), toDirt, Block.NOTIFY_LISTENERS);
             } else if (soilCheck.isOf(ModBlocks.SOUL_FARMLAND)){
+                pushEntitiesUpBeforeBlockChange(Blocks.FARMLAND.getDefaultState(), Blocks.SOUL_SOIL.getDefaultState(), world, pos.down());
                 BlockState toDirt = (random.nextInt(2) == 0) ? Blocks.SOUL_SOIL.getDefaultState() : Blocks.SOUL_SAND.getDefaultState();
                 world.setBlockState(pos.down(), toDirt, Block.NOTIFY_LISTENERS);
             } else {
@@ -102,46 +106,46 @@ public abstract class CropBlockMixin {
                 }
             }
             // Quadratic penalty increase for monocultural practices
-            monoCount = (monoCount * monoCount) / 16F;
+            monoCount = (monoCount * monoCount) / 8F;
         }
-        boolean growThistle = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.regularWeedChance * monoCount;
-        boolean growThornweed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.netherWeedChance * monoCount;
-        boolean growWaftgrass = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.netherWeedChance * monoCount;
-        boolean growSpiteweed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.spiteweedChance * monoCount;
+        boolean growOverworldWeed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.regularWeedChance * (monoCount + 1);
+        boolean growNetherWeed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.netherWeedChance * (monoCount + 1);
+        boolean growSpiteweed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.spiteweedChance * (monoCount + 1);
+
+        // For determining sub weed types
+        int weedTypeCheck = random.nextInt(100) + 1;
 
         if (world.getBiome(pos).matchesKey(BiomeKeys.SOUL_SAND_VALLEY)) {
             if (growSpiteweed && nether) {
                 BlockState weedState = ModBlocks.WITHERING_SPITEWEED.getDefaultState();
                 world.setBlockState(pos, weedState);
+                pushEntitiesUpBeforeBlockChange(Blocks.SOUL_SAND.getDefaultState(), Blocks.BLACKSTONE.getDefaultState(), world, pos.down());
                 world.setBlockState(pos.down(), Blocks.BLACKSTONE.getDefaultState(), Block.NOTIFY_LISTENERS);
                 world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
                 return;
             }
         } else {
-            if (growThistle && !nether) {
+            if (growOverworldWeed && !nether) {
                 BlockState weedState = ModBlocks.CRAWL_THISTLE.getDefaultState();
+                // Add further overworld weeds here
                 world.setBlockState(pos, weedState);
+                pushEntitiesUpBeforeBlockChange(Blocks.FARMLAND.getDefaultState(), Blocks.COARSE_DIRT.getDefaultState(), world, pos.down());
                 world.setBlockState(pos.down(), Blocks.COARSE_DIRT.getDefaultState(), Block.NOTIFY_LISTENERS);
                 world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
                 return;
             }
 
-            if (nether) {
-                if (growThornweed) {
-                    BlockState weedState = ModBlocks.CRIMSON_THORNWEED.getDefaultState();
-                    world.setBlockState(pos, weedState);
-                    world.setBlockState(pos.down(), (random.nextInt(2) == 0) ? Blocks.SOUL_SOIL.getDefaultState() : Blocks.SOUL_SAND.getDefaultState(), Block.NOTIFY_LISTENERS);
-                    world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
-                    return;
+            if (nether && growNetherWeed) {
+                BlockState weedState = ModBlocks.CRIMSON_THORNWEED.getDefaultState();
+                // Add further nether weeds here
+                if (weedTypeCheck < 20) {
+                    weedState = ModBlocks.WAFTGRASS.getDefaultState();
                 }
-
-                if (growWaftgrass) {
-                    BlockState weedState = ModBlocks.WAFTGRASS.getDefaultState();
-                    world.setBlockState(pos, weedState);
-                    world.setBlockState(pos.down(), (random.nextInt(2) == 0) ? Blocks.SOUL_SOIL.getDefaultState() : Blocks.SOUL_SAND.getDefaultState(), Block.NOTIFY_LISTENERS);
-                    world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
-                    return;
-                }
+                world.setBlockState(pos, weedState);
+                pushEntitiesUpBeforeBlockChange(ModBlocks.SOUL_FARMLAND.getDefaultState(), Blocks.SOUL_SOIL.getDefaultState(), world, pos.down());
+                world.setBlockState(pos.down(), (random.nextInt(2) == 0) ? Blocks.SOUL_SOIL.getDefaultState() : Blocks.SOUL_SAND.getDefaultState(), Block.NOTIFY_LISTENERS);
+                world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
+                return;
             }
         }
     }

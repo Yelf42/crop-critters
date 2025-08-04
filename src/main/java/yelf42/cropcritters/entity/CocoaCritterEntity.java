@@ -37,9 +37,7 @@ import software.bernie.geckolib.constant.DefaultAnimations;
 import yelf42.cropcritters.config.RecognizedCropsState;
 import yelf42.cropcritters.items.ModItems;
 
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 
 public class CocoaCritterEntity extends AbstractCropCritterEntity {
@@ -47,6 +45,12 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
     private static final Predicate<Entity> NOTICEABLE_PLAYER_FILTER = (entity) -> !entity.isSneaky() && EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR.test(entity);
     private static final Predicate<ItemEntity> PICKABLE_DROP_FILTER = (item) -> !item.cannotPickup() && item.isAlive();
     public static final RawAnimation HOLD = RawAnimation.begin().thenPlayAndHold("holding");
+    private static final Set<Item> DEFAULT_KNOWN_ITEMS = new HashSet<>();
+
+    static {
+        DEFAULT_KNOWN_ITEMS.add(Items.COCOA_BEANS);
+        DEFAULT_KNOWN_ITEMS.add(ModItems.STRANGE_FERTILIZER);
+    }
 
     public CocoaCritterEntity(EntityType<? extends TameableEntity> entityType, World world) {
         super(entityType, world);
@@ -102,7 +106,7 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
 
     @Override
     protected int resetTicksUntilCanWork() {
-        return MathHelper.nextInt(this.random, 300, 500);
+        return MathHelper.nextInt(this.random, 500, 600);
     }
 
 
@@ -136,6 +140,7 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
 
     private boolean checkCrop(Item item) {
         if (this.getWorld().isClient) return false;
+        if (DEFAULT_KNOWN_ITEMS.contains(item)) return true;
         ServerWorld world = (ServerWorld)this.getWorld();
         RecognizedCropsState state = RecognizedCropsState.getServerState(world.getServer());
         return state.hasCrop(item);
@@ -218,6 +223,7 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
         @Override
         public boolean canStart() {
             if (!CocoaCritterEntity.this.isTrusting() || CocoaCritterEntity.this.getEquippedStack(EquipmentSlot.MAINHAND).isEmpty()) return false;
+            if (validHopperPos()) return true;
             Optional<BlockPos> optional = this.getTargetBlock();
             if (optional.isPresent()) {
                 this.hopperPos = optional.get();
@@ -273,7 +279,7 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
         }
 
         protected Optional<BlockPos> getTargetBlock() {
-            Iterable<BlockPos> iterable = BlockPos.iterateOutwards(CocoaCritterEntity.this.getBlockPos(), 6, 3, 6);
+            Iterable<BlockPos> iterable = BlockPos.iterateOutwards(CocoaCritterEntity.this.getBlockPos(), 12, 2, 12);
             Long2LongOpenHashMap long2LongOpenHashMap = new Long2LongOpenHashMap();
 
             for(BlockPos blockPos : iterable) {

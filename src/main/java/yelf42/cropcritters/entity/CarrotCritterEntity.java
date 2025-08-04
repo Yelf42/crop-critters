@@ -16,6 +16,8 @@ import net.minecraft.world.World;
 import yelf42.cropcritters.blocks.ModBlocks;
 import java.util.function.Predicate;
 
+import static net.minecraft.block.Block.pushEntitiesUpBeforeBlockChange;
+
 public class CarrotCritterEntity extends AbstractCropCritterEntity {
     public CarrotCritterEntity(EntityType<? extends TameableEntity> entityType, World world) {
         super(entityType, world);

@@ -69,7 +69,7 @@ public class TorchflowerCritterEntity extends AbstractCropCritterEntity {
     protected void mobTick(ServerWorld world) {
         super.mobTick(world);
         BlockPos pos = this.getBlockPos().up();
-        if (this.isTrusting() && world.getBlockState(pos).isAir()) {
+        if (world.getBlockState(pos).isAir()) {
             world.setBlockState(pos, ModBlocks.TORCHFLOWER_SPARK.getDefaultState());
             world.scheduleBlockTick(pos, ModBlocks.TORCHFLOWER_SPARK, 200, TickPriority.EXTREMELY_LOW);
         }
