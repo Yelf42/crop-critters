@@ -12,6 +12,7 @@ import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -218,12 +219,12 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
 
         @Override
         public boolean canStart() {
-            return super.canStart() && !PumpkinCritterEntity.this.isTrusting();
+            return super.canStart() && (!PumpkinCritterEntity.this.isTrusting() || this.targetEntity instanceof HostileEntity);
         }
 
         @Override
         public boolean shouldContinue() {
-            return super.shouldContinue() && !PumpkinCritterEntity.this.isTrusting();
+            return super.shouldContinue() && (!PumpkinCritterEntity.this.isTrusting() || this.targetEntity instanceof HostileEntity);
         }
     }
 }

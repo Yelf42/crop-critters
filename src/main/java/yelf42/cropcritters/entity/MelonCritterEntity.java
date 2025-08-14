@@ -13,6 +13,7 @@ import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -223,12 +224,12 @@ public class MelonCritterEntity extends AbstractCropCritterEntity implements Ran
 
         @Override
         public boolean canStart() {
-            return super.canStart() && !MelonCritterEntity.this.isTrusting();
+            return super.canStart() && (!MelonCritterEntity.this.isTrusting() || this.targetEntity instanceof HostileEntity);
         }
 
         @Override
         public boolean shouldContinue() {
-            return super.shouldContinue() && !MelonCritterEntity.this.isTrusting();
+            return super.shouldContinue() && (!MelonCritterEntity.this.isTrusting() || this.targetEntity instanceof HostileEntity);
         }
     }
 }
