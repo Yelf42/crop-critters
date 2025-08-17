@@ -1,8 +1,7 @@
 package yelf42.cropcritters.entity;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
+import net.minecraft.block.*;
+import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
@@ -71,6 +70,13 @@ public class NetherWartCritterEntity extends AbstractCropCritterEntity {
                                         || blockState.isOf((Blocks.SOUL_SAND))
                                         || blockState.isOf(ModBlocks.SOUL_FARMLAND)
                                         || blockState.isOf(Blocks.BLACKSTONE));
+    }
+
+    @Override
+    public boolean isAttractive(BlockPos pos) {
+        BlockState target = this.getWorld().getBlockState(pos);
+        BlockState above = this.getWorld().getBlockState(pos.up());
+        return this.getTargetBlockFilter().test(target) && (above.isAir() || (above.getBlock() instanceof PlantBlock && !above.contains(TallPlantBlock.HALF) && !(above.getBlock() instanceof NetherWartBlock)));
     }
 
     @Override
