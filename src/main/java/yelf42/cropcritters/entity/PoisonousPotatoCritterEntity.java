@@ -88,7 +88,7 @@ public class PoisonousPotatoCritterEntity extends AbstractCropCritterEntity impl
 
     @Override
     protected int resetTicksUntilCanWork() {
-        return this.lastTargetMature ? MathHelper.nextInt(this.random, 900, 1200) : MathHelper.nextInt(this.random, 400, 600);
+        return resetTicksUntilCanWork(this.lastTargetMature ? MathHelper.nextInt(this.random, 900, 1200) : MathHelper.nextInt(this.random, 400, 600));
     }
 
     @Override

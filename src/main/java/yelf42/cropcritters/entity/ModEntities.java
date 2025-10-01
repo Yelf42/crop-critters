@@ -45,7 +45,7 @@ public class ModEntities {
             Registries.ENTITY_TYPE,
             Identifier.of(CropCritters.MOD_ID, "spit_ball_projectile"),
             FabricEntityTypeBuilder.<SpitSeedProjectileEntity>create(SpawnGroup.MISC, SpitSeedProjectileEntity::new)
-                    .dimensions(EntityDimensions.fixed(0.25F, 0.25F))
+                    .dimensions(EntityDimensions.fixed(0.125F, 0.125F))
                     .trackRangeBlocks(4).trackedUpdateRate(10)
                     .build(RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(CropCritters.MOD_ID,"seed_ball_projectile")))
     );

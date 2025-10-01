@@ -6,7 +6,11 @@ import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.DispenserBlock;
+import net.minecraft.block.dispenser.FallibleItemDispenserBehavior;
 import net.minecraft.entity.EntityType;
+import net.minecraft.item.ItemStack;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
@@ -15,7 +19,11 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.BiomeTags;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPointer;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeKeys;
 import net.minecraft.world.gen.GenerationStep;
 import org.slf4j.Logger;
@@ -25,6 +33,7 @@ import yelf42.cropcritters.config.ConfigManager;
 import yelf42.cropcritters.entity.ModEntities;
 import yelf42.cropcritters.events.ModEvents;
 import yelf42.cropcritters.items.ModItems;
+import yelf42.cropcritters.items.StrangeFertilizerItem;
 import yelf42.cropcritters.particle.ModParticles;
 
 public class CropCritters implements ModInitializer {
@@ -61,6 +70,27 @@ public class CropCritters implements ModInitializer {
 		ModBlocks.initialize();
 		ModEvents.initialize();
 		ModParticles.initialize();
+
+		// Strange fertilizer dispenser behaviour
+		LOGGER.info("Registering dispenser behaviours for " + CropCritters.MOD_ID);
+		DispenserBlock.registerBehavior(ModItems.STRANGE_FERTILIZER, new FallibleItemDispenserBehavior() {
+			protected ItemStack dispenseSilently(BlockPointer pointer, ItemStack stack) {
+				this.setSuccess(true);
+				World world = pointer.world();
+				Direction facing = (Direction)pointer.state().get(DispenserBlock.FACING);
+				BlockPos blockPos = pointer.pos().offset(facing);
+				BlockState state = world.getBlockState(blockPos);
+				if (!StrangeFertilizerItem.tryReviveCoral(stack, world, blockPos, state)
+						&& !StrangeFertilizerItem.useOnBush(stack, world, blockPos)
+						&& !StrangeFertilizerItem.useOnFertilizable(stack, world, blockPos)
+						&& !StrangeFertilizerItem.useOnGround(stack, world, blockPos, blockPos, facing)) {
+					this.setSuccess(false);
+				} else if (!world.isClient) {
+					world.syncWorldEvent(1505, blockPos, 15);
+				}
+				return stack;
+			}
+		});
 
 		// Vanilla biome mods
 		LOGGER.info("Starting biome changes for " + CropCritters.MOD_ID);

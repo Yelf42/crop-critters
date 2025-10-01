@@ -49,6 +49,7 @@ import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.constant.DefaultAnimations;
 import software.bernie.geckolib.util.GeckoLibUtil;
 import yelf42.cropcritters.CropCritters;
+import yelf42.cropcritters.config.ConfigManager;
 import yelf42.cropcritters.items.ModItems;
 
 import java.util.EnumSet;
@@ -69,6 +70,10 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
     protected abstract int resetTicksUntilCanWork();
     public abstract void completeTargetGoal();
     protected abstract Pair<Item, Integer> getLoot();
+
+    protected  int resetTicksUntilCanWork(int work) {
+        return (int) ((double)work * ConfigManager.CONFIG.critterWorkSpeedMultiplier);
+    }
 
     // Override for more complex behaviours
     protected boolean canWork() {return this.isTrusting();}

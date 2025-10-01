@@ -8,6 +8,7 @@ public class CropCrittersConfig {
     public int lostSoulDropChance = 6;
 
     public int critterSpawnChance = 8;
+    public double critterWorkSpeedMultiplier = 1.0;
 
     public boolean deadCoralGeneration = true;
     public boolean thornweedGeneration = true;

@@ -37,6 +37,7 @@ public class ConfigManager {
                     case "lostSoulDropChance" -> CONFIG.lostSoulDropChance = Math.clamp(Integer.parseInt(value), 0, 100);
                     case "monoculturePenalize" -> CONFIG.monoculturePenalize = Boolean.parseBoolean(value);
                     case "critterSpawnChance" -> CONFIG.critterSpawnChance = Math.clamp(Integer.parseInt(value), 0, 100);
+                    case "critterWorkSpeedMultiplier" -> CONFIG.critterWorkSpeedMultiplier = Math.clamp(Float.parseFloat(value), 0, 10);
                     case "deadCoralGeneration" -> CONFIG.deadCoralGeneration = Boolean.parseBoolean(value);
                     case "thornweedGeneration" -> CONFIG.thornweedGeneration = Boolean.parseBoolean(value);
                     case "waftgrassGeneration" -> CONFIG.waftgrassGeneration = Boolean.parseBoolean(value);
@@ -68,6 +69,10 @@ public class ConfigManager {
             writer.write("# or on randomTick in SoulSandValley.\n");
             writer.write("# Chance doubled if on a 'Soul' block:\n");
             writer.write("critterSpawnChance = " + CONFIG.critterSpawnChance + "\n");
+            writer.write("# \n");
+            writer.write("# Multiplier on critter work speed:\n");
+            writer.write("# (Between 0.01 and 10.0)\n");
+            writer.write("critterWorkSpeedMultiplier = " + CONFIG.critterWorkSpeedMultiplier + "\n");
             writer.write("# \n");
             writer.write("# Biome generation toggles: \n");
             writer.write("deadCoralGeneration = " + CONFIG.deadCoralGeneration + "\n");

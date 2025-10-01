@@ -71,7 +71,7 @@ public class StrangeFertilizerItem extends BoneMealItem {
         boolean bl = blockState.isSideSolidFullSquare(world, blockPos, context.getSide());
         if (bl && useOnGround(context.getStack(), world, blockPos, blockPos2, context.getSide())) {
             if (!world.isClient) {
-                context.getPlayer().emitGameEvent(GameEvent.ITEM_INTERACT_FINISH);
+                if (playerEntity != null) playerEntity.emitGameEvent(GameEvent.ITEM_INTERACT_FINISH);
                 world.syncWorldEvent(1505, blockPos2, 15);
             }
 
@@ -79,18 +79,14 @@ public class StrangeFertilizerItem extends BoneMealItem {
         }
 
         // Grow bush into tall bush
-        if (blockState.isOf(Blocks.BUSH) && world.getBlockState(blockPos.up()).isAir()) {
-            TallBushBlock.placeAt(world, ModBlocks.TALL_BUSH.getDefaultState(), blockPos, 2);
-
-            itemStack.decrement(1);
-
+        if (useOnBush(context.getStack(), world, blockPos)) {
             return ActionResult.SUCCESS;
         }
 
         // Use on fertilizable things
         if (useOnFertilizable(context.getStack(), world, blockPos)) {
             if (!world.isClient) {
-                context.getPlayer().emitGameEvent(GameEvent.ITEM_INTERACT_FINISH);
+                if (playerEntity != null) playerEntity.emitGameEvent(GameEvent.ITEM_INTERACT_FINISH);
                 world.syncWorldEvent(1505, blockPos, 15);
             }
 
@@ -98,20 +94,24 @@ public class StrangeFertilizerItem extends BoneMealItem {
         }
 
         // Revive Coral
-        Optional<BlockState> optional = this.tryReviveCoral(world, blockPos, playerEntity, world.getBlockState(blockPos));
-        if (optional.isEmpty()) {
+        if (!tryReviveCoral(context.getStack(), world, blockPos, world.getBlockState(blockPos))) {
             return ActionResult.PASS;
         } else {
             if (playerEntity instanceof ServerPlayerEntity) {
                 Criteria.ITEM_USED_ON_BLOCK.trigger((ServerPlayerEntity) playerEntity, blockPos, itemStack);
             }
-
-            world.setBlockState(blockPos, (BlockState) optional.get(), Block.NOTIFY_ALL_AND_REDRAW);
-            world.emitGameEvent(GameEvent.BLOCK_CHANGE, blockPos, GameEvent.Emitter.of(playerEntity, (BlockState) optional.get()));
-            itemStack.decrement(1);
-
             return ActionResult.SUCCESS;
         }
+    }
+
+    public static boolean useOnBush(ItemStack stack, World world, BlockPos blockPos) {
+        BlockState state = world.getBlockState(blockPos);
+        if (state.isOf(Blocks.BUSH) && world.getBlockState(blockPos.up()).isAir()) {
+            TallBushBlock.placeAt(world, ModBlocks.TALL_BUSH.getDefaultState(), blockPos, 2);
+            stack.decrement(1);
+            return true;
+        }
+        return false;
     }
 
     public static boolean useOnGround(ItemStack stack, World world, BlockPos blockPos, BlockPos underwaterPos, @Nullable Direction facing) {
@@ -225,16 +225,19 @@ public class StrangeFertilizerItem extends BoneMealItem {
         stack.decrement(1);
     }
 
-    private Optional<BlockState> tryReviveCoral(World world, BlockPos pos, @Nullable PlayerEntity player, BlockState state) {
-        Optional<BlockState> optional = this.getRevivedState(state);
+    public static boolean tryReviveCoral(ItemStack stack, World world, BlockPos pos, BlockState state) {
+        Optional<BlockState> optional = getRevivedState(state);
         if (optional.isPresent()) {
-            world.playSound(player, pos, SoundEvents.ITEM_AXE_STRIP, SoundCategory.BLOCKS, 1.0F, 1.0F);
-            return optional;
+            world.setBlockState(pos, (BlockState) optional.get(), Block.NOTIFY_ALL_AND_REDRAW);
+            world.emitGameEvent(null, GameEvent.BLOCK_CHANGE, pos);
+            world.playSound(null, pos, SoundEvents.ITEM_AXE_STRIP, SoundCategory.BLOCKS, 1.0F, 1.0F);
+            stack.decrement(1);
+            return true;
         }
-        return Optional.empty();
+        return false;
     }
 
-    private Optional<BlockState> getRevivedState(BlockState state) {
+    private static Optional<BlockState> getRevivedState(BlockState state) {
         return Optional.ofNullable((Block)REVIVE_CORAL.get(state.getBlock()))
                 .map(block -> {
                     BlockState revivedState = block.getDefaultState();

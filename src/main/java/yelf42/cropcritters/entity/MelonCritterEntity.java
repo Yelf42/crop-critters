@@ -110,7 +110,7 @@ public class MelonCritterEntity extends AbstractCropCritterEntity implements Ran
 
     @Override
     protected int resetTicksUntilCanWork() {
-        return MathHelper.nextInt(this.random, 300, 500);
+        return resetTicksUntilCanWork(MathHelper.nextInt(this.random, 300, 500));
     }
 
     @Override

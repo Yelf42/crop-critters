@@ -118,7 +118,7 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
 
     @Override
     protected int resetTicksUntilCanWork() {
-        return MathHelper.nextInt(this.random, 500, 600);
+        return resetTicksUntilCanWork(MathHelper.nextInt(this.random, 500, 600));
     }
 
 

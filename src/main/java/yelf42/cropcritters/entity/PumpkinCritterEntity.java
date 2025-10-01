@@ -121,8 +121,7 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
 
     @Override
     protected int resetTicksUntilCanWork() {
-        return 150;
-        //return MathHelper.nextInt(this.random, 9600, 12000);
+        return resetTicksUntilCanWork(MathHelper.nextInt(this.random, 150, 500));
     }
 
     @Override
@@ -162,6 +161,7 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
                         if (!bl && this.ticks > 600) {
                             PumpkinCritterEntity.this.clearTargetPos();
                         } else if (bl && bl2) {
+                            PumpkinCritterEntity.this.setBodyYaw((float)MathHelper.lerpAngleDegrees(0.8, PumpkinCritterEntity.this.getBodyYaw(), targetYaw(vec3d)));
                             PumpkinCritterEntity.this.completeTargetGoal();
                             PumpkinCritterEntity.this.clearTargetPos();
                         } else {

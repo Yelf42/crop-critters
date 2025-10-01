@@ -55,7 +55,7 @@ public class CarrotCritterEntity extends AbstractCropCritterEntity {
 
     @Override
     protected int resetTicksUntilCanWork() {
-        return MathHelper.nextInt(this.random, 100, 200);
+        return resetTicksUntilCanWork(MathHelper.nextInt(this.random, 100, 200));
     }
 
     @Override

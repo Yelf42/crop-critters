@@ -16,6 +16,7 @@ import net.minecraft.particle.ItemStackParticleEffect;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -74,6 +75,7 @@ public class SeedBallProjectileEntity extends ThrownItemEntity {
 
     @Override
     protected void onBlockCollision(BlockState state) {
+        if (!state.isSolid() || !state.isIn(BlockTags.DIRT)) return;
         World world = this.getWorld();
         Iterable<BlockPos> iterable = BlockPos.iterateOutwards(this.getBlockPos(), 2, 3, 2);
         for(BlockPos blockPos : iterable) {
