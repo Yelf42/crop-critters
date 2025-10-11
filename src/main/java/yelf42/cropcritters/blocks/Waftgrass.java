@@ -13,7 +13,7 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import yelf42.cropcritters.CropCritters;
 
-public class Waftgrass extends SpreadingWeekBlock {
+public class Waftgrass extends SpreadingWeedBlock {
 
     public Waftgrass(Settings settings) {
         super(settings);

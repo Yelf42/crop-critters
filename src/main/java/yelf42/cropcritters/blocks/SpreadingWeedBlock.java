@@ -23,20 +23,20 @@ import yelf42.cropcritters.events.WeedGrowNotifier;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SpreadingWeekBlock extends PlantBlock {
-    public static final MapCodec<SpreadingWeekBlock> CODEC = createCodec(SpreadingWeekBlock::new);
+public class SpreadingWeedBlock extends PlantBlock {
+    public static final MapCodec<SpreadingWeedBlock> CODEC = createCodec(SpreadingWeedBlock::new);
     public static final int MAX_AGE = 1;
     public static final IntProperty AGE = Properties.AGE_1;
     private static final VoxelShape[] SHAPES_BY_AGE = Block.createShapeArray(2, age -> Block.createColumnShape(8 + age * 4, 0.0, 8 + age * 4));
     private boolean reachedMaxNeighbours = false;
 
-    public SpreadingWeekBlock(AbstractBlock.Settings settings) {
+    public SpreadingWeedBlock(AbstractBlock.Settings settings) {
         super(settings);
         this.setDefaultState(this.stateManager.getDefaultState().with(this.getAgeProperty(), 0));
     }
 
     @Override
-    public MapCodec<? extends SpreadingWeekBlock> getCodec() {
+    public MapCodec<? extends SpreadingWeedBlock> getCodec() {
         return CODEC;
     }
 
@@ -101,7 +101,7 @@ public class SpreadingWeekBlock extends PlantBlock {
                         BlockState checkState = world.getBlockState(checkPos);
                         if (checkState.isOf(this)) neighbouringWeeds++;
                         BlockState checkBelowState = world.getBlockState(checkPos.down());
-                        if (canPlantOnTop(checkBelowState, world, checkPos.down()) && (checkState.isAir() || (!(checkState.getBlock() instanceof SpreadingWeekBlock) && checkState.getBlock() instanceof PlantBlock))) {
+                        if (canPlantOnTop(checkBelowState, world, checkPos.down()) && (checkState.isAir() || (!(checkState.getBlock() instanceof SpreadingWeedBlock) && checkState.getBlock() instanceof PlantBlock))) {
                             canSpreadTo.add(checkPos);
                         }
                     }
@@ -129,9 +129,9 @@ public class SpreadingWeekBlock extends PlantBlock {
     }
 
     @Override
-    public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
+    protected void onBlockAdded(BlockState state, World world, BlockPos pos, BlockState oldState, boolean notify) {
         WeedGrowNotifier.notifyEvent(world, pos);
-        super.onPlaced(world, pos, state, placer, itemStack);
+        super.onBlockAdded(state, world, pos, oldState, notify);
     }
 
     @Override

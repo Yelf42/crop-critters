@@ -8,7 +8,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-public class CrawlThistle extends SpreadingWeekBlock {
+public class CrawlThistle extends SpreadingWeedBlock {
 
     public CrawlThistle(Settings settings) {
         super(settings);

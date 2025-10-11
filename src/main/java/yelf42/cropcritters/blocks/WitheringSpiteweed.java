@@ -16,7 +16,7 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import yelf42.cropcritters.CropCritters;
 
-public class WitheringSpiteweed extends SpreadingWeekBlock {
+public class WitheringSpiteweed extends SpreadingWeedBlock {
 
     public WitheringSpiteweed(Settings settings) {
         super(settings);

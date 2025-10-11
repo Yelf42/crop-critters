@@ -12,7 +12,7 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import yelf42.cropcritters.CropCritters;
 
-public class CrimsonThornweed extends SpreadingWeekBlock {
+public class CrimsonThornweed extends SpreadingWeedBlock {
 
     public CrimsonThornweed(Settings settings) {
         super(settings);

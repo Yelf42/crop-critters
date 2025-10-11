@@ -28,6 +28,7 @@ import net.minecraft.world.biome.BiomeKeys;
 import net.minecraft.world.gen.GenerationStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import yelf42.cropcritters.blocks.ModBlockEntities;
 import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.config.ConfigManager;
 import yelf42.cropcritters.entity.ModEntities;
@@ -68,6 +69,7 @@ public class CropCritters implements ModInitializer {
 		ModEntities.initialize();
 		ModItems.initialize();
 		ModBlocks.initialize();
+		ModBlockEntities.initialize();
 		ModEvents.initialize();
 		ModParticles.initialize();
 

@@ -79,7 +79,7 @@ public class ModBlocks {
             AbstractBlock.Settings.create()
                     .mapColor(MapColor.DARK_GREEN)
                     .solid()
-                    .strength(0.8f)
+                    .strength(0.7f)
                     .sounds(BlockSoundGroup.SWEET_BERRY_BUSH)
                     .pistonBehavior(PistonBehavior.DESTROY),
             true
@@ -92,7 +92,7 @@ public class ModBlocks {
                     .mapColor(MapColor.DARK_RED)
                     .noCollision()
                     .ticksRandomly()
-                    .strength(0.8f)
+                    .strength(0.6f)
                     .sounds(BlockSoundGroup.SWEET_BERRY_BUSH)
                     .offset(AbstractBlock.OffsetType.XZ)
                     .pistonBehavior(PistonBehavior.DESTROY),
@@ -106,7 +106,7 @@ public class ModBlocks {
                     .mapColor(MapColor.BLACK)
                     .noCollision()
                     .ticksRandomly()
-                    .strength(0.8f)
+                    .strength(0.6f)
                     .sounds(BlockSoundGroup.SWEET_BERRY_BUSH)
                     .offset(AbstractBlock.OffsetType.XZ)
                     .pistonBehavior(PistonBehavior.DESTROY),
@@ -120,7 +120,7 @@ public class ModBlocks {
                     .mapColor(MapColor.CYAN)
                     .noCollision()
                     .ticksRandomly()
-                    .strength(0.8f)
+                    .strength(0.6f)
                     .sounds(BlockSoundGroup.SWEET_BERRY_BUSH)
                     .offset(AbstractBlock.OffsetType.XZ)
                     .pistonBehavior(PistonBehavior.DESTROY),

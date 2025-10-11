@@ -110,13 +110,12 @@ public abstract class CropBlockMixin {
         }
         boolean growOverworldWeed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.regularWeedChance * (monoCount + 1);
         boolean growNetherWeed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.netherWeedChance * (monoCount + 1);
-        boolean growSpiteweed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.spiteweedChance * (monoCount + 1);
 
         // For determining sub weed types
         int weedTypeCheck = random.nextInt(100) + 1;
 
         if (world.getBiome(pos).matchesKey(BiomeKeys.SOUL_SAND_VALLEY)) {
-            if (growSpiteweed && nether) {
+            if (growNetherWeed && nether) {
                 BlockState weedState = ModBlocks.WITHERING_SPITEWEED.getDefaultState();
                 world.setBlockState(pos, weedState);
                 pushEntitiesUpBeforeBlockChange(Blocks.SOUL_SAND.getDefaultState(), Blocks.BLACKSTONE.getDefaultState(), world, pos.down());

@@ -81,30 +81,29 @@ public class NetherWartBlockMixin {
             monoCount = (monoCount * monoCount) / 16F;
         }
         boolean growNetherWeed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.netherWeedChance * (monoCount + 1);
-        boolean growSpiteweed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.spiteweedChance * (monoCount + 1);
 
         int weedTypeCheck = random.nextInt(100) + 1;
 
-        if (world.getBiome(pos).matchesKey(BiomeKeys.SOUL_SAND_VALLEY)) {
-            if (growSpiteweed) {
+        if (growNetherWeed) {
+            if (world.getBiome(pos).matchesKey(BiomeKeys.SOUL_SAND_VALLEY)) {
                 BlockState weedState = ModBlocks.WITHERING_SPITEWEED.getDefaultState();
                 world.setBlockState(pos, weedState);
                 pushEntitiesUpBeforeBlockChange(Blocks.SOUL_SAND.getDefaultState(), Blocks.BLACKSTONE.getDefaultState(), world, pos.down());
                 world.setBlockState(pos.down(), Blocks.BLACKSTONE.getDefaultState(), Block.NOTIFY_LISTENERS);
                 world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
                 return;
+            } else {
+                BlockState weedState = ModBlocks.CRIMSON_THORNWEED.getDefaultState();
+                // Add further nether weeds here
+                if (weedTypeCheck < 20) {
+                    weedState = ModBlocks.WAFTGRASS.getDefaultState();
+                }
+                world.setBlockState(pos, weedState);
+                pushEntitiesUpBeforeBlockChange(ModBlocks.SOUL_FARMLAND.getDefaultState(), Blocks.SOUL_SOIL.getDefaultState(), world, pos.down());
+                world.setBlockState(pos.down(), (random.nextInt(2) == 0) ? Blocks.SOUL_SOIL.getDefaultState() : Blocks.SOUL_SAND.getDefaultState(), Block.NOTIFY_LISTENERS);
+                world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
+                return;
             }
-        } else if (growNetherWeed) {
-            BlockState weedState = ModBlocks.CRIMSON_THORNWEED.getDefaultState();
-            // Add further nether weeds here
-            if (weedTypeCheck < 20) {
-                weedState = ModBlocks.WAFTGRASS.getDefaultState();
-            }
-            world.setBlockState(pos, weedState);
-            pushEntitiesUpBeforeBlockChange(ModBlocks.SOUL_FARMLAND.getDefaultState(), Blocks.SOUL_SOIL.getDefaultState(), world, pos.down());
-            world.setBlockState(pos.down(), (random.nextInt(2) == 0) ? Blocks.SOUL_SOIL.getDefaultState() : Blocks.SOUL_SAND.getDefaultState(), Block.NOTIFY_LISTENERS);
-            world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
-            return;
         }
     }
 

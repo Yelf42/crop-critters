@@ -17,6 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.blocks.MazewoodSaplingBlock;
+import yelf42.cropcritters.blocks.MazewoodSaplingBlockEntity;
 import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.events.WeedGrowNotifier;
 
@@ -64,7 +65,7 @@ public abstract class LightningEntityMixin {
             BlockState toCheck = world.getBlockState(posCrop);
             if (toCheck.getBlock() instanceof CropBlock || toCheck.getBlock() instanceof StemBlock) {
                 world.setBlockState(posCrop, Blocks.AIR.getDefaultState(), Block.NOTIFY_LISTENERS);
-                if (compareBlockPosXZ(posCrop, pos) && MazewoodSaplingBlock.isWall(pos)) {
+                if (compareBlockPosXZ(posCrop, pos) && MazewoodSaplingBlockEntity.isWall(pos)) {
                     world.setBlockState(posCrop, ModBlocks.MAZEWOOD_SAPLING.getDefaultState(), Block.NOTIFY_LISTENERS);
                     WeedGrowNotifier.notifyEvent(world, posCrop);
                 }

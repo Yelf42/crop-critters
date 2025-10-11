@@ -3,14 +3,14 @@
   "category": "misc",
   "key": {
     "#": "cropcritters:lost_soul",
-    "X": "minecraft:string",
+    "X": "minecraft:copper_ingot",
     "B": "minecraft:bell",
     "G": "minecraft:glass"
   },
   "pattern": [
-    "GXG",
+    " X ",
     "G#G",
-    "GBG"
+    " B "
   ],
   "result": {
     "count": 1,
