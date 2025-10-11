@@ -7,6 +7,8 @@ public class CropCrittersConfig {
     public boolean monoculturePenalize = true;
     public int lostSoulDropChance = 6;
 
+    public int mazewoodSpread = 4;
+
     public int critterSpawnChance = 8;
     public double critterWorkSpeedMultiplier = 1.0;
 

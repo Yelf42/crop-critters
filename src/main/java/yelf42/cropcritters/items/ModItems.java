@@ -44,6 +44,21 @@ public class ModItems {
                     itemGroup.add(ModItems.LOST_SOUL);
                 });
 
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.SPAWN_EGGS)
+                .register((itemGroup) -> {
+                    itemGroup.add(ModItems.WHEAT_CRITTER_SPAWN_EGG);
+                    itemGroup.add(ModItems.MELON_CRITTER_SPAWN_EGG);
+                    itemGroup.add(ModItems.PUMPKIN_CRITTER_SPAWN_EGG);
+                    itemGroup.add(ModItems.CARROT_CRITTER_SPAWN_EGG);
+                    itemGroup.add(ModItems.POTATO_CRITTER_SPAWN_EGG);
+                    itemGroup.add(ModItems.BEETROOT_CRITTER_SPAWN_EGG);
+                    itemGroup.add(ModItems.NETHER_WART_CRITTER_SPAWN_EGG);
+                    itemGroup.add(ModItems.POISONOUS_POTATO_CRITTER_SPAWN_EGG);
+                    itemGroup.add(ModItems.TORCHFLOWER_CRITTER_SPAWN_EGG);
+                    itemGroup.add(ModItems.PITCHER_CRITTER_SPAWN_EGG);
+                    itemGroup.add(ModItems.COCOA_CRITTER_SPAWN_EGG);
+                });
+
 
         // Compostable
         CompostingChanceRegistry.INSTANCE.add(ModItems.STRANGE_FERTILIZER, 1.0f);

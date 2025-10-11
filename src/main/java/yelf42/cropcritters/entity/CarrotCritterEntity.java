@@ -3,6 +3,7 @@ package yelf42.cropcritters.entity;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.PlantBlock;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.item.Item;
@@ -62,6 +63,6 @@ public class CarrotCritterEntity extends AbstractCropCritterEntity {
     public boolean isAttractive(BlockPos pos) {
         BlockState target = this.getWorld().getBlockState(pos);
         BlockState above = this.getWorld().getBlockState(pos.up());
-        return this.getTargetBlockFilter().test(target) && above.getCollisionShape(null, pos.up()).isEmpty();
+        return this.getTargetBlockFilter().test(target) && (above.isAir() || above.getBlock() instanceof PlantBlock);
     }
 }

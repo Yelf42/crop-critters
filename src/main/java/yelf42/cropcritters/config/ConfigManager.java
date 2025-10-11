@@ -34,6 +34,7 @@ public class ConfigManager {
                     case "regularWeedsGrowChance" -> CONFIG.regularWeedChance = Math.clamp(Integer.parseInt(value), 0, 100);
                     case "netherWeedsGrowChance" -> CONFIG.netherWeedChance = Math.clamp(Integer.parseInt(value), 0, 100);
                     case "spiteweedGrowChance" -> CONFIG.spiteweedChance = Math.clamp(Integer.parseInt(value), 0, 100);
+                    case "mazewoodSpread" -> CONFIG.mazewoodSpread = Math.clamp(Integer.parseInt(value), 1, 16);
                     case "lostSoulDropChance" -> CONFIG.lostSoulDropChance = Math.clamp(Integer.parseInt(value), 0, 100);
                     case "monoculturePenalize" -> CONFIG.monoculturePenalize = Boolean.parseBoolean(value);
                     case "critterSpawnChance" -> CONFIG.critterSpawnChance = Math.clamp(Integer.parseInt(value), 0, 100);
@@ -60,7 +61,10 @@ public class ConfigManager {
             writer.write("spiteweedGrowChance = " + CONFIG.spiteweedChance + "\n");
             writer.write("# Should monocultures have increased weed chances:\n");
             writer.write("monoculturePenalize = " + CONFIG.monoculturePenalize + "\n");
-            writer.write("# Strength monocultural crops have on weed chance:\n");
+            writer.write("# \n");
+            writer.write("# How far should Mazewood spread (1-128):\n");
+            writer.write("# (Be careful, spreads fast) \n");
+            writer.write("mazewoodSpread = " + CONFIG.mazewoodSpread + "\n");
             writer.write("# \n");
             writer.write("# Lost soul mob drop chance:\n");
             writer.write("lostSoulDropChance = " + CONFIG.lostSoulDropChance + "\n");

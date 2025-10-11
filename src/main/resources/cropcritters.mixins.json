@@ -4,6 +4,7 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "CropBlockMixin",
+    "LightningEntityMixin",
     "NetherWartBlockMixin",
     "PitcherCropBlockMixin",
     "PlantBlockMixin",

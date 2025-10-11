@@ -27,7 +27,7 @@ public class SpreadingWeekBlock extends PlantBlock {
     public static final MapCodec<SpreadingWeekBlock> CODEC = createCodec(SpreadingWeekBlock::new);
     public static final int MAX_AGE = 1;
     public static final IntProperty AGE = Properties.AGE_1;
-    private static final VoxelShape[] SHAPES_BY_AGE = Block.createShapeArray(2, age -> Block.createColumnShape(16.0, 0.0, 8 + age * 8));
+    private static final VoxelShape[] SHAPES_BY_AGE = Block.createShapeArray(2, age -> Block.createColumnShape(8 + age * 4, 0.0, 8 + age * 4));
     private boolean reachedMaxNeighbours = false;
 
     public SpreadingWeekBlock(AbstractBlock.Settings settings) {

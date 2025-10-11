@@ -1,6 +1,7 @@
 package yelf42.cropcritters.blocks;
 
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.fabricmc.fabric.api.registry.CompostingChanceRegistry;
 import net.minecraft.block.*;
 import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.item.BlockItem;
@@ -56,6 +57,30 @@ public class ModBlocks {
                     .strength(0.4f)
                     .sounds(BlockSoundGroup.SWEET_BERRY_BUSH)
                     .offset(AbstractBlock.OffsetType.XZ)
+                    .pistonBehavior(PistonBehavior.DESTROY),
+            true
+    );
+
+    public static final Block MAZEWOOD_SAPLING = register(
+            "mazewood_sapling",
+            MazewoodSaplingBlock::new,
+            AbstractBlock.Settings.create()
+                    .mapColor(MapColor.DARK_GREEN)
+                    .noCollision()
+                    .ticksRandomly()
+                    .breakInstantly()
+                    .sounds(BlockSoundGroup.GRASS)
+                    .pistonBehavior(PistonBehavior.DESTROY),
+            true
+    );
+    public static final Block MAZEWOOD = register(
+            "mazewood",
+            MazewoodBlock::new,
+            AbstractBlock.Settings.create()
+                    .mapColor(MapColor.DARK_GREEN)
+                    .solid()
+                    .strength(0.8f)
+                    .sounds(BlockSoundGroup.SWEET_BERRY_BUSH)
                     .pistonBehavior(PistonBehavior.DESTROY),
             true
     );
@@ -118,7 +143,7 @@ public class ModBlocks {
 
     public static final Block ORNAMENTAL_BUSH = register(
             "ornamental_bush",
-            TallPlantBlock::new,
+            TallBushBlock::new,
             AbstractBlock.Settings.create()
                     .mapColor(MapColor.DARK_GREEN)
                     .replaceable()
@@ -170,6 +195,8 @@ public class ModBlocks {
 
         ItemGroupEvents.modifyEntriesEvent(ModItems.CROP_CRITTERS_ITEM_GROUP_KEY).register((itemGroup) -> {
             itemGroup.add(ModBlocks.SOUL_FARMLAND.asItem());
+            itemGroup.add(ModBlocks.MAZEWOOD_SAPLING.asItem());
+            itemGroup.add(ModBlocks.MAZEWOOD.asItem());
             itemGroup.add(ModBlocks.CRAWL_THISTLE.asItem());
             itemGroup.add(ModBlocks.CRIMSON_THORNWEED.asItem());
             itemGroup.add(ModBlocks.WITHERING_SPITEWEED.asItem());
@@ -180,6 +207,8 @@ public class ModBlocks {
         });
 
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.NATURAL).register((itemGroup) -> {
+            itemGroup.add(ModBlocks.MAZEWOOD_SAPLING.asItem());
+            itemGroup.add(ModBlocks.MAZEWOOD.asItem());
             itemGroup.add(ModBlocks.CRAWL_THISTLE.asItem());
             itemGroup.add(ModBlocks.CRIMSON_THORNWEED.asItem());
             itemGroup.add(ModBlocks.WITHERING_SPITEWEED.asItem());
@@ -191,6 +220,16 @@ public class ModBlocks {
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register((itemGroup) -> {
             itemGroup.add(ModBlocks.LOST_SOUL_IN_A_JAR.asItem());
         });
+
+        CompostingChanceRegistry.INSTANCE.add(ModBlocks.TALL_BUSH.asItem(), 0.8f);
+        CompostingChanceRegistry.INSTANCE.add(ModBlocks.ORNAMENTAL_BUSH.asItem(), 0.8f);
+        CompostingChanceRegistry.INSTANCE.add(ModBlocks.MAZEWOOD.asItem(), 0.8f);
+        CompostingChanceRegistry.INSTANCE.add(ModBlocks.MAZEWOOD_SAPLING.asItem(), 0.4f);
+        CompostingChanceRegistry.INSTANCE.add(ModBlocks.CRAWL_THISTLE.asItem(), 0.3f);
+        CompostingChanceRegistry.INSTANCE.add(ModBlocks.CRIMSON_THORNWEED.asItem(), 0.2f);
+        CompostingChanceRegistry.INSTANCE.add(ModBlocks.WAFTGRASS.asItem(), 0.2f);
+        CompostingChanceRegistry.INSTANCE.add(ModBlocks.WITHERING_SPITEWEED.asItem(), 0f);
+
 
     }
 }

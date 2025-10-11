@@ -41,7 +41,7 @@ public class WeedGrowNotifier {
 
     public static void notifyEvent(World world, BlockPos eventPos) {
         weedsToRing.computeIfAbsent(world, w -> new HashMap<>());
-        if (weedsToRing.get(world).size() >= 256) {
+        if (weedsToRing.get(world).size() >= 128) {
             weedsToRing.get(world).clear();
         }
         weedsToRing.get(world).put(eventPos.toImmutable(), world.getTime());

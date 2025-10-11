@@ -165,6 +165,7 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
                             PumpkinCritterEntity.this.completeTargetGoal();
                             PumpkinCritterEntity.this.clearTargetPos();
                         } else {
+                            // TODO manual movement can cause critter to walk into danger
                             PumpkinCritterEntity.this.getMoveControl().moveTo(this.nextTarget.getX(), this.nextTarget.getY(), this.nextTarget.getZ(), 1.2F);
                         }
                     }

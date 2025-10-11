@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "cropcritters:block/lost_soul_in_a_jar"
+    "layer0": "cropcritters:item/lost_soul_in_a_jar"
   }
 }
