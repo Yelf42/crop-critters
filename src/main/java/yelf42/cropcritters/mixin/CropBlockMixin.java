@@ -54,7 +54,7 @@ public abstract class CropBlockMixin {
 
     // Replace farmland with a dirt if just matured
     // Chance to spawn critter if just matured
-    @Inject(method = "randomTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", shift = At.Shift.AFTER), cancellable = true)
+    @Inject(method = "randomTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", shift = At.Shift.AFTER))
     private static void removeNutrientsAndSpawnCritters(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
         if (state.getBlock() instanceof CropBlock cropBlock) {
             if (cropBlock.getAge(state) + 1 != cropBlock.getMaxAge()) return;
@@ -71,7 +71,7 @@ public abstract class CropBlockMixin {
                 return;
             }
 
-            if (spawnCritter(world, state, random, pos)) ci.cancel();
+            if (spawnCritter(world, state, random, pos)) return;
         }
     }
 
@@ -83,7 +83,7 @@ public abstract class CropBlockMixin {
         BlockState soilCheck = world.getBlockState(pos.down());
         if (state.getBlock() instanceof CropBlock cropBlock && cropBlock.isMature(state)) {
             if (world.getBiome(pos).matchesKey(BiomeKeys.SOUL_SAND_VALLEY)) {
-                if (spawnCritter(world, state, random, pos)) ci.cancel();
+                if (spawnCritter(world, state, random, pos)) return;
             }
             if (soilCheck.isIn(CropCritters.CAN_GROW_WEEDS)) {
                 generateWeed(state, world, pos, random, (soilCheck.isOf(Blocks.SOUL_SOIL) || soilCheck.isOf(Blocks.SOUL_SAND) || soilCheck.isOf(ModBlocks.SOUL_FARMLAND)));

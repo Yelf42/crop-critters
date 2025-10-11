@@ -59,9 +59,11 @@ public class LostSoulItem extends Item {
         }
 
         // Critter spawning logic
-        Optional<Entity> toSpawn = spawnCritter(world, blockPos, state);
+        Optional<AbstractCropCritterEntity> toSpawn = spawnCritter(world, blockPos, state);
         if (toSpawn.isEmpty()) return ActionResult.PASS;
-        if (world.random.nextInt(2) == 0) {
+        AbstractCropCritterEntity critter = toSpawn.get();
+        int failChance = (critter.getMaxHealth() > 12) ? 80 : 60;
+        if (world.random.nextInt(100) + 1 <= failChance) {
             world.spawnParticles(ParticleTypes.SMOKE, blockPos.getX() + 0.5, blockPos.getY() + 0.5, blockPos.getZ() + 0.5, 10, 0.5, 0.5, 0.5, 0F);
         } else {
             BlockPos toSpawnAt = blockPos;
@@ -70,8 +72,8 @@ public class LostSoulItem extends Item {
                 toSpawnAt = blockPos.down();
             }
             world.setBlockState(blockPos, Blocks.AIR.getDefaultState(), Block.NOTIFY_LISTENERS);
-            toSpawn.get().setPosition(toSpawnAt.toBottomCenterPos());
-            world.spawnEntity(toSpawn.get());
+            critter.setPosition(toSpawnAt.toBottomCenterPos());
+            world.spawnEntity(critter);
             world.playSound(null, blockPos, SoundEvents.ENTITY_ALLAY_AMBIENT_WITH_ITEM, SoundCategory.BLOCKS, 1F, 1F);
             world.spawnParticles(ParticleTypes.SOUL_FIRE_FLAME, blockPos.getX() + 0.5, blockPos.getY() + 0.5, blockPos.getZ() + 0.5, 10, 0.5, 0.5, 0.5, 0F);
             if (playerEntity instanceof ServerPlayerEntity serverPlayerEntity) {
@@ -124,8 +126,8 @@ public class LostSoulItem extends Item {
         return true;
     }
 
-    private Optional<Entity> spawnCritter(ServerWorld world, BlockPos blockPos, BlockState state) {
-        Entity output = null;
+    private Optional<AbstractCropCritterEntity> spawnCritter(ServerWorld world, BlockPos blockPos, BlockState state) {
+        AbstractCropCritterEntity output = null;
         if (state.isOf(Blocks.PUMPKIN)) {
             output = ModEntities.PUMPKIN_CRITTER.create(world, SpawnReason.SPAWN_ITEM_USE);
         } else if (state.isOf(Blocks.MELON)) {

@@ -63,7 +63,7 @@ public abstract class PitcherCropBlockMixin {
             return;
         }
 
-        if (spawnCritter(world, world.random, pos)) ci.cancel();
+        if (spawnCritter(world, world.random, pos)) return;
     }
 
     @Unique
