@@ -84,48 +84,6 @@ public class LostSoulItem extends Item {
         return ActionResult.SUCCESS;
     }
 
-    private boolean spawnCritterOLD(ServerWorld world, BlockPos blockPos, BlockState state) {
-        if (state.isOf(Blocks.PUMPKIN)) {
-            ModEntities.PUMPKIN_CRITTER.spawn(world, blockPos, SpawnReason.NATURAL);
-        } else if (state.isOf(Blocks.MELON)) {
-            ModEntities.MELON_CRITTER.spawn(world, blockPos, SpawnReason.NATURAL);
-        } else if (state.isOf(Blocks.COCOA) && state.get(CocoaBlock.AGE, 0) >= 2) {
-            ModEntities.COCOA_CRITTER.spawn(world, blockPos, SpawnReason.NATURAL);
-        } else if (state.getBlock() instanceof PlantBlock) {
-            if (state.isOf(Blocks.PITCHER_PLANT) || (state.isOf(Blocks.PITCHER_CROP) && state.get(PitcherCropBlock.AGE, 0) >= 4)) {
-                if (state.get(PitcherCropBlock.HALF, DoubleBlockHalf.LOWER) == DoubleBlockHalf.UPPER) blockPos = blockPos.down();
-                ModEntities.PITCHER_CRITTER.spawn(world, blockPos, SpawnReason.NATURAL);
-            } else if (state.isOf(Blocks.TORCHFLOWER)) {
-                ModEntities.TORCHFLOWER_CRITTER.spawn(world, blockPos, SpawnReason.NATURAL);
-            } else if (state.isOf(Blocks.NETHER_WART)) {
-                for (int i = 0; i <= world.random.nextInt(3); i++) {
-                    ModEntities.NETHER_WART_CRITTER.spawn(world, blockPos, SpawnReason.NATURAL);
-                }
-            } else if (state.getBlock() instanceof CropBlock cropBlock && cropBlock.isMature(state)) {
-                if (state.isOf(Blocks.WHEAT)) {
-                    ModEntities.WHEAT_CRITTER.spawn(world, blockPos, SpawnReason.NATURAL);
-                } else if (state.isOf(Blocks.CARROTS)) {
-                    ModEntities.CARROT_CRITTER.spawn(world, blockPos, SpawnReason.NATURAL);
-                } else if (state.isOf(Blocks.POTATOES)) {
-                    if (world.random.nextInt(100) + 1 < world.getDifficulty().getId() * 2) {
-                        ModEntities.POISONOUS_POTATO_CRITTER.spawn(world, blockPos, SpawnReason.NATURAL);
-                    } else {
-                        ModEntities.POTATO_CRITTER.spawn(world, blockPos, SpawnReason.NATURAL);
-                    }
-                } else if (state.isOf(Blocks.BEETROOTS)) {
-                    ModEntities.BEETROOT_CRITTER.spawn(world, blockPos, SpawnReason.NATURAL);
-                } else {
-                    return false;
-                }
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
-        return true;
-    }
-
     private Optional<AbstractCropCritterEntity> spawnCritter(ServerWorld world, BlockPos blockPos, BlockState state) {
         AbstractCropCritterEntity output = null;
         if (state.isOf(Blocks.PUMPKIN)) {

@@ -57,10 +57,10 @@ public class TorchflowerCritterEntity extends AbstractCropCritterEntity {
         this.goalSelector.add(0, new SwimGoal(this));
         this.goalSelector.add(1, new SitGoal(this));
         this.goalSelector.add(2, temptGoal);
-        this.goalSelector.add(6, new FollowOwnerGoal(this, 1.0F, 10.0F, 5.0F));
-        this.goalSelector.add(4, new FleeEntityGoal<>(this, AnimalEntity.class, 10.0F, 1.6, 1.4, (entity) -> FARM_ANIMALS_FILTER.test(entity) && !this.isTrusting()));
-        this.goalSelector.add(6, new FleeEntityGoal<>(this, PlayerEntity.class, 10.0F, 1.6, 1.4, (entity) -> NOTICEABLE_PLAYER_FILTER.test(entity) && !this.isTrusting()));
-        this.goalSelector.add(12, new WanderAroundGoal(this, 0.8));
+        this.goalSelector.add(6, new FollowOwnerGoal(this, (double)2.0F, 6.0F, 2.0F));
+        this.goalSelector.add(8, new FleeEntityGoal<>(this, AnimalEntity.class, 10.0F, 1.6, 1.4, (entity) -> FARM_ANIMALS_FILTER.test(entity) && !this.isTrusting()));
+        this.goalSelector.add(8, new FleeEntityGoal<>(this, PlayerEntity.class, 10.0F, 1.6, 1.4, (entity) -> NOTICEABLE_PLAYER_FILTER.test(entity) && !this.isTrusting()));
+        this.goalSelector.add(12, new WanderAroundFarGoal(this, (double)1.0F));
         this.goalSelector.add(20, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
         this.goalSelector.add(20, new LookAroundGoal(this));
     }
@@ -78,6 +78,7 @@ public class TorchflowerCritterEntity extends AbstractCropCritterEntity {
     @Override
     public ActionResult interactMob(PlayerEntity player, Hand hand) {
         ActionResult actionResult = super.interactMob(player, hand);
+        CropCritters.LOGGER.info(this.getOwner() == null ? "null" : "present");
         if (!actionResult.isAccepted() && this.isTrusting() && this.isOwner(player)) {
             this.setSitting(!this.isSitting());
             return ActionResult.SUCCESS;
@@ -90,4 +91,6 @@ public class TorchflowerCritterEntity extends AbstractCropCritterEntity {
         super.tryTame(player);
         if (this.isTamed()) this.setSitting(true);
     }
+
+
 }

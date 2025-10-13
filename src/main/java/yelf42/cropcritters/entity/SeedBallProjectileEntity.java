@@ -62,7 +62,6 @@ public class SeedBallProjectileEntity extends ThrownItemEntity {
 
     @Override
     protected void onEntityHit(EntityHitResult entityHitResult) {
-        super.onEntityHit(entityHitResult);
         Entity entity = entityHitResult.getEntity();
         if (entity instanceof PlayerEntity player) {
             player.addStatusEffect((new StatusEffectInstance(StatusEffects.BLINDNESS, 20 * 8, 0)));
@@ -75,21 +74,25 @@ public class SeedBallProjectileEntity extends ThrownItemEntity {
 
     @Override
     protected void onBlockCollision(BlockState state) {
-        if (!state.isSolid() || !state.isIn(BlockTags.DIRT)) return;
         World world = this.getWorld();
-        Iterable<BlockPos> iterable = BlockPos.iterateOutwards(this.getBlockPos(), 2, 3, 2);
-        for(BlockPos blockPos : iterable) {
-            BlockState blockState = world.getBlockState(blockPos);
-            blockState = Registries.BLOCK
-                    .getRandomEntry(CropCritters.SEED_BALL_CROPS, world.random)
-                    .map(blockEntry -> (blockEntry.value()).getDefaultState())
-                    .orElse(blockState);
-            if ((world.random.nextInt(2) == 0 || blockPos == this.getBlockPos()) && blockState.canPlaceAt(world, blockPos) && world.getBlockState(blockPos).isAir()) {
-                world.setBlockState(blockPos, blockState);
-            }
-        }
-            super.onBlockCollision(state);
         if (!world.isClient) {
+            CropCritters.LOGGER.info(state.getBlock().toString());
+            if (!state.isSolid()) return;
+            if (!state.isIn(BlockTags.DIRT)) {
+                this.discard();
+                return;
+            }
+            Iterable<BlockPos> iterable = BlockPos.iterateOutwards(this.getBlockPos(), 2, 3, 2);
+            for(BlockPos blockPos : iterable) {
+                BlockState blockState = world.getBlockState(blockPos);
+                blockState = Registries.BLOCK
+                        .getRandomEntry(CropCritters.SEED_BALL_CROPS, world.random)
+                        .map(blockEntry -> (blockEntry.value()).getDefaultState())
+                        .orElse(blockState);
+                if ((world.random.nextInt(2) == 0 || blockPos == this.getBlockPos()) && blockState.canPlaceAt(world, blockPos) && world.getBlockState(blockPos).isAir()) {
+                    world.setBlockState(blockPos, blockState);
+                }
+            }
             world.sendEntityStatus(this, (byte)3);
             this.discard();
         }

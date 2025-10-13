@@ -12,7 +12,6 @@ import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.damage.DamageSources;
 import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
@@ -25,7 +24,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.predicate.entity.EntityPredicates;
-import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
@@ -38,7 +36,6 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -111,13 +108,14 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
         this.targetPos = null;
     }
 
+
     @Override
     public @Nullable PassiveEntity createChild(ServerWorld world, PassiveEntity entity) {return null;}
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
         controllerRegistrar.add(
-                new AnimationController<>("Sit", test -> this.isSitting() ? (test.setAndContinue(SIT)) : PlayState.STOP),
+                new AnimationController<>("Sit", test -> ((this.dataTracker.get(TAMEABLE_FLAGS) & 0x01) != 0) ? (test.setAndContinue(SIT)) : PlayState.STOP),
                 DefaultAnimations.genericWalkIdleController()
         );
     }
@@ -277,7 +275,7 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
     }
 
     protected void tryTame(PlayerEntity player) {
-        if (this.random.nextInt(3) == 0) {
+        if (this.random.nextInt(2) == 0) {
             this.setTrusting(true);
             this.setTamedBy(player);
             this.getWorld().sendEntityStatus(this, (byte)7);
@@ -371,7 +369,7 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
         }
 
         protected void moveToNextTarget() {
-            AbstractCropCritterEntity.this.navigation.startMovingAlong(AbstractCropCritterEntity.this.navigation.findPathTo(this.nextTarget.getX(), this.nextTarget.getY(), this.nextTarget.getZ(), 0), 1.2F);
+            AbstractCropCritterEntity.this.navigation.startMovingAlong(AbstractCropCritterEntity.this.navigation.findPathTo(this.nextTarget.getX(), this.nextTarget.getY(), this.nextTarget.getZ(), 0), 1F);
         }
 
         void cancel() {

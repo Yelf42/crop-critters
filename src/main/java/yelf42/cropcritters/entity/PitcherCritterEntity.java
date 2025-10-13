@@ -44,7 +44,6 @@ public class PitcherCritterEntity extends AbstractCropCritterEntity {
                 || (entity.getBoundingBox().getLengthY() >= this.getBoundingBox().getLengthY())
                 || entity.isInvulnerable()
                 || entity.hasCustomName()
-                || entity instanceof PoisonousPotatoCritterEntity
                 || entity instanceof PufferfishEntity)
             return false;
         if (this.isTrusting()) {

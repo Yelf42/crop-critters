@@ -141,32 +141,28 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
 
     class PumpkinTargetWorkGoal extends AbstractCropCritterEntity.TargetWorkGoal {
         @Override
+        public void start() {
+            super.start();
+            this.nextTarget = Vec3d.ofBottomCenter(PumpkinCritterEntity.this.targetPos).add(0.0F, getTargetOffset(), 0.0F);
+        }
+
+        @Override
         public void tick() {
             if (PumpkinCritterEntity.this.targetPos != null) {
                 ++this.ticks;
                 if (this.ticks > 600 || !(isAttractive(PumpkinCritterEntity.this.targetPos))) {
                     PumpkinCritterEntity.this.clearTargetPos();
                 } else {
-                    Vec3d vec3d = Vec3d.ofBottomCenter(PumpkinCritterEntity.this.targetPos).add(0.0F, getTargetOffset(), 0.0F);
-                    if (vec3d.squaredDistanceTo(PumpkinCritterEntity.this.getPos()) > (double)10.0F) {
-                        this.nextTarget = vec3d;
+                    if (this.nextTarget.squaredDistanceTo(PumpkinCritterEntity.this.getPos()) > (double)16.0F) {
                         this.moveToNextTarget();
                     } else {
-                        if (this.nextTarget == null) {
-                            this.nextTarget = vec3d;
-                        }
-                        PumpkinCritterEntity.this.setBodyYaw((float)MathHelper.lerpAngleDegrees(0.2, PumpkinCritterEntity.this.getBodyYaw(), targetYaw(vec3d)));
-                        boolean bl = PumpkinCritterEntity.this.getPos().distanceTo(this.nextTarget) <= 5.0;
-                        boolean bl2 = PumpkinCritterEntity.this.getPos().distanceTo(this.nextTarget) < 1.5 || MathHelper.abs(MathHelper.wrapDegrees(PumpkinCritterEntity.this.getBodyYaw() - targetYaw(vec3d))) < 5F;
-                        if (!bl && this.ticks > 600) {
-                            PumpkinCritterEntity.this.clearTargetPos();
-                        } else if (bl && bl2) {
-                            PumpkinCritterEntity.this.setBodyYaw((float)MathHelper.lerpAngleDegrees(0.8, PumpkinCritterEntity.this.getBodyYaw(), targetYaw(vec3d)));
+                        PumpkinCritterEntity.this.navigation.stop();
+                        PumpkinCritterEntity.this.setBodyYaw((float)MathHelper.lerpAngleDegrees(0.3, PumpkinCritterEntity.this.getBodyYaw(), targetYaw(this.nextTarget)));
+                        boolean bl2 = MathHelper.abs(MathHelper.wrapDegrees(PumpkinCritterEntity.this.getBodyYaw() - targetYaw(this.nextTarget))) < 5F;
+                        if (bl2) {
+                            PumpkinCritterEntity.this.getLookControl().lookAt(this.nextTarget);
                             PumpkinCritterEntity.this.completeTargetGoal();
                             PumpkinCritterEntity.this.clearTargetPos();
-                        } else {
-                            // TODO manual movement can cause critter to walk into danger
-                            PumpkinCritterEntity.this.getMoveControl().moveTo(this.nextTarget.getX(), this.nextTarget.getY(), this.nextTarget.getZ(), 1.2F);
                         }
                     }
                 }
@@ -189,7 +185,7 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
                     long2LongOpenHashMap.put(blockPos.asLong(), l);
                 } else if (isAttractive(blockPos)) {
                     Path path = PumpkinCritterEntity.this.navigation.findPathTo(blockPos, 0);
-                    if (path != null && path.reachesTarget()) {
+                    if (path != null && path.reachesTarget() && !blockPos.isWithinDistance(PumpkinCritterEntity.this.getPos(), 3)) {
                         return Optional.of(blockPos);
                     }
 

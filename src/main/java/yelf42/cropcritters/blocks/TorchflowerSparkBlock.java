@@ -39,4 +39,20 @@ public class TorchflowerSparkBlock extends AirBlock {
             world.addParticleClient(ParticleTypes.SOUL_FIRE_FLAME, p.x, p.y, p.z, 0F, 0F, 0F);
         }
     }
+
+    @Override
+    protected boolean hasRandomTicks(BlockState state) {
+        return true;
+    }
+
+    @Override
+    protected void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
+        world.scheduleBlockTick(pos, ModBlocks.TORCHFLOWER_SPARK, 1, TickPriority.EXTREMELY_LOW);
+    }
+
+    @Override
+    protected void onBlockAdded(BlockState state, World world, BlockPos pos, BlockState oldState, boolean notify) {
+        world.scheduleBlockTick(pos, ModBlocks.TORCHFLOWER_SPARK, 200, TickPriority.EXTREMELY_LOW);
+        super.onBlockAdded(state, world, pos, oldState, notify);
+    }
 }

@@ -178,6 +178,7 @@ public class ModBlocks {
                     .replaceable()
                     .noCollision()
                     .dropsNothing()
+                    .ticksRandomly()
                     .air(),
             true
     );
