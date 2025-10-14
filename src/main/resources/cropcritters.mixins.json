@@ -5,6 +5,7 @@
   "mixins": [
     "AttachedStemBlockMixin",
     "CropBlockMixin",
+    "LandPathNodeMakerMixin",
     "LightningEntityMixin",
     "NetherWartBlockMixin",
     "PitcherCropBlockMixin",
