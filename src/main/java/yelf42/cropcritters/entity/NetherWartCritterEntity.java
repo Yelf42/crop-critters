@@ -38,7 +38,9 @@ public class NetherWartCritterEntity extends AbstractCropCritterEntity {
     private static final TrackedData<Integer> LIFESPAN = DataTracker.registerData(NetherWartCritterEntity.class, TrackedDataHandlerRegistry.INTEGER);
 
     private static final ExplosionBehavior BURST = new ExplosionBehavior() {
-        public boolean canDestroyBlock(Explosion explosion, BlockView world, BlockPos pos, BlockState state, float power) {return state.isOf(ModBlocks.WITHERING_SPITEWEED);}
+        public boolean canDestroyBlock(Explosion explosion, BlockView world, BlockPos pos, BlockState state, float power) {
+            return state.isOf(ModBlocks.WITHERING_SPITEWEED) || state.isOf(Blocks.WITHER_ROSE);
+        }
         public boolean shouldDamage(Explosion explosion, Entity entity) {
             return false;
         }
