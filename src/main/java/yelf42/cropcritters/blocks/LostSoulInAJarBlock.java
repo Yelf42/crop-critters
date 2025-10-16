@@ -13,6 +13,7 @@ import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.World;
@@ -51,11 +52,23 @@ public class LostSoulInAJarBlock extends LanternBlock {
             double f = (double)pos.getZ() + random.nextDouble() * (double)10.0F - (double)5.0F;
             world.addParticleClient(ParticleTypes.GLOW, d, world.getTopY(Heightmap.Type.WORLD_SURFACE, (int)d, (int)f), f, (double)0.0F, (double)1.0F, (double)0.0F);
         }
-
     }
 
     public void ring(World world, BlockPos pos, Random random) {
         world.playSound(null, pos, SoundEvents.BLOCK_NOTE_BLOCK_CHIME.value(), SoundCategory.BLOCKS, 2.0f, 1.0f + 0.5f * (float)random.nextInt(7));
+
+        world.addSyncedBlockEvent(pos, this, 0, random.nextInt(360));
+    }
+
+    @Override
+    protected boolean onSyncedBlockEvent(BlockState state, World world, BlockPos pos, int type, int data) {
+        Vec3d cPos = pos.toCenterPos();
+        double angle = Math.toRadians((double)data);
+        double planeOffset = 0.8f;
+        double heightOffset = ((double)data / 360F) - 1.f;
+        world.addParticleClient(ParticleTypes.NOTE, cPos.getX() + Math.cos(angle) * planeOffset, cPos.getY() + heightOffset, cPos.getZ() + Math.sin(angle) * planeOffset, 0.73f, 0.0F, 0.0F);
+
+        return true;
     }
 
     @Override
