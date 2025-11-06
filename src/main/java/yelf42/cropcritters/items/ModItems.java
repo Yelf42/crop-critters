@@ -1,17 +1,37 @@
 package yelf42.cropcritters.items;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.fabricmc.fabric.api.item.v1.ComponentTooltipAppenderRegistry;
 import net.fabricmc.fabric.api.itemgroup.v1.*;
 import net.fabricmc.fabric.api.registry.*;
+import net.minecraft.block.Blocks;
+import net.minecraft.component.ComponentType;
+import net.minecraft.component.ComponentsAccess;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.*;
+import net.minecraft.item.tooltip.TooltipAppender;
+import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.codec.PacketCodecs;
+import net.minecraft.recipe.RecipeSerializer;
+import net.minecraft.recipe.SpecialCraftingRecipe;
 import net.minecraft.registry.*;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextCodecs;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.entity.ModEntities;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class ModItems {
@@ -68,6 +88,7 @@ public class ModItems {
         FuelRegistryEvents.BUILD.register((builder, context) -> {
             builder.add(ModItems.LOST_SOUL, 80 * 20);
         });
+
     }
     public static Item register(String name, Function<Item.Settings, Item> itemFactory, Item.Settings settings) {
         // Create the item key.
@@ -95,10 +116,11 @@ public class ModItems {
     // 4. Add models.items item.json
     public static final Item STRANGE_FERTILIZER = register("strange_fertilizer", StrangeFertilizerItem::new, new Item.Settings().rarity(Rarity.UNCOMMON));
     public static final Item LOST_SOUL = register("lost_soul", LostSoulItem::new, new Item.Settings().rarity(Rarity.UNCOMMON));
-    public static final Item SEED_BALL = register("seed_ball", SeedBallItem::new, new Item.Settings().maxCount(16));
+
+    public static final Item SEED_BALL = register("seed_ball", SeedBallItem::new, new Item.Settings().maxCount(16).component(ModComponents.POISONOUS_SEED_BALL, new ModComponents.PoisonousComponent(0)));
 
 
-
+    // Spawn eggs
     public static Item registerSpawnEgg(String name, EntityType<? extends MobEntity> entityType) {
         // Create the item key.
         RegistryKey<Item> itemKey = RegistryKey.of(RegistryKeys.ITEM, Identifier.of(CropCritters.MOD_ID, name));
@@ -120,7 +142,7 @@ public class ModItems {
     public static final Item PITCHER_CRITTER_SPAWN_EGG = registerSpawnEgg("pitcher_critter_spawn_egg", ModEntities.PITCHER_CRITTER);
     public static final Item COCOA_CRITTER_SPAWN_EGG = registerSpawnEgg("cocoa_critter_spawn_egg", ModEntities.COCOA_CRITTER);
 
-
-
+    // Custom recipe types
+    public static final RecipeSerializer<SeedBallRecipe> SEED_BALL_RECIPE = Registry.register(Registries.RECIPE_SERIALIZER, Identifier.of(CropCritters.MOD_ID, "crafting_special_seed_ball"), new SpecialCraftingRecipe.SpecialRecipeSerializer<>(SeedBallRecipe::new));
 
 }

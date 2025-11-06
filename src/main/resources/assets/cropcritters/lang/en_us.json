@@ -1,8 +1,13 @@
 {
   "itemGroup.cropcritters": "Crop Critters",
+
   "item.cropcritters.strange_fertilizer": "Strange Fertilizer",
   "item.cropcritters.lost_soul": "Lost Soul",
+
+  "tag.item.cropcritters.seed_ball_crops": "Seed Ball Crops",
   "item.cropcritters.seed_ball": "Seed Ball",
+  "item.cropcritters.tooltip.poisonous_seed_ball" : "Poisonous",
+
   "block.cropcritters.soul_farmland": "Soul Farmland",
   "item.cropcritters.soul_farmland": "Soul Farmland",
   "block.cropcritters.crawl_thistle": "Crawl Thistle",

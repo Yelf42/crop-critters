@@ -10,6 +10,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.DispenserBlock;
 import net.minecraft.block.dispenser.FallibleItemDispenserBehavior;
 import net.minecraft.entity.EntityType;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
@@ -33,6 +34,7 @@ import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.config.ConfigManager;
 import yelf42.cropcritters.entity.ModEntities;
 import yelf42.cropcritters.events.ModEvents;
+import yelf42.cropcritters.items.ModComponents;
 import yelf42.cropcritters.items.ModItems;
 import yelf42.cropcritters.items.StrangeFertilizerItem;
 import yelf42.cropcritters.particle.ModParticles;
@@ -49,14 +51,16 @@ public class CropCritters implements ModInitializer {
 	public static final TagKey<EntityType<?>> CROP_CRITTERS = TagKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of("cropcritters", "crop_critters"));
 	public static final TagKey<EntityType<?>> SCARE_CRITTERS = TagKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of("cropcritters", "scare_critters"));
 	public static final TagKey<EntityType<?>> HAS_LOST_SOUL = TagKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of("cropcritters", "has_lost_soul"));
-	public static final TagKey<Block> UNDERWATER_STRANGE_FERTILIZERS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "underwater_strange_fertilizers"));
+
+    public static final TagKey<Block> UNDERWATER_STRANGE_FERTILIZERS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "underwater_strange_fertilizers"));
 	public static final TagKey<Block> ON_LAND_COMMON_STRANGE_FERTILIZERS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "on_land_common_strange_fertilizers"));
 	public static final TagKey<Block> ON_LAND_RARE_STRANGE_FERTILIZERS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "on_land_rare_strange_fertilizers"));
 	public static final TagKey<Block> ON_NYLIUM_STRANGE_FERTILIZERS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "on_nylium_strange_fertilizers"));
 	public static final TagKey<Block> IGNORE_STRANGE_FERTILIZERS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "ignore_strange_fertilizers"));
 	public static final TagKey<Block> WEEDS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "weeds"));
-	public static final TagKey<Block> SEED_BALL_CROPS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "seed_ball_crops"));
 	public static final TagKey<Block> CAN_GROW_WEEDS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "can_grow_weeds"));
+
+    public static final TagKey<Item> SEED_BALL_CROPS = TagKey.of(RegistryKeys.ITEM, Identifier.of("cropcritters", "seed_ball_crops"));
 
 
 	@Override
@@ -69,6 +73,7 @@ public class CropCritters implements ModInitializer {
 		ModEntities.initialize();
 		ModItems.initialize();
 		ModBlocks.initialize();
+        ModComponents.initialize();
 		ModBlockEntities.initialize();
 		ModEvents.initialize();
 		ModParticles.initialize();
