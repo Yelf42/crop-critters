@@ -24,8 +24,6 @@ public class CropCrittersClient implements ClientModInitializer {
 		// To make some parts of the block transparent (like glass, saplings and doors):
 		BlockRenderLayerMap.putBlock(ModBlocks.LOST_SOUL_IN_A_JAR, BlockRenderLayer.TRANSLUCENT);
 		BlockRenderLayerMap.putBlock(ModBlocks.CRAWL_THISTLE, BlockRenderLayer.CUTOUT);
-		BlockRenderLayerMap.putBlock(ModBlocks.MAZEWOOD_SAPLING, BlockRenderLayer.CUTOUT);
-		BlockRenderLayerMap.putBlock(ModBlocks.MAZEWOOD, BlockRenderLayer.CUTOUT);
 		BlockRenderLayerMap.putBlock(ModBlocks.CRIMSON_THORNWEED, BlockRenderLayer.CUTOUT);
 		BlockRenderLayerMap.putBlock(ModBlocks.WAFTGRASS, BlockRenderLayer.CUTOUT);
 		BlockRenderLayerMap.putBlock(ModBlocks.WITHERING_SPITEWEED, BlockRenderLayer.CUTOUT);
@@ -41,6 +39,19 @@ public class CropCrittersClient implements ClientModInitializer {
 						? BiomeColors.getGrassColor(world, pos)
 						: 0x91BD59, ModBlocks.ORNAMENTAL_BUSH
 		);
+        BlockRenderLayerMap.putBlock(ModBlocks.MAZEWOOD, BlockRenderLayer.CUTOUT);
+        ColorProviderRegistry.BLOCK.register((state, world, pos, tintIndex) ->
+                world != null && pos != null
+                        ? BiomeColors.getGrassColor(world, pos)
+                        : 0x91BD59, ModBlocks.MAZEWOOD
+        );
+        BlockRenderLayerMap.putBlock(ModBlocks.MAZEWOOD_SAPLING, BlockRenderLayer.CUTOUT);
+        ColorProviderRegistry.BLOCK.register((state, world, pos, tintIndex) ->
+                world != null && pos != null
+                        ? BiomeColors.getGrassColor(world, pos)
+                        : 0x91BD59, ModBlocks.MAZEWOOD_SAPLING
+        );
+
 
 		// Entities
 		EntityRendererRegistry.register(ModEntities.WHEAT_CRITTER, context -> new AbstractCritterRenderer<>(context, Identifier.of(CropCritters.MOD_ID, "wheat_critter"), true));
