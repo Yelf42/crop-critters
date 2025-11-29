@@ -10,45 +10,66 @@
 
   "block.cropcritters.soul_farmland": "Soul Farmland",
   "item.cropcritters.soul_farmland": "Soul Farmland",
+
   "block.cropcritters.crawl_thistle": "Crawl Thistle",
   "item.cropcritters.crawl_thistle": "Crawl Thistle",
+
   "block.cropcritters.mazewood_sapling": "Mazewood Sapling",
   "item.cropcritters.mazewood_sapling": "Mazewood Sapling",
+
   "block.cropcritters.mazewood": "Mazewood",
   "item.cropcritters.mazewood": "Mazewood",
+
   "block.cropcritters.crimson_thornweed": "Crimson Thornweed",
   "item.cropcritters.crimson_thornweed": "Crimson Thornweed",
+
   "block.cropcritters.withering_spiteweed": "Withering Spiteweed",
   "item.cropcritters.withering_spiteweed": "Withering Spiteweed",
+
   "block.cropcritters.waftgrass": "Waftgrass",
   "item.cropcritters.waftgrass": "Waftgrass",
+
   "block.cropcritters.tall_bush": "Tall Bush",
   "item.cropcritters.tall_bush": "Tall Bush",
+
   "block.cropcritters.ornamental_bush": "Ornamental Bush",
   "item.cropcritters.ornamental_bush": "Ornamental Bush",
+
   "block.cropcritters.lost_soul_in_a_jar": "Lost Soul in a Bottle",
   "item.cropcritters.lost_soul_in_a_jar": "Lost Soul in a Bottle",
+
   "block.cropcritters.torchflower_spark": "Torchflower Spark",
+
   "entity.cropcritters.wheat_critter": "Wheat Critter",
   "item.cropcritters.wheat_critter_spawn_egg": "Wheat Critter Spawn Egg",
+
   "entity.cropcritters.melon_critter": "Melon Critter",
   "item.cropcritters.melon_critter_spawn_egg": "Melon Critter Spawn Egg",
+
   "entity.cropcritters.pumpkin_critter": "Pumpkin Critter",
   "item.cropcritters.pumpkin_critter_spawn_egg": "Pumpkin Critter Spawn Egg",
+
   "entity.cropcritters.carrot_critter": "Carrot Critter",
   "item.cropcritters.carrot_critter_spawn_egg": "Carrot Critter Spawn Egg",
+
   "entity.cropcritters.potato_critter": "Potato Critter",
   "item.cropcritters.potato_critter_spawn_egg": "Potato Critter Spawn Egg",
+
   "entity.cropcritters.beetroot_critter": "Beetroot Critter",
   "item.cropcritters.beetroot_critter_spawn_egg": "Beetroot Critter Spawn Egg",
+
   "entity.cropcritters.nether_wart_critter": "Nether Wart Critter",
   "item.cropcritters.nether_wart_critter_spawn_egg": "Nether Wart Critter Spawn Egg",
+
   "entity.cropcritters.poisonous_potato_critter": "Poisonous Potato Critter",
   "item.cropcritters.poisonous_potato_critter_spawn_egg": "Poisonous Potato Critter Spawn Egg",
+
   "entity.cropcritters.torchflower_critter": "Torchflower Critter",
   "item.cropcritters.torchflower_critter_spawn_egg": "Torchflower Critter Spawn Egg",
+
   "entity.cropcritters.pitcher_critter": "Pitcher Critter",
   "item.cropcritters.pitcher_critter_spawn_egg": "Pitcher Critter Spawn Egg",
+
   "entity.cropcritters.cocoa_critter": "Cocoa Critter",
   "item.cropcritters.cocoa_critter_spawn_egg": "Cocoa Critter Spawn Egg"
 }

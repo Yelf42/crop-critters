@@ -24,6 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.config.ConfigManager;
+import yelf42.cropcritters.config.CropCrittersConfig;
 import yelf42.cropcritters.entity.ModEntities;
 
 import static net.minecraft.block.Block.pushEntitiesUpBeforeBlockChange;
@@ -37,7 +38,7 @@ public abstract class CropBlockMixin {
         if (floor.isIn(BlockTags.DIRT)) cir.setReturnValue(true);
     }
 
-    // If SOUL_FARMLAND, ignore vanilla moisture stuff and just return 8.f
+    // If SOUL_FARMLAND, ignore vanilla moisture stuff and just return 18.f
     @Inject(method = "getAvailableMoisture", at = @At("HEAD"), cancellable = true)
     private static void soulBasedMoisture(Block block, BlockView world, BlockPos pos, CallbackInfoReturnable<Float> cir) {
         BlockState blockState = world.getBlockState(pos.down());
@@ -60,10 +61,12 @@ public abstract class CropBlockMixin {
             if (cropBlock.getAge(state) + 1 != cropBlock.getMaxAge()) return;
             BlockState soilCheck = world.getBlockState(pos.down());
             if (soilCheck.isOf(Blocks.FARMLAND)) {
+                // Farmland to dirt
                 pushEntitiesUpBeforeBlockChange(Blocks.FARMLAND.getDefaultState(), Blocks.DIRT.getDefaultState(), world, pos.down());
                 BlockState toDirt = (random.nextInt(4) == 0) ? Blocks.DIRT.getDefaultState() : (random.nextInt(2) == 0) ? Blocks.ROOTED_DIRT.getDefaultState() : Blocks.COARSE_DIRT.getDefaultState();
                 world.setBlockState(pos.down(), toDirt, Block.NOTIFY_LISTENERS);
             } else if (soilCheck.isOf(ModBlocks.SOUL_FARMLAND)){
+                // Soul farmland to soul blocks
                 pushEntitiesUpBeforeBlockChange(Blocks.FARMLAND.getDefaultState(), Blocks.SOUL_SOIL.getDefaultState(), world, pos.down());
                 BlockState toDirt = (random.nextInt(2) == 0) ? Blocks.SOUL_SOIL.getDefaultState() : Blocks.SOUL_SAND.getDefaultState();
                 world.setBlockState(pos.down(), toDirt, Block.NOTIFY_LISTENERS);
@@ -76,20 +79,24 @@ public abstract class CropBlockMixin {
     }
 
     // Try spawn critter if soul_sand_valley
-    // Try to generate weed if on correct blocks
+    // Try to generate weed if on farmland (scale chance with age)
     // Stop ticking / aging if not on farmland
     @Inject(method = "randomTick", at = @At("HEAD"), cancellable = true)
     private static void stopGrowthOnDirtAndSpawnSoulSandValleyCritters(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
         BlockState soilCheck = world.getBlockState(pos.down());
-        if (state.getBlock() instanceof CropBlock cropBlock && cropBlock.isMature(state)) {
-            if (world.getBiome(pos).matchesKey(BiomeKeys.SOUL_SAND_VALLEY)) {
+        if (!(soilCheck.isOf(Blocks.FARMLAND) || soilCheck.isOf(ModBlocks.SOUL_FARMLAND))) {
+            ci.cancel();
+            return;
+        }
+
+        if (state.getBlock() instanceof CropBlock cropBlock) {
+            if (world.getBiome(pos).matchesKey(BiomeKeys.SOUL_SAND_VALLEY)  && cropBlock.isMature(state)) {
                 if (spawnCritter(world, state, random, pos)) return;
             }
-            if (soilCheck.isIn(CropCritters.CAN_GROW_WEEDS)) {
-                generateWeed(state, world, pos, random, (soilCheck.isOf(Blocks.SOUL_SOIL) || soilCheck.isOf(Blocks.SOUL_SAND) || soilCheck.isOf(ModBlocks.SOUL_FARMLAND)));
+            if (random.nextDouble() < 0.03 * ((double) cropBlock.getAge(state) / (cropBlock.getMaxAge() - 1))) {
+                generateWeed(state, world, pos, random, soilCheck.isOf(ModBlocks.SOUL_FARMLAND));
             }
         }
-        if (!(soilCheck.isOf(Blocks.FARMLAND) || soilCheck.isOf(ModBlocks.SOUL_FARMLAND))) ci.cancel();
     }
 
     @Unique
@@ -108,8 +115,11 @@ public abstract class CropBlockMixin {
             // Quadratic penalty increase for monocultural practices
             monoCount = (monoCount * monoCount) / 8F;
         }
-        boolean growOverworldWeed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.regularWeedChance * (monoCount + 1);
-        boolean growNetherWeed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.netherWeedChance * (monoCount + 1);
+        boolean growOverworldWeed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.regularWeedChance + (monoCount);
+        boolean growNetherWeed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.netherWeedChance + (monoCount);
+
+        // Break early, no weeds can grow
+        if (!growOverworldWeed && !growNetherWeed) return;
 
         // For determining sub weed types
         int weedTypeCheck = random.nextInt(100) + 1;

@@ -7,6 +7,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.ai.goal.*;
+import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.passive.TameableEntity;
@@ -19,6 +20,8 @@ import net.minecraft.loot.context.LootWorldContext;
 import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
@@ -26,6 +29,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
 import software.bernie.geckolib.animatable.processing.AnimationController;
 import software.bernie.geckolib.animation.PlayState;
@@ -43,6 +47,11 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
     private static final Predicate<ItemEntity> PICKABLE_DROP_FILTER = (item) -> !item.cannotPickup() && item.isAlive();
     public static final RawAnimation HOLD = RawAnimation.begin().thenPlayAndHold("holding");
     private static final Set<Item> DEFAULT_KNOWN_ITEMS = new HashSet<>();
+
+    private static final int MAX_HOPPER_DISTANCE = 32;
+
+    @Nullable
+    BlockPos hopperPos;
 
     static {
         DEFAULT_KNOWN_ITEMS.add(ModItems.STRANGE_FERTILIZER);
@@ -62,6 +71,19 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
         DEFAULT_KNOWN_ITEMS.add(Items.PITCHER_POD);
         DEFAULT_KNOWN_ITEMS.add(Items.NETHER_WART);
     }
+
+    @Override
+    protected void writeCustomData(WriteView view) {
+        super.writeCustomData(view);
+        view.putNullable("hopper_pos", BlockPos.CODEC, this.hopperPos);
+    }
+
+    @Override
+    protected void readCustomData(ReadView view) {
+        super.readCustomData(view);
+        this.hopperPos = (BlockPos)view.read("hopper_pos", BlockPos.CODEC).orElse(null);
+    }
+
 
     public CocoaCritterEntity(EntityType<? extends TameableEntity> entityType, World world) {
         super(entityType, world);
@@ -226,9 +248,14 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
 
     }
 
+    protected boolean validHopperPos() {
+        return this.hopperPos != null
+                && this.getWorld().getBlockState(this.hopperPos).isOf(Blocks.HOPPER)
+                && this.hopperPos.isWithinDistance(this.getPos(), MAX_HOPPER_DISTANCE);
+    }
+
     class DepositInHopperGoal extends Goal {
         protected Long2LongOpenHashMap unreachableTargetsPosCache = new Long2LongOpenHashMap();
-        protected BlockPos hopperPos;
         protected int ticks;
         protected Vec3d nextTarget;
 
@@ -238,7 +265,7 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
             if (validHopperPos()) return true;
             Optional<BlockPos> optional = this.getTargetBlock();
             if (optional.isPresent()) {
-                this.hopperPos = optional.get();
+                CocoaCritterEntity.this.hopperPos = optional.get();
                 return true;
             }
             return false;
@@ -257,10 +284,11 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
         @Override
         public void tick() {
             ++this.ticks;
-            if (this.ticks > 600 || !validHopperPos()) {
-                this.hopperPos = null;
+            if (this.ticks > 300 || !validHopperPos()) {
+                CocoaCritterEntity.this.hopperPos = null;
             } else {
-                Vec3d vec3d = Vec3d.ofBottomCenter(this.hopperPos).add(0.0F, 1, 0.0F);
+                // validHopperPos() checks for null, ignore warning
+                Vec3d vec3d = Vec3d.ofBottomCenter(CocoaCritterEntity.this.hopperPos).add(0.0F, 1, 0.0F);
                 if (vec3d.squaredDistanceTo(CocoaCritterEntity.this.getPos()) > (double)1.0F) {
                     this.nextTarget = vec3d;
                     this.moveToNextTarget();
@@ -270,13 +298,13 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
                     }
 
                     boolean bl = CocoaCritterEntity.this.getPos().distanceTo(this.nextTarget) <= 0.5;
-                    if (!bl && this.ticks > 600) {
-                        this.hopperPos = null;
+                    if (!bl && this.ticks > 300) {
+                        CocoaCritterEntity.this.hopperPos = null;
                     } else if (bl) {
                         ItemStack stack = CocoaCritterEntity.this.getEquippedStack(EquipmentSlot.MAINHAND);
                         CocoaCritterEntity.this.tryPutDown(stack, false);
                     } else {
-                        CocoaCritterEntity.this.getMoveControl().moveTo(this.nextTarget.getX(), this.nextTarget.getY(), this.nextTarget.getZ(), 1.2F);
+                        CocoaCritterEntity.this.getMoveControl().moveTo(this.nextTarget.getX(), this.nextTarget.getY(), this.nextTarget.getZ(), 0.8F);
                     }
                 }
             }
@@ -286,8 +314,9 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
             CocoaCritterEntity.this.navigation.startMovingAlong(CocoaCritterEntity.this.navigation.findPathTo(this.nextTarget.getX(), this.nextTarget.getY(), this.nextTarget.getZ(), 0), 1.2F);
         }
 
-        protected boolean validHopperPos() {
-            return (this.hopperPos != null) && (CocoaCritterEntity.this.getWorld().getBlockState(this.hopperPos).isOf(Blocks.HOPPER));
+        protected boolean checkHopper(BlockPos blockPos) {
+            return (CocoaCritterEntity.this.getWorld().getBlockState(blockPos).isOf(Blocks.HOPPER))
+                    && (CocoaCritterEntity.this.getWorld().getBlockState(blockPos.up()).canPathfindThrough(NavigationType.LAND));
         }
 
         protected Optional<BlockPos> getTargetBlock() {
@@ -298,7 +327,7 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
                 long l = this.unreachableTargetsPosCache.getOrDefault(blockPos.asLong(), Long.MIN_VALUE);
                 if (CocoaCritterEntity.this.getWorld().getTime() < l) {
                     long2LongOpenHashMap.put(blockPos.asLong(), l);
-                } else if (CocoaCritterEntity.this.getWorld().getBlockState(blockPos).isOf(Blocks.HOPPER)) {
+                } else if (checkHopper(blockPos)) {
                     Path path = CocoaCritterEntity.this.navigation.findPathTo(blockPos, 0);
                     if (path != null && path.reachesTarget()) {
                         return Optional.of(blockPos);

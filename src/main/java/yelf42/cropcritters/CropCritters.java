@@ -58,7 +58,6 @@ public class CropCritters implements ModInitializer {
 	public static final TagKey<Block> ON_NYLIUM_STRANGE_FERTILIZERS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "on_nylium_strange_fertilizers"));
 	public static final TagKey<Block> IGNORE_STRANGE_FERTILIZERS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "ignore_strange_fertilizers"));
 	public static final TagKey<Block> WEEDS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "weeds"));
-	public static final TagKey<Block> CAN_GROW_WEEDS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "can_grow_weeds"));
 
     public static final TagKey<Item> SEED_BALL_CROPS = TagKey.of(RegistryKeys.ITEM, Identifier.of("cropcritters", "seed_ball_crops"));
 
