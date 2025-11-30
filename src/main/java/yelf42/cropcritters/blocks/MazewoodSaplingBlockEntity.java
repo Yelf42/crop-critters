@@ -104,8 +104,7 @@ public class MazewoodSaplingBlockEntity extends BlockEntity {
     private boolean canPlantAt(BlockState checkState, BlockState checkBelowState) {
         return (checkBelowState.isIn(BlockTags.DIRT))
                 && (checkState.isAir()
-                || (!(checkState.getBlock() instanceof SpreadingWeedBlock)
-                    && !(checkState.getBlock() instanceof MazewoodSaplingBlock)
+                || (!(checkState.getBlock() instanceof MazewoodSaplingBlock)
                     && (checkState.getBlock() instanceof PlantBlock)));
     }
 
