@@ -7,11 +7,6 @@
 	"authors": [
 		"Yelf42"
 	],
-	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
-	},
-	"license": "MIT",
 	"icon": "assets/cropcritters/icon.png",
 	"environment": "*",
 	"entrypoints": {
