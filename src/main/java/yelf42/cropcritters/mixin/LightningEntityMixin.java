@@ -1,7 +1,6 @@
 package yelf42.cropcritters.mixin;
 
 import net.minecraft.block.*;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.LightningEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -14,9 +13,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import yelf42.cropcritters.CropCritters;
-import yelf42.cropcritters.blocks.MazewoodSaplingBlock;
 import yelf42.cropcritters.blocks.MazewoodSaplingBlockEntity;
 import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.events.WeedGrowNotifier;
@@ -33,9 +29,9 @@ public abstract class LightningEntityMixin {
     @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LightningEntity;spawnFire(I)V", shift = At.Shift.AFTER))
     public void tick(CallbackInfo ci) {
         LightningEntity self = (LightningEntity) (Object)this;
-        Vec3d pos = self.getPos();
+        Vec3d pos = self.getEntityPos();
         BlockPos blockPos = BlockPos.ofFloored(pos.x, pos.y - 1.0E-6, pos.z);
-        strikeCrops(self.getWorld(), blockPos, self.getRandom());
+        strikeCrops(self.getEntityWorld(), blockPos, self.getRandom());
     }
 
     @Unique

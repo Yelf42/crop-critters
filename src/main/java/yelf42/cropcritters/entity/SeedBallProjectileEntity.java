@@ -65,7 +65,7 @@ public class SeedBallProjectileEntity extends ThrownItemEntity {
         if (status == 3) {
             ParticleEffect particleEffect = this.getParticleParameters();
             for(int i = 0; i < 8; ++i) {
-                this.getWorld().addParticleClient(particleEffect, this.getX(), this.getY(), this.getZ(), 0.0D, 0.0D, 0.0D);
+                this.getEntityWorld().addParticleClient(particleEffect, this.getX(), this.getY(), this.getZ(), 0.0D, 0.0D, 0.0D);
             }
         }
     }
@@ -80,16 +80,16 @@ public class SeedBallProjectileEntity extends ThrownItemEntity {
             int p = this.getStack().getOrDefault(ModComponents.POISONOUS_SEED_BALL, new ModComponents.PoisonousComponent(0)).poisonStacks();
             livingEntity.addStatusEffect((new StatusEffectInstance(StatusEffects.POISON, 20 * 6 * p, 0)));
         }
-        if (!this.getWorld().isClient) {
-            this.getWorld().sendEntityStatus(this, (byte)3);
+        if (!this.getEntityWorld().isClient()) {
+            this.getEntityWorld().sendEntityStatus(this, (byte)3);
             this.discard();
         }
     }
 
     @Override
     protected void onBlockCollision(BlockState state) {
-        World world = this.getWorld();
-        if (!world.isClient) {
+        World world = this.getEntityWorld();
+        if (!world.isClient()) {
             if (!state.isSolid()) return;
             if (!state.isIn(BlockTags.DIRT)) {
                 this.discard();

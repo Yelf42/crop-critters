@@ -18,10 +18,12 @@ public class CrawlThistle extends SpreadingWeedBlock {
     public int getMaxNeighbours() { return 2; }
 
     @Override
-    protected void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler handler) {
+    protected void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler handler, boolean bl) {
         if (entity instanceof LivingEntity livingEntity) {
             Vec3d vec3d = new Vec3d(0.9, 0.9F, 0.9);
             livingEntity.slowMovement(state, vec3d);
         }
     }
+
+
 }

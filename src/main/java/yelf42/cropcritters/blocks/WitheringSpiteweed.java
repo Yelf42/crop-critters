@@ -56,7 +56,7 @@ public class WitheringSpiteweed extends SpreadingWeedBlock {
     }
 
     @Override
-    protected void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler handler) {
+    protected void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler handler, boolean bl) {
         if (world instanceof ServerWorld serverWorld
                 && entity instanceof LivingEntity livingEntity
                 && !(livingEntity.getType().isIn(CropCritters.CROP_CRITTERS))) {

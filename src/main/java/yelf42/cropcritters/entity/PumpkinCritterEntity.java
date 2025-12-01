@@ -91,7 +91,7 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
         if (this.targetPos == null) return;
         triggerAnim("plant_controller", "plant");
         Vec3d dir = this.getRotationVector();
-        World world = this.getWorld();
+        World world = this.getEntityWorld();
         if (world instanceof ServerWorld serverWorld) {
             ItemStack itemStack = new ItemStack(ModItems.SEED_BALL);
             ProjectileEntity.spawn(new SeedBallProjectileEntity(serverWorld, this, itemStack), serverWorld, itemStack, (entity) -> entity.setVelocity(dir.x, 1.8F, dir.z, 0.4F, 0.0F));
@@ -130,7 +130,7 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
         double e = target.getEyeY() - 0.4F;
         double f = target.getZ() - this.getZ();
         double g = Math.sqrt(d * d + f * f) * (double)0.2F;
-        World var12 = this.getWorld();
+        World var12 = this.getEntityWorld();
         if (var12 instanceof ServerWorld serverWorld) {
             ItemStack itemStack = new ItemStack(Items.PUMPKIN_SEEDS);
             ProjectileEntity.spawn(new SpitSeedProjectileEntity(serverWorld, this, itemStack), serverWorld, itemStack, (entity) -> entity.setVelocity(d, e + g - entity.getY(), f, 1.2F, 3.0F));
@@ -153,7 +153,7 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
                 if (this.ticks > 600 || !(isAttractive(PumpkinCritterEntity.this.targetPos))) {
                     PumpkinCritterEntity.this.clearTargetPos();
                 } else {
-                    if (this.nextTarget.squaredDistanceTo(PumpkinCritterEntity.this.getPos()) > (double)16.0F) {
+                    if (this.nextTarget.squaredDistanceTo(PumpkinCritterEntity.this.getEntityPos()) > (double)16.0F) {
                         this.moveToNextTarget();
                     } else {
                         PumpkinCritterEntity.this.navigation.stop();
@@ -170,7 +170,7 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
         }
 
         protected float targetYaw(Vec3d target) {
-            Vec3d d = target.subtract(PumpkinCritterEntity.this.getPos());
+            Vec3d d = target.subtract(PumpkinCritterEntity.this.getEntityPos());
             return (float)(MathHelper.atan2(d.z, d.x) * (180.0 / Math.PI)) - 90.0F;
         }
 
@@ -181,15 +181,15 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
 
             for(BlockPos blockPos : iterable) {
                 long l = this.unreachableTargetsPosCache.getOrDefault(blockPos.asLong(), Long.MIN_VALUE);
-                if (PumpkinCritterEntity.this.getWorld().getTime() < l) {
+                if (PumpkinCritterEntity.this.getEntityWorld().getTime() < l) {
                     long2LongOpenHashMap.put(blockPos.asLong(), l);
                 } else if (isAttractive(blockPos)) {
                     Path path = PumpkinCritterEntity.this.navigation.findPathTo(blockPos, 0);
-                    if (path != null && path.reachesTarget() && !blockPos.isWithinDistance(PumpkinCritterEntity.this.getPos(), 3)) {
+                    if (path != null && path.reachesTarget() && !blockPos.isWithinDistance(PumpkinCritterEntity.this.getEntityPos(), 3)) {
                         return Optional.of(blockPos);
                     }
 
-                    long2LongOpenHashMap.put(blockPos.asLong(), PumpkinCritterEntity.this.getWorld().getTime() + 600L);
+                    long2LongOpenHashMap.put(blockPos.asLong(), PumpkinCritterEntity.this.getEntityWorld().getTime() + 600L);
                 }
             }
 
@@ -207,7 +207,7 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
         @Override
         protected void findClosestTarget() {
             ServerWorld serverWorld = getServerWorld(this.mob);
-            this.targetEntity = serverWorld.getClosestEntity(this.mob.getWorld().getEntitiesByClass(this.targetClass, this.getSearchBox(this.getFollowRange()), (livingEntity) -> true), this.getAndUpdateTargetPredicate(), this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
+            this.targetEntity = serverWorld.getClosestEntity(this.mob.getEntityWorld().getEntitiesByClass(this.targetClass, this.getSearchBox(this.getFollowRange()), (livingEntity) -> true), this.getAndUpdateTargetPredicate(), this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
         }
 
         private TargetPredicate getAndUpdateTargetPredicate() {

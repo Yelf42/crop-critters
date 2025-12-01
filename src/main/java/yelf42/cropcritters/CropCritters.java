@@ -91,7 +91,7 @@ public class CropCritters implements ModInitializer {
 						&& !StrangeFertilizerItem.useOnFertilizable(stack, world, blockPos)
 						&& !StrangeFertilizerItem.useOnGround(stack, world, blockPos, blockPos, facing)) {
 					this.setSuccess(false);
-				} else if (!world.isClient) {
+				} else if (!world.isClient()) {
 					world.syncWorldEvent(1505, blockPos, 15);
 				}
 				return stack;

@@ -28,7 +28,7 @@ public class Waftgrass extends SpreadingWeedBlock {
     public int getMaxNeighbours() { return 3; }
 
     @Override
-    protected void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler handler) {
+    protected void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler handler, boolean bl) {
         // Apply damage, avoid critters and nether mobs
         if (world instanceof ServerWorld serverWorld
                 && entity instanceof LivingEntity livingEntity

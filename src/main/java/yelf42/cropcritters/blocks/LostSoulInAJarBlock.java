@@ -13,6 +13,7 @@ import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.Heightmap;
@@ -50,7 +51,7 @@ public class LostSoulInAJarBlock extends LanternBlock {
             double d = (double)pos.getX() + random.nextDouble() * (double)10.0F - (double)5.0F;
             double e = (double)pos.getY() - 3;
             double f = (double)pos.getZ() + random.nextDouble() * (double)10.0F - (double)5.0F;
-            world.addParticleClient(ParticleTypes.GLOW, d, world.getTopY(Heightmap.Type.WORLD_SURFACE, (int)d, (int)f), f, (double)0.0F, (double)1.0F, (double)0.0F);
+            world.addParticleClient(ParticleTypes.GLOW, d, world.getTopY(Heightmap.Type.WORLD_SURFACE, (int)d, (int)f), f, 0.0F, 1.0F, 0.0F);
         }
     }
 
@@ -77,7 +78,7 @@ public class LostSoulInAJarBlock extends LanternBlock {
     }
 
     @Override
-    protected int getComparatorOutput(BlockState state, World world, BlockPos pos) {
+    protected int getComparatorOutput(BlockState state, World world, BlockPos pos, Direction direction) {
         return (Boolean)world.getBlockState(pos).get(POWERED) ? 15 : 0;
     }
 

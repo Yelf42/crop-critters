@@ -31,7 +31,7 @@ public class LostSoulItem extends Item {
 
     @Override
     public ActionResult useOnBlock(ItemUsageContext context) {
-        if (context.getWorld().isClient) return ActionResult.PASS;
+        if (context.getWorld().isClient()) return ActionResult.PASS;
         ServerWorld world = (ServerWorld) context.getWorld();
         BlockPos blockPos = context.getBlockPos();
         BlockState state = world.getBlockState(blockPos);

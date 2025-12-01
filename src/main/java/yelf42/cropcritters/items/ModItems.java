@@ -1,37 +1,21 @@
 package yelf42.cropcritters.items;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.fabricmc.fabric.api.item.v1.ComponentTooltipAppenderRegistry;
 import net.fabricmc.fabric.api.itemgroup.v1.*;
 import net.fabricmc.fabric.api.registry.*;
-import net.minecraft.block.Blocks;
-import net.minecraft.component.ComponentType;
-import net.minecraft.component.ComponentsAccess;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.TypedEntityData;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.*;
-import net.minecraft.item.tooltip.TooltipAppender;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.SpecialCraftingRecipe;
 import net.minecraft.registry.*;
 import net.minecraft.text.Text;
-import net.minecraft.text.TextCodecs;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.entity.ModEntities;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class ModItems {
@@ -128,7 +112,7 @@ public class ModItems {
         // Register the item.
         return Registry.register(Registries.ITEM,
                 itemKey,
-                new SpawnEggItem(entityType, new Item.Settings().registryKey(itemKey)));
+                new SpawnEggItem(new Item.Settings().registryKey(itemKey).component(DataComponentTypes.ENTITY_DATA, TypedEntityData.create(entityType, new NbtCompound()))));
     }
     public static final Item WHEAT_CRITTER_SPAWN_EGG = registerSpawnEgg("wheat_critter_spawn_egg", ModEntities.WHEAT_CRITTER);
     public static final Item MELON_CRITTER_SPAWN_EGG = registerSpawnEgg("melon_critter_spawn_egg", ModEntities.MELON_CRITTER);

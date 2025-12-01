@@ -16,8 +16,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.particle.EntityEffectParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.particle.TintedParticleEffect;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
@@ -36,7 +36,7 @@ import static net.minecraft.block.Block.pushEntitiesUpBeforeBlockChange;
 
 public class PoisonousPotatoCritterEntity extends AbstractCropCritterEntity implements Monster {
 
-    private static final EntityEffectParticleEffect PARTICLE_EFFECT = EntityEffectParticleEffect.create(ParticleTypes.ENTITY_EFFECT, ColorHelper.withAlpha(1F, 8889187));
+    private static final TintedParticleEffect PARTICLE_EFFECT = TintedParticleEffect.create(ParticleTypes.ENTITY_EFFECT, ColorHelper.withAlpha(1F, 8889187));
 
     private static final Predicate<Entity> POISON_PREDICATE = (entity) -> {
         if (entity instanceof PlayerEntity playerEntity) return !playerEntity.isCreative();
@@ -93,8 +93,8 @@ public class PoisonousPotatoCritterEntity extends AbstractCropCritterEntity impl
 
     @Override
     public void completeTargetGoal() {
-        if (this.getWorld().isClient || this.targetPos == null) return;
-        BlockState target = this.getWorld().getBlockState(this.targetPos);
+        if (this.getEntityWorld().isClient() || this.targetPos == null) return;
+        BlockState target = this.getEntityWorld().getBlockState(this.targetPos);
         this.jump();
         this.destroyFarmland = 17;
         this.destroyFarmlandPos = this.targetPos.down();
@@ -109,7 +109,7 @@ public class PoisonousPotatoCritterEntity extends AbstractCropCritterEntity impl
 
     @Override
     protected void tryTame(PlayerEntity player) {
-        this.getWorld().sendEntityStatus(this, (byte)6);
+        this.getEntityWorld().sendEntityStatus(this, (byte)6);
     }
 
     @Override
@@ -120,36 +120,36 @@ public class PoisonousPotatoCritterEntity extends AbstractCropCritterEntity impl
     @Override
     public void tick() {
         super.tick();
-        if (!this.getWorld().isClient) {
+        if (!this.getEntityWorld().isClient()) {
             if (this.destroyFarmlandPos == null) this.destroyFarmland = 0;
             if (this.destroyFarmland > 0) {
                 if (this.destroyFarmland == 1 && this.getBlockPos().isWithinDistance(this.destroyFarmlandPos, 2)) {
-                    BlockState soil = this.getWorld().getBlockState(this.destroyFarmlandPos);
+                    BlockState soil = this.getEntityWorld().getBlockState(this.destroyFarmlandPos);
                     Block toDirt = soil.isOf(Blocks.FARMLAND) ? Blocks.DIRT : soil.isOf(ModBlocks.SOUL_FARMLAND) ? Blocks.SOUL_SAND : null;
                     if (toDirt != null) {
-                        this.getWorld().setBlockState(this.destroyFarmlandPos, toDirt.getDefaultState(), Block.NOTIFY_LISTENERS);
-                        pushEntitiesUpBeforeBlockChange(Blocks.FARMLAND.getDefaultState(), toDirt.getDefaultState(), this.getWorld(), this.destroyFarmlandPos);
+                        this.getEntityWorld().setBlockState(this.destroyFarmlandPos, toDirt.getDefaultState(), Block.NOTIFY_LISTENERS);
+                        pushEntitiesUpBeforeBlockChange(Blocks.FARMLAND.getDefaultState(), toDirt.getDefaultState(), this.getEntityWorld(), this.destroyFarmlandPos);
                     }
-                    BlockState crop = this.getWorld().getBlockState(this.destroyFarmlandPos.up());
-                    if (this.lastTargetMature) Block.dropStacks(crop, this.getWorld(), this.destroyFarmlandPos.up());
-                    this.getWorld().setBlockState(this.destroyFarmlandPos.up(), Blocks.AIR.getDefaultState(), Block.NOTIFY_LISTENERS);
+                    BlockState crop = this.getEntityWorld().getBlockState(this.destroyFarmlandPos.up());
+                    if (this.lastTargetMature) Block.dropStacks(crop, this.getEntityWorld(), this.destroyFarmlandPos.up());
+                    this.getEntityWorld().setBlockState(this.destroyFarmlandPos.up(), Blocks.AIR.getDefaultState(), Block.NOTIFY_LISTENERS);
                     this.destroyFarmlandPos = null;
                 }
                 this.destroyFarmland--;
             }
         } else {
-            if (this.getWorld().random.nextInt(10) != 0) return;
+            if (this.getEntityWorld().random.nextInt(10) != 0) return;
             double x = this.getX() + (this.random.nextDouble() - 0.5) * this.getWidth();
             double y = this.getY() + this.getHeight() * 0.5;
             double z = this.getZ() + (this.random.nextDouble() - 0.5) * this.getWidth();
-            this.getWorld().addParticleClient(PARTICLE_EFFECT, x, y, z, 0, 0, 0);
+            this.getEntityWorld().addParticleClient(PARTICLE_EFFECT, x, y, z, 0, 0, 0);
         }
     }
 
     @Override
     public void tickMovement() {
         super.tickMovement();
-        if (this.getWorld() instanceof ServerWorld serverWorld) {
+        if (this.getEntityWorld() instanceof ServerWorld serverWorld) {
             if (this.isAlive()) {
                 for(MobEntity mobEntity : serverWorld.getEntitiesByClass(MobEntity.class, this.getBoundingBox().expand(0.3), POISON_PREDICATE)) {
                     if (mobEntity.isAlive()) {

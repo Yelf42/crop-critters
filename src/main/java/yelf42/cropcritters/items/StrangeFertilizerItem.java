@@ -70,7 +70,7 @@ public class StrangeFertilizerItem extends BoneMealItem {
         // Use on the ground
         boolean bl = blockState.isSideSolidFullSquare(world, blockPos, context.getSide());
         if (bl && useOnGround(context.getStack(), world, blockPos, blockPos2, context.getSide())) {
-            if (!world.isClient) {
+            if (!world.isClient()) {
                 if (playerEntity != null) playerEntity.emitGameEvent(GameEvent.ITEM_INTERACT_FINISH);
                 world.syncWorldEvent(1505, blockPos2, 15);
             }
@@ -85,7 +85,7 @@ public class StrangeFertilizerItem extends BoneMealItem {
 
         // Use on fertilizable things
         if (useOnFertilizable(context.getStack(), world, blockPos)) {
-            if (!world.isClient) {
+            if (!world.isClient()) {
                 if (playerEntity != null) playerEntity.emitGameEvent(GameEvent.ITEM_INTERACT_FINISH);
                 world.syncWorldEvent(1505, blockPos, 15);
             }

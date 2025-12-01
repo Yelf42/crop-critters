@@ -33,8 +33,8 @@ public class WheatCritterEntity extends AbstractCropCritterEntity {
     public void completeTargetGoal() {
         if (this.targetPos == null) return;
         this.playSound(SoundEvents.ITEM_SHEARS_SNIP, 1.0F, 1.0F);
-        this.getWorld().syncWorldEvent(this, 2001, this.targetPos, Block.getRawIdFromState(this.getWorld().getBlockState(this.targetPos)));
-        this.getWorld().setBlockState(this.targetPos, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL_AND_REDRAW);
+        this.getEntityWorld().syncWorldEvent(this, 2001, this.targetPos, Block.getRawIdFromState(this.getEntityWorld().getBlockState(this.targetPos)));
+        this.getEntityWorld().setBlockState(this.targetPos, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL_AND_REDRAW);
     }
 
     @Override

@@ -22,11 +22,6 @@ public class SpitSeedProjectileEntity extends ThrownItemEntity {
         super(entityType, world);
     }
 
-    public SpitSeedProjectileEntity(double x, double y, double z, World world, ItemStack stack) {
-        super(ModEntities.SPIT_SEED_PROJECTILE, x, y, z, world, stack);
-        //this.spatItem = stack.getItem();
-    }
-
     public SpitSeedProjectileEntity(ServerWorld serverWorld, LivingEntity livingEntity, ItemStack itemStack) {
         super(ModEntities.SPIT_SEED_PROJECTILE, livingEntity, serverWorld, itemStack);
         //this.spatItem = itemStack.getItem();
@@ -40,12 +35,12 @@ public class SpitSeedProjectileEntity extends ThrownItemEntity {
     @Override
     public void tick() {
         super.tick();
-        this.getWorld().sendEntityStatus(this, (byte)4);
+        this.getEntityWorld().sendEntityStatus(this, (byte)4);
     }
 
     @Environment(EnvType.CLIENT)
     private ParticleEffect getParticleParameters() {
-        ItemStack itemStack = this.getStack();
+        //ItemStack itemStack = this.getStack();
         return ParticleTypes.SPLASH;
     }
 
@@ -54,11 +49,11 @@ public class SpitSeedProjectileEntity extends ThrownItemEntity {
         ParticleEffect particleEffect = this.getParticleParameters();
         if (status == 3) {
             for(int i = 0; i < 8; ++i) {
-                this.getWorld().addParticleClient(particleEffect, this.getX(), this.getY(), this.getZ(), 0.0D, 0.0D, 0.0D);
+                this.getEntityWorld().addParticleClient(particleEffect, this.getX(), this.getY(), this.getZ(), 0.0D, 0.0D, 0.0D);
             }
         }
         if (status == 4) {
-            this.getWorld().addParticleClient(particleEffect, this.getX(), this.getY(), this.getZ(), 0.0D, 0.0D, 0.0D);
+            this.getEntityWorld().addParticleClient(particleEffect, this.getX(), this.getY(), this.getZ(), 0.0D, 0.0D, 0.0D);
         }
     }
 
@@ -69,16 +64,16 @@ public class SpitSeedProjectileEntity extends ThrownItemEntity {
         super.onEntityHit(entityHitResult);
         Entity entity = entityHitResult.getEntity(); // sets a new Entity instance as the EntityHitResult (victim)
         entity.serverDamage(this.getDamageSources().thrown(this, this.getOwner()), 1F);
-        if (!this.getWorld().isClient) {
-            this.getWorld().sendEntityStatus(this, (byte)3);
+        if (!this.getEntityWorld().isClient()) {
+            this.getEntityWorld().sendEntityStatus(this, (byte)3);
             this.discard();
         }
     }
 
     @Override
     protected void onBlockCollision(BlockState state) {
-        World world = this.getWorld();
-        if (!world.isClient) {
+        World world = this.getEntityWorld();
+        if (!world.isClient()) {
             world.sendEntityStatus(this, (byte)3);
             this.discard();
         }
