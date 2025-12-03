@@ -112,7 +112,7 @@ public class ModItems {
         // Register the item.
         return Registry.register(Registries.ITEM,
                 itemKey,
-                new SpawnEggItem(new Item.Settings().registryKey(itemKey).component(DataComponentTypes.ENTITY_DATA, TypedEntityData.create(entityType, new NbtCompound()))));
+                new SpawnEggItem(new Item.Settings().registryKey(itemKey).spawnEgg(entityType)));
     }
     public static final Item WHEAT_CRITTER_SPAWN_EGG = registerSpawnEgg("wheat_critter_spawn_egg", ModEntities.WHEAT_CRITTER);
     public static final Item MELON_CRITTER_SPAWN_EGG = registerSpawnEgg("melon_critter_spawn_egg", ModEntities.MELON_CRITTER);
