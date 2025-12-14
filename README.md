@@ -1,5 +1,5 @@
 # TODO:
-- Make Mazewood lightning strike works on any crop surface (not just farmland)
+- Reintroduce weed pathfinding penalty, in a way that Critters can ignore
 - New weed types:
   - Tumbleweed
   - Firework-esque weed
