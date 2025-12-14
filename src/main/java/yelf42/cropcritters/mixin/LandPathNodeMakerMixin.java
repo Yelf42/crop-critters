@@ -17,7 +17,9 @@ public abstract class LandPathNodeMakerMixin {
     @Inject(method="getCommonNodeType", at=@At("HEAD"), cancellable = true)
     private static void injectWeedPenalties(BlockView world, BlockPos pos, CallbackInfoReturnable<PathNodeType> cir) {
         BlockState state = world.getBlockState(pos);
-        if (state.isIn(CropCritters.WEEDS)) cir.setReturnValue(PathNodeType.DAMAGE_OTHER);
+        // Breaks wheat critter, removing for now
+        // If necessary, enum addition in PathNodeType.class, then in AbstractCropCritterEntity call this.setPathfindingPenalty() in constructor;
+        //if (state.isIn(CropCritters.WEEDS)) cir.setReturnValue(PathNodeType.DAMAGE_OTHER);
     }
 
 }

@@ -2,6 +2,7 @@ package yelf42.cropcritters.mixin;
 
 import net.minecraft.block.*;
 import net.minecraft.entity.LightningEntity;
+import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -53,6 +54,8 @@ public abstract class LightningEntityMixin {
                 checkLocations.add(rPos.up());
                 pushEntitiesUpBeforeBlockChange(ModBlocks.SOUL_FARMLAND.getDefaultState(), Blocks.SOUL_SOIL.getDefaultState(), world, rPos);
                 world.setBlockState(rPos, Blocks.SOUL_SOIL.getDefaultState(), Block.NOTIFY_LISTENERS);
+            } else if (struckState.isIn(BlockTags.DIRT)) {
+                checkLocations.add(rPos.up());
             }
         }
 
