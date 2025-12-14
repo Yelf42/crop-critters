@@ -189,7 +189,7 @@ public class MelonCritterEntity extends AbstractCropCritterEntity implements Ran
                     ServerPlayNetworking.send(player, payload);
                 }
             }
-            MelonCritterEntity.this.playSound(SoundEvents.WEATHER_RAIN, 0.1F, 0.8F / (MelonCritterEntity.this.getRandom().nextFloat() * 0.4F + 0.8F));
+            MelonCritterEntity.this.playSound(SoundEvents.WEATHER_RAIN, 0.01F, 0.8F / (MelonCritterEntity.this.getRandom().nextFloat() * 0.4F + 0.8F));
 
         }
 

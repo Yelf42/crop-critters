@@ -7,7 +7,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
-import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.Nullable;
@@ -28,7 +27,7 @@ public class SoulFarmland extends FarmlandBlock {
     @Override
     public void onLandedUpon(World world, BlockState state, BlockPos pos, Entity entity, double fallDistance) {
         if (world instanceof ServerWorld serverWorld) {
-            if ((double)world.random.nextFloat() < fallDistance - (double)0.5F && entity instanceof LivingEntity && (entity instanceof PlayerEntity || serverWorld.getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING)) && entity.getWidth() * entity.getWidth() * entity.getHeight() > 0.512F) {
+            if ((double)world.random.nextFloat() < fallDistance - (double)0.5F && entity instanceof LivingEntity && (entity instanceof PlayerEntity || (Boolean)serverWorld.getGameRules().getValue(net.minecraft.world.rule.GameRules.DO_MOB_GRIEFING)) && entity.getWidth() * entity.getWidth() * entity.getHeight() > 0.512F) {
                 setToSoulSoil(entity, state, world, pos);
             }
         }
