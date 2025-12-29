@@ -7,7 +7,7 @@ import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.constant.dataticket.DataTicket;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 import software.bernie.geckolib.renderer.base.GeoRenderState;
-import software.bernie.geckolib.renderer.layer.ItemInHandGeoLayer;
+import software.bernie.geckolib.renderer.layer.builtin.ItemInHandGeoLayer;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.entity.AbstractCropCritterEntity;
 import yelf42.cropcritters.model.entity.AbstractCritterModel;
