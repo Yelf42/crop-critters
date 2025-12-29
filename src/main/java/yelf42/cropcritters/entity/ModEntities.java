@@ -48,7 +48,25 @@ public class ModEntities {
             FabricEntityTypeBuilder.<SpitSeedProjectileEntity>create(SpawnGroup.MISC, SpitSeedProjectileEntity::new)
                     .dimensions(EntityDimensions.fixed(0.25F, 0.25F))
                     .trackRangeBlocks(4).trackedUpdateRate(10)
-                    .build(RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(CropCritters.MOD_ID,"seed_ball_projectile")))
+                    .build(RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(CropCritters.MOD_ID,"spit_ball_projectile")))
+    );
+
+    public static final EntityType<PopperPodEntity> POPPER_POD_PROJECTILE = Registry.register(
+            Registries.ENTITY_TYPE,
+            Identifier.of(CropCritters.MOD_ID, "popper_pod_projectile"),
+            FabricEntityTypeBuilder.<PopperPodEntity>create(SpawnGroup.MISC, PopperPodEntity::new)
+                    .dimensions(EntityDimensions.fixed(0.25F, 0.25F))
+                    .trackRangeBlocks(4).trackedUpdateRate(10)
+                    .build(RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(CropCritters.MOD_ID,"popper_pod_projectile")))
+    );
+
+    public static final EntityType<PopperSeedEntity> POPPER_SEED_PROJECTILE = Registry.register(
+            Registries.ENTITY_TYPE,
+            Identifier.of(CropCritters.MOD_ID, "popper_seed_projectile"),
+            FabricEntityTypeBuilder.<PopperSeedEntity>create(SpawnGroup.MISC, PopperSeedEntity::new)
+                    .dimensions(EntityDimensions.fixed(0.125F, 0.125F))
+                    .trackRangeBlocks(4).trackedUpdateRate(10)
+                    .build(RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(CropCritters.MOD_ID,"popper_seed_projectile")))
     );
 
     public static final EntityType<MelonCritterEntity> MELON_CRITTER = registerCritter("melon_critter", MelonCritterEntity::new, 0.65f, 0.7f, 0.25f);

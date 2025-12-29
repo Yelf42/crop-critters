@@ -18,12 +18,14 @@ import net.minecraft.world.WorldView;
 import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.tick.ScheduledTickView;
 import org.jetbrains.annotations.Nullable;
+import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.events.WeedGrowNotifier;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SpreadingWeedBlock extends PlantBlock {
+
+public class SpreadingWeedBlock extends PlantBlock implements Fertilizable{
     public static final MapCodec<SpreadingWeedBlock> CODEC = createCodec(SpreadingWeedBlock::new);
     public static final int MAX_AGE = 1;
     public static final IntProperty AGE = Properties.AGE_1;
@@ -80,6 +82,7 @@ public class SpreadingWeedBlock extends PlantBlock {
 
     @Override
     protected void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
+
         // Turn farmlands bad
         BlockState soilCheck = world.getBlockState(pos.down());
         if (soilCheck.isOf(Blocks.FARMLAND)) {
@@ -101,7 +104,7 @@ public class SpreadingWeedBlock extends PlantBlock {
                         BlockState checkState = world.getBlockState(checkPos);
                         if (checkState.isOf(this)) neighbouringWeeds++;
                         BlockState checkBelowState = world.getBlockState(checkPos.down());
-                        if (canPlantOnTop(checkBelowState, world, checkPos.down()) && (checkState.isAir() || (!(checkState.getBlock() instanceof SpreadingWeedBlock) && checkState.getBlock() instanceof PlantBlock))) {
+                        if (canPlantOnTop(checkBelowState, world, checkPos.down()) && ModBlocks.canWeedsReplace(checkState)) {
                             canSpreadTo.add(checkPos);
                         }
                     }
@@ -145,4 +148,22 @@ public class SpreadingWeedBlock extends PlantBlock {
         builder.add(AGE);
     }
 
+    @Override
+    public boolean isFertilizable(WorldView world, BlockPos pos, BlockState state) {
+        return !isMature(state) || Fertilizable.canSpread(world, pos, state);
+    }
+
+    @Override
+    public boolean canGrow(World world, Random random, BlockPos pos, BlockState state) {
+        return random.nextInt(2) == 0;
+    }
+
+    @Override
+    public void grow(ServerWorld world, Random random, BlockPos pos, BlockState state) {
+        if (!isMature(state)) {
+            world.setBlockState(pos, this.withAge(this.getMaxAge()), Block.NOTIFY_LISTENERS);
+        } else {
+            Fertilizable.findPosToSpreadTo(world, pos, state).ifPresent((posx) -> setToWeed(world,posx));
+        }
+    }
 }

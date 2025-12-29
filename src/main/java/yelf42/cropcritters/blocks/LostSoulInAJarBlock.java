@@ -45,6 +45,7 @@ public class LostSoulInAJarBlock extends LanternBlock {
         world.scheduleBlockTick(pos, state.getBlock(), 15 + world.random.nextInt(30), TickPriority.EXTREMELY_LOW);
     }
 
+    // TODO make work underground
     @Override
     public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
         if (random.nextDouble() <= 1.0) {

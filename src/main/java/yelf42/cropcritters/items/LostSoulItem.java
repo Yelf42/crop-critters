@@ -54,7 +54,7 @@ public class LostSoulItem extends Item {
             if (playerEntity instanceof ServerPlayerEntity serverPlayerEntity) {
                 Criteria.ITEM_USED_ON_BLOCK.trigger(serverPlayerEntity, blockPos, itemStack);
             }
-            itemStack.decrement(1);
+            itemStack.decrementUnlessCreative(1, playerEntity);
             return ActionResult.SUCCESS;
         }
 
@@ -79,7 +79,7 @@ public class LostSoulItem extends Item {
             if (playerEntity instanceof ServerPlayerEntity serverPlayerEntity) {
                 Criteria.ITEM_USED_ON_BLOCK.trigger(serverPlayerEntity, blockPos, itemStack);
             }
-            itemStack.decrement(1);
+            itemStack.decrementUnlessCreative(1, playerEntity);
         }
         return ActionResult.SUCCESS;
     }

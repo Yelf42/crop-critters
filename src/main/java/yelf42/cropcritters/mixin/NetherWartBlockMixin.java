@@ -39,13 +39,6 @@ public class NetherWartBlockMixin {
         }
     }
 
-    // Inject into randomTicks for chance to spawn critter on just matured
-    @Inject(method = "randomTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", shift = At.Shift.AFTER))
-    private static void spawnCritterOnJustMatured(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
-        int wartAge = state.get(AGE, 0);
-        if ((wartAge >= NetherWartBlock.MAX_AGE) && spawnCritter(world, random, pos)) return;
-    }
-
     // Inject into randomTicks to turn into weed if mature
     // Grow faster on soul farmland
     @Inject(method = "randomTick", at = @At("TAIL"))
@@ -62,7 +55,7 @@ public class NetherWartBlockMixin {
         }
 
         // Chance to spawn critter if in SoulSandValley
-        if (world.getBiome(pos).matchesKey(BiomeKeys.SOUL_SAND_VALLEY)) {
+        if (world.getBiome(pos).matchesKey(BiomeKeys.SOUL_SAND_VALLEY) || random.nextInt(3) == 0) {
             if (spawnCritter(world, random, pos)) return;
         }
 

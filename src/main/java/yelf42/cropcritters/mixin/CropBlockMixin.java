@@ -29,6 +29,8 @@ import yelf42.cropcritters.entity.ModEntities;
 
 import static net.minecraft.block.Block.pushEntitiesUpBeforeBlockChange;
 
+// TODO add new weeds
+
 @Mixin(CropBlock.class)
 public abstract class CropBlockMixin {
 

@@ -2,16 +2,13 @@ package yelf42.cropcritters.events;
 
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityCombatEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.minecraft.block.TallPlantBlock;
+import net.minecraft.block.*;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -24,6 +21,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.blocks.ModBlocks;
+import yelf42.cropcritters.blocks.PopperPlantBlock;
+import yelf42.cropcritters.blocks.StrangleFern;
+import yelf42.cropcritters.blocks.StrangleFernBlockEntity;
 import yelf42.cropcritters.config.ConfigManager;
 import yelf42.cropcritters.items.ModItems;
 
@@ -34,6 +34,11 @@ public class ModEvents {
         CropCritters.LOGGER.info("Initializing events for " + CropCritters.MOD_ID);
         registerSoulSoilTilling();
         registerSoulSandToSoil();
+
+        registerSporesOnCrops();
+        registerSnipStrangleFern();
+
+        registerHarvestPopperPod();
 
         registerDropLostSouls();
 
@@ -82,6 +87,90 @@ public class ModEvents {
                     if (!player.isCreative()) stack.damage(1, player);
 
                     world.playSound(null, pos, SoundEvents.ITEM_HOE_TILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
+                    return ActionResult.SUCCESS;
+                }
+            }
+
+            return ActionResult.PASS;
+        });
+    }
+
+    private static void registerSporesOnCrops() {
+        UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
+            if (world.isClient()) return ActionResult.PASS;
+
+            ItemStack stack = player.getStackInHand(hand);
+
+            if (stack.isOf(ModBlocks.STRANGLE_FERN.asItem())) {
+                BlockState toPlant = ModBlocks.STRANGLE_FERN.getDefaultState();
+                BlockPos pos = hitResult.getBlockPos();
+                BlockState state = world.getBlockState(pos);
+
+                if (toPlant.canPlaceAt(world, pos) && StrangleFern.canInfest(state)) {
+                    world.setBlockState(pos, toPlant);
+
+                    stack.decrementUnlessCreative(1, player);
+
+                    world.playSound(null, pos, SoundEvents.BLOCK_SWEET_BERRY_BUSH_PLACE, SoundCategory.BLOCKS, 1.0F, 1.0F);
+                    return ActionResult.SUCCESS;
+                }
+            }
+
+            return ActionResult.PASS;
+        });
+    }
+
+    private static void registerSnipStrangleFern() {
+        UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
+            if (world.isClient()) return ActionResult.PASS;
+
+            ItemStack stack = player.getStackInHand(hand);
+
+            if (stack.isOf(Items.SHEARS)) {
+                BlockPos pos = hitResult.getBlockPos();
+                BlockState state = world.getBlockState(pos);
+
+                if (state.isOf(ModBlocks.STRANGLE_FERN)) {
+                    StrangleFernBlockEntity sfbe = (StrangleFernBlockEntity) world.getBlockEntity(pos);
+                    BlockState infested = Blocks.DEAD_BUSH.getDefaultState();
+                    if (sfbe != null) {
+                        infested = sfbe.getInfestedState();
+                    }
+                    world.setBlockState(pos, infested, Block.NOTIFY_ALL);
+
+                    if (!player.isCreative()) stack.damage(1, player);
+
+                    world.playSound(null, pos, SoundEvents.ITEM_SHEARS_SNIP, SoundCategory.PLAYERS, 1.0F, 1.0F);
+                    return ActionResult.SUCCESS;
+                }
+            }
+
+            return ActionResult.PASS;
+        });
+    }
+
+    private static void registerHarvestPopperPod() {
+        UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
+            if (world.isClient()) return ActionResult.PASS;
+
+            ItemStack stack = player.getStackInHand(hand);
+
+            if (stack.isOf(Items.SHEARS)) {
+                BlockPos pos = hitResult.getBlockPos();
+                BlockState state = world.getBlockState(pos);
+
+                if (state.isOf(ModBlocks.POPPER_PLANT) && state.get(PopperPlantBlock.AGE, 0) == PopperPlantBlock.MAX_AGE) {
+                    Vec3d center = pos.toCenterPos();
+                    ItemStack itemStack = new ItemStack(ModItems.POPPER_POD);
+                    ItemEntity itemEntity = new ItemEntity(world, center.x, center.y, center.z, itemStack);
+                    itemEntity.setToDefaultPickupDelay();
+                    world.spawnEntity(itemEntity);
+
+                    world.setBlockState(pos, state.with(PopperPlantBlock.AGE, 0));
+
+                    if (!player.isCreative()) stack.damage(1, player);
+
+                    world.playSound(null, pos, SoundEvents.ITEM_SHEARS_SNIP, SoundCategory.PLAYERS, 1.0F, 1.0F);
                     return ActionResult.SUCCESS;
                 }
             }

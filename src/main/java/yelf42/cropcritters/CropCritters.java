@@ -32,8 +32,10 @@ import org.slf4j.LoggerFactory;
 import yelf42.cropcritters.blocks.ModBlockEntities;
 import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.config.ConfigManager;
+import yelf42.cropcritters.effects.ModEffects;
 import yelf42.cropcritters.entity.ModEntities;
 import yelf42.cropcritters.events.ModEvents;
+import yelf42.cropcritters.features.ModFeatures;
 import yelf42.cropcritters.items.ModComponents;
 import yelf42.cropcritters.items.ModItems;
 import yelf42.cropcritters.items.StrangeFertilizerItem;
@@ -58,6 +60,9 @@ public class CropCritters implements ModInitializer {
 	public static final TagKey<Block> ON_NYLIUM_STRANGE_FERTILIZERS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "on_nylium_strange_fertilizers"));
 	public static final TagKey<Block> IGNORE_STRANGE_FERTILIZERS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "ignore_strange_fertilizers"));
 	public static final TagKey<Block> WEEDS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "weeds"));
+    public static final TagKey<Block> SPORES_INFECT = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "spores_infectable"));
+    public static final TagKey<Block> IMMUNE_PLANTS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "immune_plants"));
+
 
     public static final TagKey<Item> SEED_BALL_CROPS = TagKey.of(RegistryKeys.ITEM, Identifier.of("cropcritters", "seed_ball_crops"));
 
@@ -76,6 +81,8 @@ public class CropCritters implements ModInitializer {
 		ModBlockEntities.initialize();
 		ModEvents.initialize();
 		ModParticles.initialize();
+        ModEffects.initialize();
+        ModFeatures.initialize();
 
 		// Strange fertilizer dispenser behaviour
 		LOGGER.info("Registering dispenser behaviours for " + CropCritters.MOD_ID);

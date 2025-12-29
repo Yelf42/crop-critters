@@ -29,6 +29,25 @@
   "block.cropcritters.waftgrass": "Waftgrass",
   "item.cropcritters.waftgrass": "Waftgrass",
 
+  "block.cropcritters.strangle_fern": "Strangle Fern",
+  "item.cropcritters.strangle_fern": "Strangle Fern Spores",
+  "effect.cropcritters.spores_effect": "Spores",
+
+  "block.cropcritters.puffbomb_mushroom": "Puffbomb Mushroom",
+  "item.cropcritters.puffbomb_mushroom": "Puffbomb Mushroom",
+  "block.cropcritters.puffbomb_mushroom_block": "Puffbomb Mushroom Block",
+  "item.cropcritters.puffbomb_mushroom_block": "Puffbomb Mushroom Block",
+  "item.cropcritters.puffbomb_slice": "Puffbomb Slice",
+  "item.cropcritters.cooked_puffbomb_steak": "Cooked Puffbomb Steak",
+  "effect.cropcritters.puffbomb_poisoning": "Ticking",
+
+  "block.cropcritters.liverwort": "Liverwort",
+  "item.cropcritters.liverwort": "Liverwort",
+
+  "item.cropcritters.popper_pod": "Popper Pod",
+  "block.cropcritters.popper_plant": "Popper Plant",
+  "item.cropcritters.popper_plant": "Popper Seed",
+
   "block.cropcritters.tall_bush": "Tall Bush",
   "item.cropcritters.tall_bush": "Tall Bush",
 

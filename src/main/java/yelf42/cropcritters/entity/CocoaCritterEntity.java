@@ -69,7 +69,6 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
         DEFAULT_KNOWN_ITEMS.add(Items.TORCHFLOWER_SEEDS);
         DEFAULT_KNOWN_ITEMS.add(Items.PITCHER_PLANT);
         DEFAULT_KNOWN_ITEMS.add(Items.PITCHER_POD);
-        DEFAULT_KNOWN_ITEMS.add(Items.NETHER_WART);
     }
 
     @Override
