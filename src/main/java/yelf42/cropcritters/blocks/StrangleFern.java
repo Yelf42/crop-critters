@@ -25,7 +25,7 @@ import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.effects.ModEffects;
 import yelf42.cropcritters.events.WeedGrowNotifier;
 
-// TODO item texture, model must clip 1 pixel down for farmland
+// TODO item texture
 
 public class StrangleFern extends BlockWithEntity implements Fertilizable {
 
@@ -45,7 +45,7 @@ public class StrangleFern extends BlockWithEntity implements Fertilizable {
 
     @Override
     protected VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return Block.createColumnShape(12, 0.0, 4 * Math.min(this.getAge(state), 2) + 4);
+        return Block.createColumnShape(12, -1, 5 * Math.min(this.getAge(state), 2) + 4);
     }
 
     protected IntProperty getAgeProperty() {

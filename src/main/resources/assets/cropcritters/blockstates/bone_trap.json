@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "stage=0": {
+      "model": "cropcritters:block/bone_trap0"
+    },
+    "stage=1": {
+      "model": "cropcritters:block/bone_trap1"
+    },
+    "stage=2": {
+      "model": "cropcritters:block/bone_trap2"
+    }
+  }
+}

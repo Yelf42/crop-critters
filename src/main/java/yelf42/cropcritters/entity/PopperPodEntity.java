@@ -27,6 +27,7 @@ import org.jspecify.annotations.Nullable;
 import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.items.ModItems;
 
+import java.util.List;
 import java.util.OptionalInt;
 
 public class PopperPodEntity extends ProjectileEntity implements FlyingItemEntity {
@@ -45,7 +46,7 @@ public class PopperPodEntity extends ProjectileEntity implements FlyingItemEntit
     }
 
     public PopperPodEntity(World world, double x, double y, double z, ItemStack stack) {
-        super(EntityType.FIREWORK_ROCKET, world);
+        super(ModEntities.POPPER_POD_PROJECTILE, world);
         this.life = 0;
         this.lifeTime = 0;
         this.life = 0;
@@ -108,7 +109,7 @@ public class PopperPodEntity extends ProjectileEntity implements FlyingItemEntit
                     double e = 0.1;
                     Vec3d vec3d2 = this.shooter.getVelocity();
                     this.shooter.setVelocity(vec3d2.add(vec3d.x * 0.1 + (vec3d.x * (double)1.5F - vec3d2.x) * (double)0.5F, vec3d.y * 0.1 + (vec3d.y * (double)1.5F - vec3d2.y) * (double)0.5F, vec3d.z * 0.1 + (vec3d.z * (double)1.5F - vec3d2.z) * (double)0.5F));
-                    vec3d3 = this.shooter.getHandPosOffset(Items.FIREWORK_ROCKET);
+                    vec3d3 = this.shooter.getHandPosOffset(ModItems.POPPER_POD);
                 } else {
                     vec3d3 = Vec3d.ZERO;
                 }
@@ -138,14 +139,13 @@ public class PopperPodEntity extends ProjectileEntity implements FlyingItemEntit
 
         this.updateRotation();
         if (this.life == 0 && !this.isSilent()) {
-            // TODO popping sfx
-            this.getEntityWorld().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.ENTITY_FIREWORK_ROCKET_LAUNCH, SoundCategory.AMBIENT, 3.0F, 1.0F);
+            // Launch sfx
+            this.getEntityWorld().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.BLOCK_CANDLE_EXTINGUISH, SoundCategory.AMBIENT, 2.0F, 1.0F + (random.nextFloat() * 0.8F - 0.4F));
         }
 
         ++this.life;
         if (this.getEntityWorld().isClient()) {
-            // TODO nicer trail particles
-            this.getEntityWorld().addParticleClient(ParticleTypes.FIREWORK, this.getX(), this.getY(), this.getZ(), this.random.nextGaussian() * 0.05, -this.getVelocity().y * (double)0.5F, this.random.nextGaussian() * 0.05);
+            this.getEntityWorld().addParticleClient(ParticleTypes.SPLASH, this.getX(), this.getY(), this.getZ(), this.random.nextGaussian() * 0.05, -this.getVelocity().y * (double)0.5F, this.random.nextGaussian() * 0.05);
         }
 
         if (this.life > this.lifeTime) {
@@ -160,6 +160,7 @@ public class PopperPodEntity extends ProjectileEntity implements FlyingItemEntit
     private void explodeAndRemove(ServerWorld world) {
         world.sendEntityStatus(this, (byte)17);
         this.emitGameEvent(GameEvent.EXPLODE, this.getOwner()); // IDK what this does
+        this.getEntityWorld().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.UI_HUD_BUBBLE_POP, SoundCategory.AMBIENT, 2.0F, 1.0F + (random.nextFloat() * 0.8F - 0.4F));
         if (this.shouldExplode) this.explode(world);
         this.discard();
     }
@@ -185,14 +186,14 @@ public class PopperPodEntity extends ProjectileEntity implements FlyingItemEntit
     }
 
     private void explode(ServerWorld world) {
-        int count = random.nextInt(3) != 0 ? 1 : (random.nextInt(3) != 0 ? 2 : 3);
+        int count = (random.nextInt(3) != 0) ? 1 : (random.nextInt(3) != 0 ? 2 : 3);
 
-        for (int i = 0; i < count; i--) {
+        for (int i = 0; i < count; i++) {
             double angle = random.nextDouble() * Math.PI * 2.0f;
             ProjectileEntity.spawn(new PopperSeedEntity(this.getEntityPos(), world),
                     world,
                     new ItemStack(ModBlocks.POPPER_PLANT.asItem()),
-                    (entity) -> entity.setVelocity(Math.sin(angle), 0.0f, Math.cos(angle), random.nextFloat() * 0.5f + 0.25f, 10.0F));
+                    (entity) -> entity.setVelocity(Math.sin(angle), 0.0f, Math.cos(angle), random.nextFloat() * 0.3f + 0.1f, 10.0F));
         }
     }
 
@@ -207,9 +208,8 @@ public class PopperPodEntity extends ProjectileEntity implements FlyingItemEntit
     public void handleStatus(byte status) {
         if (status == 17 && this.getEntityWorld().isClient()) {
             Vec3d vec3d = this.getVelocity();
-            // TODO particles
+            this.getEntityWorld().addFireworkParticle(this.getX(), this.getY(), this.getZ(), vec3d.x, vec3d.y, vec3d.z, List.of());
         }
-
         super.handleStatus(status);
     }
 

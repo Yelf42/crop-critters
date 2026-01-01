@@ -29,7 +29,7 @@ public class PopperPlantBlock extends PlantBlock implements Fertilizable {
 
     protected PopperPlantBlock(Settings settings) {
         super(settings);
-        this.setDefaultState(this.stateManager.getDefaultState().with(this.getAgeProperty(), 0));
+        this.setDefaultState(this.stateManager.getDefaultState().with(AGE, 0));
     }
 
     @Override
@@ -42,16 +42,12 @@ public class PopperPlantBlock extends PlantBlock implements Fertilizable {
         return SHAPE;
     }
 
-    protected IntProperty getAgeProperty() {
-        return AGE;
-    }
-
     public int getMaxAge() {
         return MAX_AGE;
     }
 
     public int getAge(BlockState state) {
-        return (Integer)state.get(this.getAgeProperty());
+        return (Integer)state.get(AGE);
     }
 
     public final boolean isMature(BlockState state) {
@@ -65,12 +61,14 @@ public class PopperPlantBlock extends PlantBlock implements Fertilizable {
 
     @Override
     protected void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
+        int lightLevel = world.getLightLevel(LightType.SKY, pos);
+        long time = world.getTimeOfDay() % 24000;
+        if (lightLevel < 14 || (time < 2000 || time > 9000)) return;
+
         if (!isMature(state)) {
             world.setBlockState(pos, state.with(AGE, this.getAge(state) + 1));
         } else {
-            int lightLevel = world.getLightLevel(LightType.SKY, pos);
-            long time = world.getTimeOfDay() % 24000;
-            if ((random.nextInt(10) == 0) && lightLevel >= 15 && (time >= 2000 && time <= 9000)) popOff(state, world, pos);
+            if (random.nextInt(10) == 0) popOff(state, world, pos);
         }
     }
 

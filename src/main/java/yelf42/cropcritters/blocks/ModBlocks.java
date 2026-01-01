@@ -188,6 +188,18 @@ public class ModBlocks {
             true
     );
 
+    public static final Block BONE_TRAP = register(
+            "bone_trap",
+            BoneTrapBlock::new,
+            AbstractBlock.Settings.create()
+                    .mapColor(MapColor.WHITE_GRAY)
+                    .noCollision()
+                    .strength(0.4f)
+                    .sounds(BlockSoundGroup.BONE)
+                    .pistonBehavior(PistonBehavior.DESTROY),
+            true
+    );
+
     public static final Block PUFFBOMB_MUSHROOM = register(
             "puffbomb_mushroom",
             PuffbombPlantBlock::new,
@@ -309,6 +321,7 @@ public class ModBlocks {
             itemGroup.add(ModBlocks.WAFTGRASS.asItem());
             itemGroup.add(ModBlocks.STRANGLE_FERN.asItem());
             itemGroup.add(ModBlocks.POPPER_PLANT.asItem());
+            itemGroup.add(ModBlocks.BONE_TRAP.asItem());
             itemGroup.add(ModBlocks.PUFFBOMB_MUSHROOM.asItem());
             itemGroup.add(ModBlocks.PUFFBOMB_MUSHROOM_BLOCK.asItem());
             itemGroup.add(ModBlocks.LIVERWORT.asItem());
@@ -325,6 +338,7 @@ public class ModBlocks {
             itemGroup.add(ModBlocks.WITHERING_SPITEWEED.asItem());
             itemGroup.add(ModBlocks.WAFTGRASS.asItem());
             itemGroup.add(ModBlocks.STRANGLE_FERN.asItem());
+            itemGroup.add(ModBlocks.BONE_TRAP.asItem());
             itemGroup.add(ModBlocks.PUFFBOMB_MUSHROOM.asItem());
             itemGroup.add(ModBlocks.PUFFBOMB_MUSHROOM_BLOCK.asItem());
             itemGroup.add(ModBlocks.LIVERWORT.asItem());
@@ -340,6 +354,7 @@ public class ModBlocks {
         CompostingChanceRegistry.INSTANCE.add(ModBlocks.ORNAMENTAL_BUSH.asItem(), 0.8f);
         CompostingChanceRegistry.INSTANCE.add(ModBlocks.MAZEWOOD.asItem(), 0.8f);
         CompostingChanceRegistry.INSTANCE.add(ModBlocks.PUFFBOMB_MUSHROOM.asItem(), 0.65f);
+        CompostingChanceRegistry.INSTANCE.add(ModBlocks.BONE_TRAP.asItem(), 0.6f);
         CompostingChanceRegistry.INSTANCE.add(ModBlocks.MAZEWOOD_SAPLING.asItem(), 0.4f);
         CompostingChanceRegistry.INSTANCE.add(ModBlocks.CRAWL_THISTLE.asItem(), 0.3f);
         CompostingChanceRegistry.INSTANCE.add(ModBlocks.CRIMSON_THORNWEED.asItem(), 0.2f);

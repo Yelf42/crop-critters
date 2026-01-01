@@ -7,7 +7,7 @@
 	"authors": [
 		"Yelf42"
 	],
-	"icon": "assets/cropcritters/icon.png",
+	"icon": "iconOLD.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [

@@ -57,14 +57,12 @@ public class WitheringSpiteweed extends SpreadingWeedBlock {
 
     @Override
     protected void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler handler, boolean bl) {
-        if (world instanceof ServerWorld serverWorld
-                && entity instanceof LivingEntity livingEntity
-                && !(livingEntity.getType().isIn(CropCritters.CROP_CRITTERS))) {
+        if (entity instanceof LivingEntity livingEntity
+                && !(livingEntity.getType().isIn(CropCritters.WEED_IMMUNE))) {
             Vec3d vec3d = new Vec3d(0.9, 0.9F, 0.9);
             livingEntity.slowMovement(state, vec3d);
-            if (!livingEntity.isInvulnerableTo(serverWorld, world.getDamageSources().wither())) {
+            if (world instanceof ServerWorld serverWorld && !livingEntity.isInvulnerableTo(serverWorld, world.getDamageSources().wither())) {
                 livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.WITHER, 40));
-
             }
         }
     }

@@ -30,9 +30,9 @@ public class Waftgrass extends SpreadingWeedBlock {
     @Override
     protected void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler handler, boolean bl) {
         // Apply damage, avoid critters and nether mobs
-        if (world instanceof ServerWorld serverWorld
+        if (world instanceof ServerWorld
                 && entity instanceof LivingEntity livingEntity
-                && !(livingEntity.getType().isIn(CropCritters.CROP_CRITTERS))) {
+                && !(livingEntity.getType().isIn(CropCritters.WEED_IMMUNE))) {
             livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.LEVITATION, 120));
         }
     }

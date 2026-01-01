@@ -30,7 +30,7 @@ public class PopperSeedEntity extends ThrownItemEntity {
     public void tick() {
         super.tick();
         ++this.lifespan;
-        if (this.lifespan > 200 && !this.getEntityWorld().isClient()) this.discard();
+        if (this.lifespan > 80 && !this.getEntityWorld().isClient()) this.discard();
     }
 
     @Override

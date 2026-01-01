@@ -5,16 +5,20 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
 import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.particle.ParticleTypes;
+import net.minecraft.particle.TintedParticleEffect;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ColorHelper;
 import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.blocks.StrangleFern;
+import yelf42.cropcritters.particle.ModParticles;
 
 // TODO custom particle effect
 
 public class SporesEffect extends StatusEffect {
     protected SporesEffect(StatusEffectCategory category, int color) {
-        super(category, color);
+        super(category, color, TintedParticleEffect.create(ModParticles.SPORE_PARTICLE, ColorHelper.withAlpha(100, color)));
     }
 
     @Override

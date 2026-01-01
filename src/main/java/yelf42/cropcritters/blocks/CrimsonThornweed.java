@@ -29,12 +29,11 @@ public class CrimsonThornweed extends SpreadingWeedBlock {
     @Override
     protected void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler handler, boolean bl) {
         // Apply damage, avoid critters and nether mobs
-        if (world instanceof ServerWorld serverWorld
-                && entity instanceof LivingEntity livingEntity
+        if (entity instanceof LivingEntity livingEntity
                 && !(livingEntity.getType().isIn(CropCritters.WEED_IMMUNE))) {
             Vec3d vec3d = new Vec3d(0.9, 0.9F, 0.9);
             livingEntity.slowMovement(state, vec3d);
-            livingEntity.damage(serverWorld, world.getDamageSources().sweetBerryBush(), 2.0F);
+            if (world instanceof ServerWorld serverWorld) livingEntity.damage(serverWorld, world.getDamageSources().sweetBerryBush(), 2.0F);
         }
     }
 }

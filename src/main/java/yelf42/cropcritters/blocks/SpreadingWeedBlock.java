@@ -34,7 +34,7 @@ public class SpreadingWeedBlock extends PlantBlock implements Fertilizable{
 
     public SpreadingWeedBlock(AbstractBlock.Settings settings) {
         super(settings);
-        this.setDefaultState(this.stateManager.getDefaultState().with(this.getAgeProperty(), 0));
+        this.setDefaultState(this.stateManager.getDefaultState().with(AGE, 0));
     }
 
     @Override
@@ -49,20 +49,16 @@ public class SpreadingWeedBlock extends PlantBlock implements Fertilizable{
 
     public int getMaxNeighbours() { return 0; }
 
-    protected IntProperty getAgeProperty() {
-        return AGE;
-    }
-
     public int getMaxAge() {
         return MAX_AGE;
     }
 
     public int getAge(BlockState state) {
-        return (Integer)state.get(this.getAgeProperty());
+        return (Integer)state.get(AGE);
     }
 
     public BlockState withAge(int age) {
-        return this.getDefaultState().with(this.getAgeProperty(), age);
+        return this.getDefaultState().with(AGE, age);
     }
 
     public final boolean isMature(BlockState state) {

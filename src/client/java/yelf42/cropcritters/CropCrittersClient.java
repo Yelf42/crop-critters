@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.client.color.world.BiomeColors;
+import net.minecraft.client.particle.SpellParticle;
 import net.minecraft.client.render.BlockRenderLayer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 import net.minecraft.client.render.entity.FlyingItemEntityRenderer;
@@ -18,6 +19,7 @@ import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.blocks.StrangleFernBlockEntity;
 import yelf42.cropcritters.entity.ModEntities;
 import yelf42.cropcritters.particle.ModParticles;
+import yelf42.cropcritters.particle.SporeParticle;
 import yelf42.cropcritters.particle.WaterSprayParticle;
 import yelf42.cropcritters.renderer.blockentity.StrangleFernBlockEntityRenderer;
 import yelf42.cropcritters.renderer.entity.AbstractCritterRenderer;
@@ -35,6 +37,7 @@ public class CropCrittersClient implements ClientModInitializer {
         BlockRenderLayerMap.putBlock(ModBlocks.LIVERWORT, BlockRenderLayer.CUTOUT);
 		BlockRenderLayerMap.putBlock(ModBlocks.WITHERING_SPITEWEED, BlockRenderLayer.CUTOUT);
         BlockRenderLayerMap.putBlock(ModBlocks.POPPER_PLANT, BlockRenderLayer.CUTOUT);
+        BlockRenderLayerMap.putBlock(ModBlocks.BONE_TRAP, BlockRenderLayer.CUTOUT);
 
         BlockRenderLayerMap.putBlock(ModBlocks.TALL_BUSH, BlockRenderLayer.CUTOUT);
         ColorProviderRegistry.BLOCK.register((state, world, pos, tintIndex) ->
@@ -63,6 +66,11 @@ public class CropCrittersClient implements ClientModInitializer {
 
         BlockRenderLayerMap.putBlock(ModBlocks.STRANGLE_FERN, BlockRenderLayer.CUTOUT);
         BlockEntityRendererFactories.register(ModBlockEntities.STRANGLE_FERN, StrangleFernBlockEntityRenderer::new);
+        ColorProviderRegistry.BLOCK.register((state, world, pos, tintIndex) ->
+                world != null && pos != null
+                        ? BiomeColors.getGrassColor(world, pos) + 0xd4e1c3
+                        : 0x91BD59, ModBlocks.STRANGLE_FERN
+        );
 
         // Entities
 		EntityRendererRegistry.register(ModEntities.WHEAT_CRITTER, context -> new AbstractCritterRenderer<>(context, Identifier.of(CropCritters.MOD_ID, "wheat_critter"), true));
@@ -84,6 +92,7 @@ public class CropCrittersClient implements ClientModInitializer {
 
 		// Particles
 		ParticleFactoryRegistry.getInstance().register(ModParticles.WATER_SPRAY_PARTICLE, WaterSprayParticle.Factory::new);
+        ParticleFactoryRegistry.getInstance().register(ModParticles.SPORE_PARTICLE, SporeParticle.Factory::new);
 
 		// Packet Handling
 		ClientPlayNetworking.registerGlobalReceiver(CropCritters.WaterSprayS2CPayload.ID, (payload, context) -> {
