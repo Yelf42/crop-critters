@@ -35,10 +35,16 @@ public class PopperSeedEntity extends ThrownItemEntity {
 
     @Override
     protected void onBlockCollision(BlockState state) {
-        if (state.isIn(BlockTags.DIRT)) {
+        if (this.getEntityWorld().getBlockState(this.getBlockPos()).isIn(BlockTags.DIRT)) {
             BlockState toCheckUp = this.getEntityWorld().getBlockState(this.getBlockPos().up());
             if (ModBlocks.canWeedsReplace(toCheckUp)) {
                 this.getEntityWorld().setBlockState(this.getBlockPos().up(), ModBlocks.POPPER_PLANT.getDefaultState());
+                this.discard();
+            }
+        } else if (this.getEntityWorld().getBlockState(this.getBlockPos().down()).isIn(BlockTags.DIRT)) {
+            BlockState toCheck = this.getEntityWorld().getBlockState(this.getBlockPos());
+            if (ModBlocks.canWeedsReplace(toCheck)) {
+                this.getEntityWorld().setBlockState(this.getBlockPos(), ModBlocks.POPPER_PLANT.getDefaultState());
                 this.discard();
             }
         }
