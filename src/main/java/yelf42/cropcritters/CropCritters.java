@@ -65,7 +65,6 @@ public class CropCritters implements ModInitializer {
     public static final TagKey<Block> SPORES_INFECT = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "spores_infectable"));
     public static final TagKey<Block> IMMUNE_PLANTS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "immune_plants"));
 
-
     public static final TagKey<Item> SEED_BALL_CROPS = TagKey.of(RegistryKeys.ITEM, Identifier.of("cropcritters", "seed_ball_crops"));
 
 

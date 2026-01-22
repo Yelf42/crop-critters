@@ -89,6 +89,7 @@ public class CropCrittersClient implements ClientModInitializer {
 		EntityRendererRegistry.register(ModEntities.SPIT_SEED_PROJECTILE, FlyingItemEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.POPPER_POD_PROJECTILE, PopperPodEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.POPPER_SEED_PROJECTILE, FlyingItemEntityRenderer::new);
+		EntityRendererRegistry.register(ModEntities.HERBICIDE_PROJECTILE, FlyingItemEntityRenderer::new);
 
 		// Particles
 		ParticleFactoryRegistry.getInstance().register(ModParticles.WATER_SPRAY_PARTICLE, WaterSprayParticle.Factory::new);

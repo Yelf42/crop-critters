@@ -45,6 +45,7 @@ public class ModItems {
                     itemGroup.add(ModItems.PUFFBOMB_SLICE);
                     itemGroup.add(ModItems.COOKED_PUFFBOMB_STEAK);
                     itemGroup.add(ModItems.POPPER_POD);
+                    itemGroup.add(ModItems.HERBICIDE);
                 });
 
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.INGREDIENTS)
@@ -110,6 +111,7 @@ public class ModItems {
 
     public static final Item SEED_BALL = register("seed_ball", SeedBallItem::new, new Item.Settings().maxCount(16).component(ModComponents.POISONOUS_SEED_BALL, new ModComponents.PoisonousComponent(0)));
     public static final Item POPPER_POD = register("popper_pod", PopperPodItem::new, new Item.Settings());
+    public static final Item HERBICIDE = register("herbicide", HerbicideItem::new, new Item.Settings().maxCount(16));
 
     // Foods
     public static final Item PUFFBOMB_SLICE = register("puffbomb_slice", Item::new, new Item.Settings().food((new FoodComponent.Builder()).nutrition(2).saturationModifier(0.4F).build()));

@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "cropcritters:block/puffbomb_1"
+    "layer0": "cropcritters:item/herbicide"
   }
 }

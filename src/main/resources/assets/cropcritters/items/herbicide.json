@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "cropcritters:item/liverwort"
+    "model": "cropcritters:item/herbicide"
   }
 }

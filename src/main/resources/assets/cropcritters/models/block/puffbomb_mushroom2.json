@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/cross",
   "textures": {
-    "cross": "cropcritters:block/puffbomb_0"
+    "cross": "cropcritters:block/puffbomb_2"
   }
 }

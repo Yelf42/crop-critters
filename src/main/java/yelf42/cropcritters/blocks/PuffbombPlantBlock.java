@@ -26,7 +26,7 @@ import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.events.WeedGrowNotifier;
 import yelf42.cropcritters.features.ModFeatures;
 
-// TODO growth stage jsons, model clips 1 pixel down for farmland placement, exploding status effect + food + stew
+// TODO model clips 1 pixel down for farmland placement, outline shapes for growth stages
 
 public class PuffbombPlantBlock extends MushroomPlantBlock {
 
