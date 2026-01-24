@@ -115,7 +115,13 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
         controllerRegistrar.add(
-                new AnimationController<>("Sit", test -> ((this.dataTracker.get(TAMEABLE_FLAGS) & 0x01) != 0) ? (test.setAndContinue(SIT)) : PlayState.STOP),
+                new AnimationController<>("Sit", test -> {
+                    if ((this.dataTracker.get(TAMEABLE_FLAGS) & 0x01) != 0) {
+                        return (test.setAndContinue(SIT));
+                    }
+                    test.controller().reset();
+                    return PlayState.STOP;
+                }),
                 DefaultAnimations.genericWalkIdleController()
         );
     }

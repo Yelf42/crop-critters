@@ -1,19 +1,20 @@
 package yelf42.cropcritters.blocks;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.PlantBlock;
-import net.minecraft.block.ShapeContext;
+import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCollisionHandler;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
+import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.IntProperty;
+import net.minecraft.state.property.Property;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.util.shape.VoxelShape;
@@ -25,6 +26,7 @@ import yelf42.cropcritters.events.WeedGrowNotifier;
 
 public class BoneTrapBlock extends PlantBlock {
     public static final MapCodec<BoneTrapBlock> CODEC = createCodec(BoneTrapBlock::new);
+    public static final EnumProperty<Direction> FACING = HorizontalFacingBlock.FACING;
 
     // 0 = open, 2 = closed, 1 = recharging
     public static final IntProperty STAGE = IntProperty.of("stage", 0, 2);
@@ -50,6 +52,10 @@ public class BoneTrapBlock extends PlantBlock {
         return SHAPES_BY_STAGE[this.getStage(state)];
     }
 
+    public BlockState getPlacementState(ItemPlacementContext ctx) {
+        return (BlockState)this.getDefaultState().with(FACING, ctx.getHorizontalPlayerFacing().rotateYClockwise());
+    }
+
     public int getStage(BlockState state) {
         return (int)state.get(STAGE);
     }
@@ -73,14 +79,14 @@ public class BoneTrapBlock extends PlantBlock {
 
     @Override
     protected void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler handler, boolean bl) {
-        if (entity instanceof LivingEntity livingEntity && !(livingEntity.getType().isIn(CropCritters.WEED_IMMUNE))) {
+        if (entity instanceof LivingEntity livingEntity) {
             double dist = livingEntity.getEntityPos().distanceTo(pos.toBottomCenterPos());
             if (this.getStage(state) == 0 && dist <= 0.2F) {
 
                 world.playSound(null, pos, SoundEvents.ENTITY_EVOKER_FANGS_ATTACK, SoundCategory.BLOCKS, 0.5F, 1.0F + (world.random.nextFloat() * 0.6F - 0.3F));
 
                 if (world instanceof ServerWorld serverWorld) {
-                    livingEntity.damage(serverWorld, world.getDamageSources().sweetBerryBush(), 4.0F);
+                    if (!(livingEntity.getType().isIn(CropCritters.WEED_IMMUNE))) livingEntity.damage(serverWorld, world.getDamageSources().sweetBerryBush(), 4.0F);
                     serverWorld.scheduleBlockTick(pos, this, 40 + serverWorld.random.nextInt(20), TickPriority.EXTREMELY_LOW);
                     serverWorld.setBlockState(pos, state.with(STAGE, 2));
                 }
@@ -106,5 +112,6 @@ public class BoneTrapBlock extends PlantBlock {
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
         builder.add(STAGE);
+        builder.add(new Property[]{FACING});
     }
 }

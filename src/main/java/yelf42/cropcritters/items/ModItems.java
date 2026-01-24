@@ -2,6 +2,8 @@ package yelf42.cropcritters.items;
 
 import net.fabricmc.fabric.api.itemgroup.v1.*;
 import net.fabricmc.fabric.api.registry.*;
+import net.minecraft.block.DispenserBlock;
+import net.minecraft.block.dispenser.ProjectileDispenserBehavior;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.FireworksComponent;
 import net.minecraft.component.type.FoodComponent;
@@ -80,6 +82,9 @@ public class ModItems {
         FuelRegistryEvents.BUILD.register((builder, context) -> {
             builder.add(ModItems.LOST_SOUL, 80 * 20);
         });
+
+        // Dispenser behaviours
+        DispenserBlock.registerProjectileBehavior(ModItems.SEED_BALL);
 
     }
     public static Item register(String name, Function<Item.Settings, Item> itemFactory, Item.Settings settings) {

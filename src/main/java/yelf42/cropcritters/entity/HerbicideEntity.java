@@ -34,13 +34,13 @@ public class HerbicideEntity extends ThrownItemEntity {
         super.onCollision(hitResult);
         this.getEntityWorld().sendEntityStatus(this, (byte)3);
         if (this.getEntityWorld() instanceof ServerWorld serverWorld) {
-            killPlants(serverWorld, this.getBlockPos());
+            killWeeds(serverWorld, this.getBlockPos());
             serverWorld.syncWorldEvent(2002, this.getBlockPos(), Colors.GREEN);
             this.discard();
         }
     }
 
-    private void killPlants(ServerWorld world, BlockPos blockPos) {
+    private void killWeeds(ServerWorld world, BlockPos blockPos) {
         Iterable<BlockPos> iterable = BlockPos.iterateOutwards(blockPos, 4, 4, 4);
 
         for (BlockPos pos : iterable) {

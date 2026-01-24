@@ -22,6 +22,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.config.ConfigManager;
+import yelf42.cropcritters.config.WeedPlacement;
 import yelf42.cropcritters.entity.ModEntities;
 
 import java.util.Objects;
@@ -34,9 +35,11 @@ public class NetherWartBlockMixin {
 
     @Inject(method = "canPlantOnTop", at = @At("HEAD"), cancellable = true)
     private void allowPlantOnSoulStuff(BlockState floor, BlockView world, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
-        if (floor.isOf(ModBlocks.SOUL_FARMLAND) || floor.isOf(Blocks.SOUL_SOIL)) {
+        if (floor.isOf(Blocks.SOUL_SAND) || floor.isOf(ModBlocks.SOUL_FARMLAND) || floor.isOf(Blocks.SOUL_SOIL)) {
             cir.setReturnValue(true);
+            return;
         }
+        cir.setReturnValue(false);
     }
 
     // Inject into randomTicks to turn into weed if mature
@@ -54,56 +57,17 @@ public class NetherWartBlockMixin {
             return;
         }
 
-        // Chance to spawn critter if in SoulSandValley
-        if (world.getBiome(pos).matchesKey(BiomeKeys.SOUL_SAND_VALLEY) || random.nextInt(3) == 0) {
-            if (spawnCritter(world, random, pos)) return;
-        }
+        if (spawnCritter(world, random, pos)) return;
 
-        // Count how many neighbours are the same type of crop
-        // More identical crops increases chance of weed growth
-        float monoCount = 1F;
-        if (ConfigManager.CONFIG.monoculturePenalize) {
-            for (int i = -1; i <= 1; i++) {
-                for (int j = -1; j <= 1; j++) {
-                    if (i == j && j == 0) continue;
-                    BlockState cropToCheck = world.getBlockState(pos.add(i,0, j));
-                    monoCount += cropToCheck.isOf(state.getBlock()) ? 1F : 0F;
-                }
-            }
-            // Quadratic penalty increase for monocultural practices
-            monoCount = (monoCount * monoCount) / 16F;
-        }
-        boolean growNetherWeed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.netherWeedChance * (monoCount + 1);
-
-        int weedTypeCheck = random.nextInt(100) + 1;
-
-        if (growNetherWeed) {
-            if (world.getBiome(pos).matchesKey(BiomeKeys.SOUL_SAND_VALLEY)) {
-                BlockState weedState = ModBlocks.WITHERING_SPITEWEED.getDefaultState();
-                world.setBlockState(pos, weedState);
-                pushEntitiesUpBeforeBlockChange(Blocks.SOUL_SAND.getDefaultState(), Blocks.BLACKSTONE.getDefaultState(), world, pos.down());
-                world.setBlockState(pos.down(), Blocks.BLACKSTONE.getDefaultState(), Block.NOTIFY_LISTENERS);
-                world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
-                return;
-            } else {
-                BlockState weedState = ModBlocks.CRIMSON_THORNWEED.getDefaultState();
-                // Add further nether weeds here
-                if (weedTypeCheck < 20) {
-                    weedState = ModBlocks.WAFTGRASS.getDefaultState();
-                }
-                world.setBlockState(pos, weedState);
-                pushEntitiesUpBeforeBlockChange(ModBlocks.SOUL_FARMLAND.getDefaultState(), Blocks.SOUL_SOIL.getDefaultState(), world, pos.down());
-                world.setBlockState(pos.down(), (random.nextInt(2) == 0) ? Blocks.SOUL_SOIL.getDefaultState() : Blocks.SOUL_SAND.getDefaultState(), Block.NOTIFY_LISTENERS);
-                world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
-                return;
-            }
-        }
+        WeedPlacement.generateWeed(state, world, pos, random, true);
     }
 
     @Unique
     private static boolean spawnCritter(ServerWorld world, Random random, BlockPos pos) {
         boolean airCheck = world.getBlockState(pos.up()).isAir();
         int spawnChance = ConfigManager.CONFIG.critterSpawnChance * 2;
+        if (world.getBiome(pos).matchesKey(BiomeKeys.SOUL_SAND_VALLEY)) spawnChance *= 2;
+
         if (airCheck && random.nextInt(100) + 1 < spawnChance) {
             for (int i = 0; i <= world.random.nextInt(3); i++) {
                 ModEntities.NETHER_WART_CRITTER.spawn(world, pos, SpawnReason.NATURAL);

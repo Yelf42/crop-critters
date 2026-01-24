@@ -45,14 +45,14 @@ public class LostSoulInAJarBlock extends LanternBlock {
         world.scheduleBlockTick(pos, state.getBlock(), 15 + world.random.nextInt(30), TickPriority.EXTREMELY_LOW);
     }
 
-    // TODO make work underground
     @Override
     public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
         if (random.nextDouble() <= 1.0) {
             double d = (double)pos.getX() + random.nextDouble() * (double)10.0F - (double)5.0F;
-            double e = (double)pos.getY() - 3;
+            double e = (double)pos.getY() - random.nextDouble() * (double)4.0F;
             double f = (double)pos.getZ() + random.nextDouble() * (double)10.0F - (double)5.0F;
-            world.addParticleClient(ParticleTypes.GLOW, d, world.getTopY(Heightmap.Type.WORLD_SURFACE, (int)d, (int)f), f, 0.0F, 1.0F, 0.0F);
+            //world.addParticleClient(ParticleTypes.GLOW, d, world.getTopY(Heightmap.Type.WORLD_SURFACE, (int)d, (int)f), f, 0.0F, 1.0F, 0.0F);
+            world.addParticleClient(ParticleTypes.GLOW, d, e, f, 0.0F, 1.0F, 0.0F);
         }
     }
 

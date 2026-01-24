@@ -26,13 +26,11 @@ import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.events.WeedGrowNotifier;
 import yelf42.cropcritters.features.ModFeatures;
 
-// TODO model clips 1 pixel down for farmland placement, outline shapes for growth stages
-
 public class PuffbombPlantBlock extends MushroomPlantBlock {
 
     public static final int MAX_AGE = 2;
     public static final IntProperty AGE = Properties.AGE_2;
-    private static final VoxelShape[] SHAPES_BY_AGE = Block.createShapeArray(2, age -> Block.createColumnShape(8 + age * 4, 0.0, 8 + age * 4));
+    private static final VoxelShape[] SHAPES_BY_AGE = Block.createShapeArray(2, age -> Block.createColumnShape(5 + age * 4, -1.0, 5 + age * 4));
 
     private static final RegistryKey<ConfiguredFeature<?, ?>> FEATURE_KEY = ModFeatures.PUFFBOMB_BLOB_KEY;
 

@@ -25,11 +25,10 @@ import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.config.ConfigManager;
 import yelf42.cropcritters.config.CropCrittersConfig;
+import yelf42.cropcritters.config.WeedPlacement;
 import yelf42.cropcritters.entity.ModEntities;
 
 import static net.minecraft.block.Block.pushEntitiesUpBeforeBlockChange;
-
-// TODO add new weeds
 
 @Mixin(CropBlock.class)
 public abstract class CropBlockMixin {
@@ -96,67 +95,7 @@ public abstract class CropBlockMixin {
                 if (spawnCritter(world, state, random, pos)) return;
             }
             if (random.nextDouble() < 0.03 * ((double) cropBlock.getAge(state) / (cropBlock.getMaxAge() - 1))) {
-                generateWeed(state, world, pos, random, soilCheck.isOf(ModBlocks.SOUL_FARMLAND));
-            }
-        }
-    }
-
-    @Unique
-    private static void generateWeed(BlockState state, ServerWorld world, BlockPos pos, Random random, boolean nether) {
-        // Count how many neighbours are the same type of crop
-        // More identical crops increases chance of weed growth
-        float monoCount = 1F;
-        if (ConfigManager.CONFIG.monoculturePenalize) {
-            for (int i = -1; i <= 1; i++) {
-                for (int j = -1; j <= 1; j++) {
-                    if (i == j && j == 0) continue;
-                    BlockState cropToCheck = world.getBlockState(pos.add(i,0, j));
-                    monoCount += cropToCheck.isOf(state.getBlock()) ? 1F : 0F;
-                }
-            }
-            // Quadratic penalty increase for monocultural practices
-            monoCount = (monoCount * monoCount) / 8F;
-        }
-        boolean growOverworldWeed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.regularWeedChance + (monoCount);
-        boolean growNetherWeed = random.nextInt(100) + 1 < (float)ConfigManager.CONFIG.netherWeedChance + (monoCount);
-
-        // Break early, no weeds can grow
-        if (!growOverworldWeed && !growNetherWeed) return;
-
-        // For determining sub weed types
-        int weedTypeCheck = random.nextInt(100) + 1;
-
-        if (world.getBiome(pos).matchesKey(BiomeKeys.SOUL_SAND_VALLEY)) {
-            if (growNetherWeed && nether) {
-                BlockState weedState = ModBlocks.WITHERING_SPITEWEED.getDefaultState();
-                world.setBlockState(pos, weedState);
-                pushEntitiesUpBeforeBlockChange(Blocks.SOUL_SAND.getDefaultState(), Blocks.BLACKSTONE.getDefaultState(), world, pos.down());
-                world.setBlockState(pos.down(), Blocks.BLACKSTONE.getDefaultState(), Block.NOTIFY_LISTENERS);
-                world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
-                return;
-            }
-        } else {
-            if (growOverworldWeed && !nether) {
-                BlockState weedState = ModBlocks.CRAWL_THISTLE.getDefaultState();
-                // Add further overworld weeds here
-                world.setBlockState(pos, weedState);
-                pushEntitiesUpBeforeBlockChange(Blocks.FARMLAND.getDefaultState(), Blocks.COARSE_DIRT.getDefaultState(), world, pos.down());
-                world.setBlockState(pos.down(), Blocks.COARSE_DIRT.getDefaultState(), Block.NOTIFY_LISTENERS);
-                world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
-                return;
-            }
-
-            if (nether && growNetherWeed) {
-                BlockState weedState = ModBlocks.CRIMSON_THORNWEED.getDefaultState();
-                // Add further nether weeds here
-                if (weedTypeCheck < 20) {
-                    weedState = ModBlocks.WAFTGRASS.getDefaultState();
-                }
-                world.setBlockState(pos, weedState);
-                pushEntitiesUpBeforeBlockChange(ModBlocks.SOUL_FARMLAND.getDefaultState(), Blocks.SOUL_SOIL.getDefaultState(), world, pos.down());
-                world.setBlockState(pos.down(), (random.nextInt(2) == 0) ? Blocks.SOUL_SOIL.getDefaultState() : Blocks.SOUL_SAND.getDefaultState(), Block.NOTIFY_LISTENERS);
-                world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
-                return;
+                WeedPlacement.generateWeed(state, world, pos, random, soilCheck.isOf(ModBlocks.SOUL_FARMLAND));
             }
         }
     }
@@ -174,7 +113,7 @@ public abstract class CropBlockMixin {
             } else if (state.isOf(Blocks.CARROTS)) {
                 ModEntities.CARROT_CRITTER.spawn(world, pos, SpawnReason.NATURAL);
             } else if (state.isOf(Blocks.POTATOES)) {
-                if (random.nextInt(100) + 1 < world.getDifficulty().getId() * 2) {
+                if (random.nextInt(100) + 1 < world.getDifficulty().getId() * 5) {
                     ModEntities.POISONOUS_POTATO_CRITTER.spawn(world, pos, SpawnReason.NATURAL);
                 } else {
                     ModEntities.POTATO_CRITTER.spawn(world, pos, SpawnReason.NATURAL);

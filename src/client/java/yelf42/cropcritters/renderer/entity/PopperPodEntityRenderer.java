@@ -10,6 +10,7 @@ import net.minecraft.client.render.state.CameraRenderState;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemDisplayContext;
 import net.minecraft.util.math.RotationAxis;
+import org.joml.Vector3fc;
 import yelf42.cropcritters.entity.PopperPodEntity;
 
 public class PopperPodEntityRenderer extends EntityRenderer<PopperPodEntity, FireworkRocketEntityRenderState> {
@@ -22,12 +23,15 @@ public class PopperPodEntityRenderer extends EntityRenderer<PopperPodEntity, Fir
 
     public void render(FireworkRocketEntityRenderState fireworkRocketEntityRenderState, MatrixStack matrixStack, OrderedRenderCommandQueue orderedRenderCommandQueue, CameraRenderState cameraRenderState) {
         matrixStack.push();
+
         matrixStack.multiply(cameraRenderState.orientation);
+        matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(45.0F));
         if (fireworkRocketEntityRenderState.shotAtAngle) {
             matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(180.0F));
             matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180.0F));
             matrixStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90.0F));
         }
+
 
         fireworkRocketEntityRenderState.stack.render(matrixStack, orderedRenderCommandQueue, fireworkRocketEntityRenderState.light, OverlayTexture.DEFAULT_UV, fireworkRocketEntityRenderState.outlineColor);
         matrixStack.pop();

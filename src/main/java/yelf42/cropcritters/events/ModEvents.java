@@ -262,21 +262,26 @@ public class ModEvents {
                     && (killedEntity.getType().isIn(CropCritters.HAS_LOST_SOUL))
                     && (entity instanceof PlayerEntity playerEntity)) {
                 ItemStack stack = playerEntity.getMainHandStack();
-                int dropChance = 0;
+                int dropChance = ConfigManager.CONFIG.lostSoulDropChance;
+
+                // Hoe + Critter?
                 if (stack.isIn(ItemTags.HOES)) {
                     dropChance += ConfigManager.CONFIG.lostSoulDropChance;
-                    Optional<RegistryEntry.Reference<Enchantment>> e = world.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getEntry(Enchantments.SILK_TOUCH.getValue());
-                    if (e.isPresent()) {
-                        dropChance += (EnchantmentHelper.getLevel(e.get(), stack) > 0) ? ConfigManager.CONFIG.lostSoulDropChance : 0;
-                    }
                     dropChance += (killedEntity.getType().isIn(CropCritters.CROP_CRITTERS)) ? ConfigManager.CONFIG.lostSoulDropChance : 0;
                 }
-                if (stack.isIn(ItemTags.SWORDS)) {
-                    Optional<RegistryEntry.Reference<Enchantment>> e = world.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getEntry(Enchantments.LOOTING.getValue());
-                    if (e.isPresent()) {
-                        dropChance += (ConfigManager.CONFIG.lostSoulDropChance / 2) * EnchantmentHelper.getLevel(e.get(), stack);
-                    }
+
+                // Silk Touch?
+                Optional<RegistryEntry.Reference<Enchantment>> e = world.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getEntry(Enchantments.SILK_TOUCH.getValue());
+                if (e.isPresent()) {
+                    dropChance += (EnchantmentHelper.getLevel(e.get(), stack) > 0) ? 2 * ConfigManager.CONFIG.lostSoulDropChance : 0;
                 }
+
+                // Looting?
+                Optional<RegistryEntry.Reference<Enchantment>> e2 = world.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getEntry(Enchantments.LOOTING.getValue());
+                if (e2.isPresent()) {
+                    dropChance += (ConfigManager.CONFIG.lostSoulDropChance / 2) * EnchantmentHelper.getLevel(e2.get(), stack);
+                }
+
                 if (serverWorld.random.nextInt(100) + 1 < dropChance) {
                     Vec3d pos = killedEntity.getEntityPos();
                     ItemEntity ls = new ItemEntity(world, pos.x, pos.y, pos.z, new ItemStack(ModItems.LOST_SOUL));

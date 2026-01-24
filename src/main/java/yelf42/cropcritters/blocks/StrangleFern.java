@@ -25,8 +25,6 @@ import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.effects.ModEffects;
 import yelf42.cropcritters.events.WeedGrowNotifier;
 
-// TODO item texture
-
 public class StrangleFern extends BlockWithEntity implements Fertilizable {
 
     public static final MapCodec<StrangleFern> CODEC = createCodec(StrangleFern::new);

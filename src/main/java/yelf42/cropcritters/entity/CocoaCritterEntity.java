@@ -35,6 +35,7 @@ import software.bernie.geckolib.animation.AnimationController;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.animation.object.PlayState;
 import software.bernie.geckolib.constant.DefaultAnimations;
+import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.config.RecognizedCropsState;
 import yelf42.cropcritters.items.ModItems;
 
@@ -107,7 +108,15 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
     public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
         controllerRegistrar.add(
                 DefaultAnimations.genericWalkIdleController(),
-                new AnimationController<>("Hold", test -> this.getEquippedStack(EquipmentSlot.MAINHAND).isEmpty() ? PlayState.STOP : (test.setAndContinue(HOLD)))
+                new AnimationController<>("Hold", test -> {
+                    if ((this.getEquippedStack(EquipmentSlot.MAINHAND).isEmpty())) {
+                        test.controller().reset();
+                        return PlayState.STOP;
+                    } else {
+                        return (test.setAndContinue(HOLD));
+                    }
+                    //return this.getEquippedStack(EquipmentSlot.MAINHAND).isEmpty() ? PlayState.STOP : (test.setAndContinue(HOLD));
+                })
         );
     }
 

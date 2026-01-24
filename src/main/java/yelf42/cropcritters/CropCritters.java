@@ -41,7 +41,7 @@ import yelf42.cropcritters.items.ModItems;
 import yelf42.cropcritters.items.StrangeFertilizerItem;
 import yelf42.cropcritters.particle.ModParticles;
 
-// TODO Gunpowder from puffbomb, herbicides
+// TODO golden rose beacon
 
 public class CropCritters implements ModInitializer {
 	public static final String MOD_ID = "cropcritters";

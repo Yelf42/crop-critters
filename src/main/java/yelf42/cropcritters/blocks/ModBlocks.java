@@ -13,24 +13,28 @@ import net.minecraft.item.ItemGroups;
 import net.minecraft.item.consume.ApplyEffectsConsumeEffect;
 import net.minecraft.item.consume.UseAction;
 import net.minecraft.registry.*;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Pair;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.random.Random;
+import net.minecraft.world.biome.BiomeKeys;
+import net.minecraft.world.event.GameEvent;
 import yelf42.cropcritters.CropCritters;
+import yelf42.cropcritters.config.ConfigManager;
 import yelf42.cropcritters.effects.ModEffects;
 import yelf42.cropcritters.items.ModItems;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
+import static net.minecraft.block.Block.pushEntitiesUpBeforeBlockChange;
+
 public class ModBlocks {
-
-    public static boolean canWeedsReplace(BlockState state) {
-        if (state.contains(Properties.DOUBLE_BLOCK_HALF)) return false;
-        return state.isOf(Blocks.AIR)
-                || (state.getBlock() instanceof PlantBlock && !state.isIn(CropCritters.WEEDS) && !state.isIn(CropCritters.IMMUNE_PLANTS));
-    }
-
 
     private static Block register(String name, Function<AbstractBlock.Settings, Block> blockFactory, AbstractBlock.Settings settings, boolean shouldRegisterItem) {
         // Create a registry key for the block

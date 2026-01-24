@@ -15,10 +15,9 @@ import net.minecraft.world.LightType;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldView;
 import net.minecraft.world.attribute.EnvironmentAttributes;
+import yelf42.cropcritters.config.WeedPlacement;
 
 import java.awt.*;
-
-// TODO get working with custom model, make model clip 1 pixel down for farmland placement
 
 public class LiverwortBlock extends MultifaceGrowthBlock implements Fertilizable {
     public static final MapCodec<LiverwortBlock> CODEC = createCodec(LiverwortBlock::new);
@@ -155,7 +154,7 @@ public class LiverwortBlock extends MultifaceGrowthBlock implements Fertilizable
 
         @Override
         protected boolean canGrow(BlockView world, BlockPos pos, BlockPos growPos, Direction direction, BlockState state) {
-            return super.canGrow(world, pos, growPos, direction, state) || ModBlocks.canWeedsReplace(state);
+            return super.canGrow(world, pos, growPos, direction, state) || WeedPlacement.canWeedsReplace(state);
         }
     }
 
