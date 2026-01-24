@@ -20,8 +20,6 @@ import yelf42.cropcritters.entity.PopperPodEntity;
 import yelf42.cropcritters.events.WeedGrowNotifier;
 import yelf42.cropcritters.items.ModItems;
 
-
-// TODO bug where you cant break the block?
 public class PopperPlantBlock extends PlantBlock implements Fertilizable {
 
     public static final MapCodec<PopperPlantBlock> CODEC = createCodec(PopperPlantBlock::new);

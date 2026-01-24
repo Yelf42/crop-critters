@@ -14,17 +14,14 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.biome.BiomeKeys;
-import net.minecraft.world.event.GameEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.config.ConfigManager;
-import yelf42.cropcritters.config.CropCrittersConfig;
 import yelf42.cropcritters.config.WeedPlacement;
 import yelf42.cropcritters.entity.ModEntities;
 

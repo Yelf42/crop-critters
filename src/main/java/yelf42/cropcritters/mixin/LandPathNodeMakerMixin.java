@@ -14,12 +14,12 @@ import yelf42.cropcritters.CropCritters;
 @Mixin(LandPathNodeMaker.class)
 public abstract class LandPathNodeMakerMixin {
 
+    // PathNodeType.DAMAGE_OTHER is only used for CACTUS and SWEET_BERRY_BUSH, which is close enough to WEEDS
+    // In the future, consider custom PathNodeType just for WEEDS
     @Inject(method="getCommonNodeType", at=@At("HEAD"), cancellable = true)
     private static void injectWeedPenalties(BlockView world, BlockPos pos, CallbackInfoReturnable<PathNodeType> cir) {
         BlockState state = world.getBlockState(pos);
-        // TODO Breaks wheat critter, removing for now
-        // If necessary, enum addition in PathNodeType.class, then in AbstractCropCritterEntity call this.setPathfindingPenalty() in constructor;
-        //if (state.isIn(CropCritters.WEEDS)) cir.setReturnValue(PathNodeType.DAMAGE_OTHER);
+        if (state.isIn(CropCritters.PATH_PENALTY_WEEDS)) cir.setReturnValue(PathNodeType.DAMAGE_OTHER);
     }
 
 }

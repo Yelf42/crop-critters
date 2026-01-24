@@ -3,9 +3,6 @@ package yelf42.cropcritters.items;
 import net.fabricmc.fabric.api.itemgroup.v1.*;
 import net.fabricmc.fabric.api.registry.*;
 import net.minecraft.block.DispenserBlock;
-import net.minecraft.block.dispenser.ProjectileDispenserBehavior;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.FireworksComponent;
 import net.minecraft.component.type.FoodComponent;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.MobEntity;
@@ -19,7 +16,6 @@ import net.minecraft.util.Rarity;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.entity.ModEntities;
 
-import java.util.List;
 import java.util.function.Function;
 
 public class ModItems {

@@ -7,7 +7,7 @@
 	"authors": [
 		"Yelf42"
 	],
-	"icon": "iconOLD.png",
+	"icon": "icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [

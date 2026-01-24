@@ -9,6 +9,7 @@ import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.ai.pathing.MobNavigation;
 import net.minecraft.entity.ai.pathing.Path;
+import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
@@ -84,6 +85,7 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
 
     public AbstractCropCritterEntity(EntityType<? extends TameableEntity> entityType, World world) {
         super(entityType, world);
+        setPathfindingPenalty(PathNodeType.DAMAGE_OTHER, 0.0f);
     }
 
     public void setTrusting(boolean trusting) {
@@ -220,7 +222,7 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
 
     @Override
     public boolean damage(ServerWorld world, DamageSource source, float amount) {
-        if (this.isInvulnerableTo(world, source) || source.isOf(DamageTypes.CACTUS)) {
+        if (this.isInvulnerableTo(world, source) || source.isOf(DamageTypes.CACTUS) || source.isOf(DamageTypes.SWEET_BERRY_BUSH)) {
             return false;
         } else {
             if (this.targetWorkGoal != null) this.targetWorkGoal.cancel();

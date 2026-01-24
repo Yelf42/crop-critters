@@ -13,26 +13,14 @@ import net.minecraft.item.ItemGroups;
 import net.minecraft.item.consume.ApplyEffectsConsumeEffect;
 import net.minecraft.item.consume.UseAction;
 import net.minecraft.registry.*;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.state.property.Properties;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.biome.BiomeKeys;
-import net.minecraft.world.event.GameEvent;
 import yelf42.cropcritters.CropCritters;
-import yelf42.cropcritters.config.ConfigManager;
 import yelf42.cropcritters.effects.ModEffects;
 import yelf42.cropcritters.items.ModItems;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Function;
-
-import static net.minecraft.block.Block.pushEntitiesUpBeforeBlockChange;
 
 public class ModBlocks {
 
@@ -179,6 +167,7 @@ public class ModBlocks {
             true
     );
 
+    // TODO check if offset looks good with final textures
     public static final Block POPPER_PLANT = register(
             "popper_plant",
             PopperPlantBlock::new,
@@ -188,6 +177,7 @@ public class ModBlocks {
                     .ticksRandomly()
                     .strength(0.4f)
                     .sounds(BlockSoundGroup.SWEET_BERRY_BUSH)
+                    .offset(AbstractBlock.OffsetType.XZ)
                     .pistonBehavior(PistonBehavior.DESTROY),
             true
     );

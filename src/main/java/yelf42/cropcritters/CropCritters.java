@@ -62,6 +62,7 @@ public class CropCritters implements ModInitializer {
 	public static final TagKey<Block> ON_NYLIUM_STRANGE_FERTILIZERS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "on_nylium_strange_fertilizers"));
 	public static final TagKey<Block> IGNORE_STRANGE_FERTILIZERS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "ignore_strange_fertilizers"));
 	public static final TagKey<Block> WEEDS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "weeds"));
+    public static final TagKey<Block> PATH_PENALTY_WEEDS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "path_penalty_weeds"));
     public static final TagKey<Block> SPORES_INFECT = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "spores_infectable"));
     public static final TagKey<Block> IMMUNE_PLANTS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("cropcritters", "immune_plants"));
 

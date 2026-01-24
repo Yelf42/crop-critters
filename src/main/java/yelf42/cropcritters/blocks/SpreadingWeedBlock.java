@@ -2,8 +2,6 @@ package yelf42.cropcritters.blocks;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.block.*;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.IntProperty;
@@ -17,8 +15,6 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldView;
 import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.tick.ScheduledTickView;
-import org.jetbrains.annotations.Nullable;
-import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.config.WeedPlacement;
 import yelf42.cropcritters.events.WeedGrowNotifier;
 

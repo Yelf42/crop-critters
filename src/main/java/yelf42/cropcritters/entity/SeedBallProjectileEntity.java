@@ -9,7 +9,6 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.thrown.ThrownItemEntity;
 import net.minecraft.item.Item;
@@ -24,11 +23,9 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.items.ModComponents;
 import yelf42.cropcritters.items.ModItems;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 

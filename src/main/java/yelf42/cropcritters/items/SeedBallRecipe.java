@@ -1,7 +1,5 @@
 package yelf42.cropcritters.items;
 
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.TooltipDisplayComponent;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -10,7 +8,6 @@ import net.minecraft.recipe.book.CraftingRecipeCategory;
 import net.minecraft.recipe.input.CraftingRecipeInput;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import yelf42.cropcritters.CropCritters;
