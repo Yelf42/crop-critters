@@ -62,8 +62,9 @@ public class PopperPlantBlock extends PlantBlock implements Fertilizable {
     @Override
     protected void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
         int lightLevel = world.getLightLevel(LightType.SKY, pos);
+        float temp = world.getBiome(pos).value().getTemperature();
         long time = world.getTimeOfDay() % 24000;
-        if (lightLevel < 14 || (time < 2000 || time > 9000)) return;
+        if (lightLevel < 14 || (time < 2000 || time > 9000) || (temp >= 1.0 || temp < 0.5)) return;
 
         if (!isMature(state)) {
             world.setBlockState(pos, state.with(AGE, this.getAge(state) + 1));

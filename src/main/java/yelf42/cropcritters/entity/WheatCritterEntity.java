@@ -9,10 +9,13 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.state.property.Properties;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import yelf42.cropcritters.CropCritters;
+import yelf42.cropcritters.blocks.ModBlocks;
+import yelf42.cropcritters.blocks.StrangleFern;
 
 import java.util.function.Predicate;
 
@@ -23,7 +26,9 @@ public class WheatCritterEntity extends AbstractCropCritterEntity {
 
     @Override
     protected Predicate<BlockState> getTargetBlockFilter() {
-        return (blockState -> blockState.isIn(CropCritters.WEEDS) || blockState.isOf(Blocks.DEAD_BUSH));
+        return (blockState -> (blockState.isIn(CropCritters.WEEDS) && !blockState.isOf(ModBlocks.STRANGLE_FERN))
+                || (blockState.isOf(ModBlocks.STRANGLE_FERN) && blockState.get(StrangleFern.AGE, 0) > 1)
+                || blockState.isOf(Blocks.DEAD_BUSH));
     }
 
     @Override

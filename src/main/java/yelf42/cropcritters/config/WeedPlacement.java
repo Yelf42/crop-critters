@@ -91,8 +91,13 @@ public class WeedPlacement {
                 return;
             }
 
+            BlockState toPlace = getFromWeightedList(WEIGHTED_OVERWORLD_WEEDS);
+
+            float temp = world.getBiome(pos).value().getTemperature();
+            if (toPlace.isOf(ModBlocks.POPPER_PLANT) && (temp >= 1.0 || temp < 0.5)) toPlace = ModBlocks.CRAWL_THISTLE.getDefaultState();
+
             // Default
-            placeOverworldWeed(getFromWeightedList(WEIGHTED_OVERWORLD_WEEDS), world, pos, random);
+            placeOverworldWeed(toPlace, world, pos, random);
         }
     }
 

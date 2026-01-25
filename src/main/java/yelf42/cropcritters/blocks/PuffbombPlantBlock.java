@@ -26,6 +26,7 @@ import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.events.WeedGrowNotifier;
 import yelf42.cropcritters.features.ModFeatures;
 
+// TODO ticking debuff asset
 public class PuffbombPlantBlock extends MushroomPlantBlock {
 
     public static final int MAX_AGE = 2;
