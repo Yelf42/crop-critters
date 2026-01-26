@@ -19,7 +19,7 @@ public class ModEffects {
     public static final StatusEffectInstance NATURAL_SPORES = new StatusEffectInstance(SPORES, 6000, 0, true, true, false);
 
     public static final RegistryEntry<StatusEffect> PUFFBOMB_POISONING = register("puffbomb_poisoning", new PuffbombPoisoningEffect(StatusEffectCategory.HARMFUL, 16770790));
-    public static final StatusEffectInstance EATEN_PUFFBOMB_POISONING = new StatusEffectInstance(PUFFBOMB_POISONING, 2400, 0, true, false, true);
+    public static final StatusEffectInstance EATEN_PUFFBOMB_POISONING = new StatusEffectInstance(PUFFBOMB_POISONING, 2400, 0, false, false, true);
 
 
     private static RegistryEntry<StatusEffect> register(String id, StatusEffect statusEffect) {

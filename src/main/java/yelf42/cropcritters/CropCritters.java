@@ -42,8 +42,6 @@ import yelf42.cropcritters.items.StrangeFertilizerItem;
 import yelf42.cropcritters.particle.ModParticles;
 
 // TODO golden rose beacon
-// TODO biome additions of new weeds
-
 public class CropCritters implements ModInitializer {
 	public static final String MOD_ID = "cropcritters";
 
