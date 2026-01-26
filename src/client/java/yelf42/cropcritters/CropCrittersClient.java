@@ -66,7 +66,7 @@ public class CropCrittersClient implements ClientModInitializer {
         BlockEntityRendererFactories.register(ModBlockEntities.STRANGLE_FERN, StrangleFernBlockEntityRenderer::new);
         ColorProviderRegistry.BLOCK.register((state, world, pos, tintIndex) ->
                 world != null && pos != null
-                        ? BiomeColors.getGrassColor(world, pos) + 0xd4e1c3
+                        ? BiomeColors.getGrassColor(world, pos)
                         : 0x91BD59, ModBlocks.STRANGLE_FERN
         );
 

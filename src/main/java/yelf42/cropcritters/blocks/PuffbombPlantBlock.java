@@ -33,7 +33,7 @@ public class PuffbombPlantBlock extends MushroomPlantBlock {
     public static final IntProperty AGE = Properties.AGE_2;
     private static final VoxelShape[] SHAPES_BY_AGE = Block.createShapeArray(2, age -> Block.createColumnShape(5 + age * 4, -1.0, 5 + age * 4));
 
-    private static final RegistryKey<ConfiguredFeature<?, ?>> FEATURE_KEY = ModFeatures.PUFFBOMB_BLOB_KEY;
+    private static final RegistryKey<ConfiguredFeature<?, ?>> FEATURE_KEY = ModFeatures.PUFFBOMB_BLOB_CONFIGURED_FEATURE;
 
     private static final ExplosionBehavior BURST = new ExplosionBehavior() {
         public boolean canDestroyBlock(Explosion explosion, BlockView world, BlockPos pos, BlockState state, float power) {

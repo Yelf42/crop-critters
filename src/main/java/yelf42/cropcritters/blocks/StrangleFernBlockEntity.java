@@ -15,6 +15,7 @@ public class StrangleFernBlockEntity extends BlockEntity {
 
     public StrangleFernBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.STRANGLE_FERN, pos, state);
+        if (Math.random() > 0.5) infestedState = Blocks.SHORT_GRASS.getDefaultState();
     }
 
     @Override

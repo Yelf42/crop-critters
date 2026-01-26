@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.block.*;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
+import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
@@ -27,7 +28,7 @@ public class SpreadingWeedBlock extends PlantBlock implements Fertilizable{
     public static final int MAX_AGE = 1;
     public static final IntProperty AGE = Properties.AGE_1;
     private static final VoxelShape[] SHAPES_BY_AGE = Block.createShapeArray(2, age -> Block.createColumnShape(8 + age * 4, 0.0, 8 + age * 4));
-    private boolean reachedMaxNeighbours = false;
+    public static final BooleanProperty CAN_SPREAD = BooleanProperty.of("can_spread");
 
     public SpreadingWeedBlock(AbstractBlock.Settings settings) {
         super(settings);
@@ -64,13 +65,12 @@ public class SpreadingWeedBlock extends PlantBlock implements Fertilizable{
 
     @Override
     protected BlockState getStateForNeighborUpdate(BlockState state, WorldView world, ScheduledTickView tickView, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, Random random) {
-        reachedMaxNeighbours = false;
-        return super.getStateForNeighborUpdate(state, world, tickView, pos, direction, neighborPos, neighborState, random);
+        return super.getStateForNeighborUpdate(state.with(CAN_SPREAD, state.get(CAN_SPREAD) || !neighborState.isOf(this)), world, tickView, pos, direction, neighborPos, neighborState, random);
     }
 
     @Override
     protected boolean hasRandomTicks(BlockState state) {
-        return !reachedMaxNeighbours;
+        return state.get(CAN_SPREAD);
     }
 
     @Override
@@ -109,7 +109,7 @@ public class SpreadingWeedBlock extends PlantBlock implements Fertilizable{
                 BlockPos targetPos = canSpreadTo.get(random.nextInt(canSpreadTo.size()));
                 setToWeed(world, targetPos);
             } else {
-                reachedMaxNeighbours = true;
+                world.setBlockState(pos, state.with(CAN_SPREAD, false));
             }
         } else if (random.nextInt(2) == 0) {
             // 50% chance to mature per random tick
@@ -139,6 +139,7 @@ public class SpreadingWeedBlock extends PlantBlock implements Fertilizable{
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
         builder.add(AGE);
+        builder.add(CAN_SPREAD);
     }
 
     @Override

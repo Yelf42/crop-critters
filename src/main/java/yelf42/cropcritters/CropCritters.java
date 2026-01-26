@@ -42,6 +42,7 @@ import yelf42.cropcritters.items.StrangeFertilizerItem;
 import yelf42.cropcritters.particle.ModParticles;
 
 // TODO golden rose beacon
+// TODO biome additions of new weeds
 
 public class CropCritters implements ModInitializer {
 	public static final String MOD_ID = "cropcritters";
@@ -113,30 +114,51 @@ public class CropCritters implements ModInitializer {
 			BiomeModifications.addFeature(
 					BiomeSelectors.tag(BiomeTags.IS_BEACH),
 					GenerationStep.Feature.UNDERGROUND_ORES,
-					RegistryKey.of(RegistryKeys.PLACED_FEATURE, Identifier.of("cropcritters", "dead_coral_shelf"))
+					RegistryKey.of(RegistryKeys.PLACED_FEATURE, Identifier.of(CropCritters.MOD_ID, "dead_coral_shelf"))
 			);
 		}
 		if (ConfigManager.CONFIG.thornweedGeneration) {
 			BiomeModifications.addFeature(
 					BiomeSelectors.includeByKey(BiomeKeys.CRIMSON_FOREST),
 					GenerationStep.Feature.VEGETAL_DECORATION,
-					RegistryKey.of(RegistryKeys.PLACED_FEATURE, Identifier.of("cropcritters", "crimson_thornweed"))
+					RegistryKey.of(RegistryKeys.PLACED_FEATURE, Identifier.of(CropCritters.MOD_ID, "crimson_thornweed"))
 			);
 		}
 		if (ConfigManager.CONFIG.waftgrassGeneration) {
 			BiomeModifications.addFeature(
 					BiomeSelectors.includeByKey(BiomeKeys.WARPED_FOREST),
 					GenerationStep.Feature.VEGETAL_DECORATION,
-					RegistryKey.of(RegistryKeys.PLACED_FEATURE, Identifier.of("cropcritters", "waftgrass"))
+					RegistryKey.of(RegistryKeys.PLACED_FEATURE, Identifier.of(CropCritters.MOD_ID, "waftgrass"))
 			);
 		}
 		if (ConfigManager.CONFIG.spiteweedGeneration) {
 			BiomeModifications.addFeature(
 					BiomeSelectors.includeByKey(BiomeKeys.SOUL_SAND_VALLEY),
 					GenerationStep.Feature.SURFACE_STRUCTURES,
-					RegistryKey.of(RegistryKeys.PLACED_FEATURE, Identifier.of("cropcritters", "withering_spiteweed"))
+					RegistryKey.of(RegistryKeys.PLACED_FEATURE, Identifier.of(CropCritters.MOD_ID, "withering_spiteweed"))
 			);
 		}
+        if (ConfigManager.CONFIG.strangleFernGeneration) {
+            BiomeModifications.addFeature(
+                    BiomeSelectors.includeByKey(BiomeKeys.SWAMP),
+                    GenerationStep.Feature.VEGETAL_DECORATION,
+                    RegistryKey.of(RegistryKeys.PLACED_FEATURE, Identifier.of(CropCritters.MOD_ID, "strangle_fern"))
+            );
+        }
+        if (ConfigManager.CONFIG.liverwortGeneration) {
+            BiomeModifications.addFeature(
+                    BiomeSelectors.includeByKey(BiomeKeys.SWAMP),
+                    GenerationStep.Feature.VEGETAL_DECORATION,
+                    RegistryKey.of(RegistryKeys.PLACED_FEATURE, Identifier.of(CropCritters.MOD_ID, "liverwort"))
+            );
+        }
+        if (ConfigManager.CONFIG.puffbombGeneration) {
+            BiomeModifications.addFeature(
+                    BiomeSelectors.includeByKey(BiomeKeys.PLAINS),
+                    GenerationStep.Feature.VEGETAL_DECORATION,
+                    RegistryKey.of(RegistryKeys.PLACED_FEATURE, Identifier.of(CropCritters.MOD_ID, "plains_puffbomb_blob"))
+            );
+        }
 
 
 		// S2C Packets

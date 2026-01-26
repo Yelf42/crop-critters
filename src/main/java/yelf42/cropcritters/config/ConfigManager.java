@@ -42,6 +42,10 @@ public class ConfigManager {
                     case "thornweedGeneration" -> CONFIG.thornweedGeneration = Boolean.parseBoolean(value);
                     case "waftgrassGeneration" -> CONFIG.waftgrassGeneration = Boolean.parseBoolean(value);
                     case "spiteweedGeneration" -> CONFIG.spiteweedGeneration = Boolean.parseBoolean(value);
+                    case "strangleFernGeneration" -> CONFIG.strangleFernGeneration = Boolean.parseBoolean(value);
+                    case "puffbombGeneration" -> CONFIG.puffbombGeneration = Boolean.parseBoolean(value);
+                    case "liverwortGeneration" -> CONFIG.liverwortGeneration = Boolean.parseBoolean(value);
+
                 }
             }
         } catch (IOException e) {
@@ -81,6 +85,9 @@ public class ConfigManager {
             writer.write("thornweedGeneration = " + CONFIG.thornweedGeneration + "\n");
             writer.write("waftgrassGeneration = " + CONFIG.waftgrassGeneration + "\n");
             writer.write("spiteweedGeneration = " + CONFIG.spiteweedGeneration + "\n");
+            writer.write("strangleFernGeneration = " + CONFIG.strangleFernGeneration + "\n");
+            writer.write("puffbombGeneration = " + CONFIG.puffbombGeneration + "\n");
+            writer.write("liverwortGeneration = " + CONFIG.liverwortGeneration + "\n");
         } catch (IOException e) {
             System.err.println("Failed to save config: " + e.getMessage());
         }
