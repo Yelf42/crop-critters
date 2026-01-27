@@ -88,7 +88,6 @@ public class LiverwortBlock extends MultifaceGrowthBlock implements Fertilizable
         long time = world.getTimeOfDay() % 24000;
         if (state.getFluidState().isEmpty()
                 && (time <= 8000 && time >= 4000)
-                && (random.nextInt(2) == 0)
                 && world.getLightLevel(LightType.SKY, pos) >= 15
                 && !world.hasRain(pos)) {
             world.addSyncedBlockEvent(pos, this, 0, 0);
@@ -101,7 +100,10 @@ public class LiverwortBlock extends MultifaceGrowthBlock implements Fertilizable
             return;
         }
 
-        if (!state.get(CAN_SPREAD, false)) return;
+        if (!state.get(CAN_SPREAD, false)) {
+            if (world.isRaining() && random.nextInt(6) == 1) world.setBlockState(pos, state.with(CAN_SPREAD, true));
+            return;
+        }
 
         // Calculate neighbours, return if too many
         int neighbouringWeeds = -1;

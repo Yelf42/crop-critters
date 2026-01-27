@@ -105,7 +105,7 @@ public class StrangleFern extends BlockWithEntity implements Fertilizable {
     private void ageUp(BlockState state, ServerWorld world, BlockPos pos) {
         int newAge = this.getAge(state) + 1;
         world.setBlockState(pos, state.with(AGE, newAge), 3);
-        if (newAge == this.getMaxAge()) {
+        if (newAge == this.getMaxAge() && world.random.nextInt(3) == 0) {
             StrangleFernBlockEntity sfbe = (StrangleFernBlockEntity) world.getBlockEntity(pos);
             if (sfbe != null) sfbe.setInfestedState(Blocks.DEAD_BUSH.getDefaultState());
         }
