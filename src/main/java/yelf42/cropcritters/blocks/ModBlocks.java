@@ -167,7 +167,6 @@ public class ModBlocks {
             true
     );
 
-    // TODO check if offset looks good with final textures
     public static final Block POPPER_PLANT = register(
             "popper_plant",
             PopperPlantBlock::new,
