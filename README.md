@@ -1,7 +1,6 @@
-# TODO:
-- Reintroduce weed pathfinding penalty, in a way that Critters can ignore
+# TODO / IDEAS:
+- Custom beacon-esque multiblock
+- Pests
+- Locust swarm raid
 - New weed types:
   - Tumbleweed
-  - Firework-esque weed
-  - Spore effect, fern
-  - Camouflaged weed
