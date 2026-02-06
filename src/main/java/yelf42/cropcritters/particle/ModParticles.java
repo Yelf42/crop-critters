@@ -1,7 +1,9 @@
 package yelf42.cropcritters.particle;
 
 import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
+import net.minecraft.particle.ParticleType;
 import net.minecraft.particle.SimpleParticleType;
+import net.minecraft.particle.TintedParticleEffect;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
@@ -12,8 +14,17 @@ public class ModParticles {
     public static final SimpleParticleType WATER_SPRAY_PARTICLE =
             registerParticle("water_spray_particle", FabricParticleTypes.simple());
 
+    public static final SimpleParticleType SOUL_SIPHON_PARTICLE =
+            registerParticle("soul_siphon_particle", FabricParticleTypes.simple());
+
+    public static final ParticleType<TintedParticleEffect> SPORE_PARTICLE = registerTintedParticle("spore_particle");
+
     private static SimpleParticleType registerParticle(String name, SimpleParticleType particleType) {
         return Registry.register(Registries.PARTICLE_TYPE, Identifier.of(CropCritters.MOD_ID, name), particleType);
+    }
+
+    private static ParticleType<TintedParticleEffect> registerTintedParticle(String name) {
+        return Registry.register(Registries.PARTICLE_TYPE, Identifier.of(CropCritters.MOD_ID, name), FabricParticleTypes.complex(TintedParticleEffect::createCodec, TintedParticleEffect::createPacketCodec));
     }
 
     public static void initialize() {

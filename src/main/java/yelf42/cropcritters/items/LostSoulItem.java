@@ -18,6 +18,7 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
+import yelf42.cropcritters.config.CritterHelper;
 import yelf42.cropcritters.entity.AbstractCropCritterEntity;
 import yelf42.cropcritters.entity.ModEntities;
 
@@ -31,7 +32,7 @@ public class LostSoulItem extends Item {
 
     @Override
     public ActionResult useOnBlock(ItemUsageContext context) {
-        if (context.getWorld().isClient) return ActionResult.PASS;
+        if (context.getWorld().isClient()) return ActionResult.PASS;
         ServerWorld world = (ServerWorld) context.getWorld();
         BlockPos blockPos = context.getBlockPos();
         BlockState state = world.getBlockState(blockPos);
@@ -54,12 +55,12 @@ public class LostSoulItem extends Item {
             if (playerEntity instanceof ServerPlayerEntity serverPlayerEntity) {
                 Criteria.ITEM_USED_ON_BLOCK.trigger(serverPlayerEntity, blockPos, itemStack);
             }
-            itemStack.decrement(1);
+            itemStack.decrementUnlessCreative(1, playerEntity);
             return ActionResult.SUCCESS;
         }
 
         // Critter spawning logic
-        Optional<AbstractCropCritterEntity> toSpawn = spawnCritter(world, blockPos, state);
+        Optional<AbstractCropCritterEntity> toSpawn = CritterHelper.spawnCritterWithItem(world, state);
         if (toSpawn.isEmpty()) return ActionResult.PASS;
         AbstractCropCritterEntity critter = toSpawn.get();
         int failChance = (critter.getMaxHealth() > 12) ? 80 : 60;
@@ -79,51 +80,8 @@ public class LostSoulItem extends Item {
             if (playerEntity instanceof ServerPlayerEntity serverPlayerEntity) {
                 Criteria.ITEM_USED_ON_BLOCK.trigger(serverPlayerEntity, blockPos, itemStack);
             }
-            itemStack.decrement(1);
+            itemStack.decrementUnlessCreative(1, playerEntity);
         }
         return ActionResult.SUCCESS;
-    }
-
-    private Optional<AbstractCropCritterEntity> spawnCritter(ServerWorld world, BlockPos blockPos, BlockState state) {
-        AbstractCropCritterEntity output = null;
-        if (state.isOf(Blocks.PUMPKIN)) {
-            output = ModEntities.PUMPKIN_CRITTER.create(world, SpawnReason.SPAWN_ITEM_USE);
-        } else if (state.isOf(Blocks.MELON)) {
-            output = ModEntities.MELON_CRITTER.create(world, SpawnReason.SPAWN_ITEM_USE);
-        } else if (state.isOf(Blocks.COCOA) && state.get(CocoaBlock.AGE, 0) >= 2) {
-            output = ModEntities.COCOA_CRITTER.create(world, SpawnReason.SPAWN_ITEM_USE);
-        } else if (state.getBlock() instanceof PlantBlock) {
-            if (state.isOf(Blocks.PITCHER_PLANT) || (state.isOf(Blocks.PITCHER_CROP) && state.get(PitcherCropBlock.AGE, 0) >= 4)) {
-                output = ModEntities.PITCHER_CRITTER.create(world, SpawnReason.SPAWN_ITEM_USE);
-            } else if (state.isOf(Blocks.TORCHFLOWER)) {
-                output = ModEntities.TORCHFLOWER_CRITTER.create(world, SpawnReason.SPAWN_ITEM_USE);
-            } else if (state.isOf(Blocks.NETHER_WART)) {
-                for (int i = 0; i <= world.random.nextInt(3); i++) {
-                    output = ModEntities.NETHER_WART_CRITTER.create(world, SpawnReason.SPAWN_ITEM_USE);
-                }
-            } else if (state.getBlock() instanceof CropBlock cropBlock && cropBlock.isMature(state)) {
-                if (state.isOf(Blocks.WHEAT)) {
-                    output = ModEntities.WHEAT_CRITTER.create(world, SpawnReason.SPAWN_ITEM_USE);
-                } else if (state.isOf(Blocks.CARROTS)) {
-                    output = ModEntities.CARROT_CRITTER.create(world, SpawnReason.SPAWN_ITEM_USE);
-                } else if (state.isOf(Blocks.POTATOES)) {
-                    if (world.random.nextInt(100) + 1 < world.getDifficulty().getId() * 2) {
-                        output = ModEntities.POISONOUS_POTATO_CRITTER.create(world, SpawnReason.SPAWN_ITEM_USE);
-                    } else {
-                        output = ModEntities.POTATO_CRITTER.create(world, SpawnReason.SPAWN_ITEM_USE);
-                    }
-                } else if (state.isOf(Blocks.BEETROOTS)) {
-                    output = ModEntities.BEETROOT_CRITTER.create(world, SpawnReason.SPAWN_ITEM_USE);
-                } else {
-                    return Optional.empty();
-                }
-            } else {
-                return Optional.empty();
-            }
-        } else {
-            return Optional.empty();
-        }
-        if (output == null) return Optional.empty();
-        return Optional.of(output);
     }
 }

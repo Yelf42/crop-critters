@@ -13,6 +13,14 @@ public class ModBlockEntities {
             "mazewood_sapling",
             FabricBlockEntityTypeBuilder.create(MazewoodSaplingBlockEntity::new, ModBlocks.MAZEWOOD_SAPLING).build());
 
+    public static final BlockEntityType<StrangleFernBlockEntity> STRANGLE_FERN = register(
+            "strangle_fern",
+            FabricBlockEntityTypeBuilder.create(StrangleFernBlockEntity::new, ModBlocks.STRANGLE_FERN).build());
+
+    public static final BlockEntityType<SoulRoseBlockEntity> SOUL_ROSE = register(
+            "soul_rose",
+            FabricBlockEntityTypeBuilder.create(SoulRoseBlockEntity::new, ModBlocks.SOUL_ROSE).build());
+
     public static <T extends BlockEntityType<?>> T register(String path, T blockEntityType) {
         return Registry.register(Registries.BLOCK_ENTITY_TYPE, Identifier.of(CropCritters.MOD_ID, path), blockEntityType);
     }

@@ -7,6 +7,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import yelf42.cropcritters.CropCritters;
 
 public class CrawlThistle extends SpreadingWeedBlock {
 
@@ -18,10 +19,12 @@ public class CrawlThistle extends SpreadingWeedBlock {
     public int getMaxNeighbours() { return 2; }
 
     @Override
-    protected void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler handler) {
-        if (entity instanceof LivingEntity livingEntity) {
+    protected void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler handler, boolean bl) {
+        if (entity instanceof LivingEntity livingEntity && !(livingEntity.getType().isIn(CropCritters.WEED_IMMUNE))) {
             Vec3d vec3d = new Vec3d(0.9, 0.9F, 0.9);
             livingEntity.slowMovement(state, vec3d);
         }
     }
+
+
 }

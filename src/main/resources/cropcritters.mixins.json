@@ -4,12 +4,17 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "AttachedStemBlockMixin",
+    "BiomeMixin",
     "CropBlockMixin",
+    "FarmlandBlockMixin",
+    "FlowerPotBlockMixin",
     "LandPathNodeMakerMixin",
     "LightningEntityMixin",
     "NetherWartBlockMixin",
     "PitcherCropBlockMixin",
     "PlantBlockMixin",
+    "ServerWorldMixin",
+    "ShearsDispenserBehaviourMixin",
     "StemBlockMixin"
   ],
   "server": [],

@@ -2,7 +2,6 @@ package yelf42.cropcritters.items;
 
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.block.*;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BoneMealItem;
 import net.minecraft.item.ItemStack;
@@ -24,6 +23,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 import org.jetbrains.annotations.Nullable;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.blocks.ModBlocks;
+import yelf42.cropcritters.blocks.SoulRoseBlock;
 import yelf42.cropcritters.blocks.TallBushBlock;
 
 import java.util.Map;
@@ -70,7 +70,7 @@ public class StrangeFertilizerItem extends BoneMealItem {
         // Use on the ground
         boolean bl = blockState.isSideSolidFullSquare(world, blockPos, context.getSide());
         if (bl && useOnGround(context.getStack(), world, blockPos, blockPos2, context.getSide())) {
-            if (!world.isClient) {
+            if (!world.isClient()) {
                 if (playerEntity != null) playerEntity.emitGameEvent(GameEvent.ITEM_INTERACT_FINISH);
                 world.syncWorldEvent(1505, blockPos2, 15);
             }
@@ -85,7 +85,7 @@ public class StrangeFertilizerItem extends BoneMealItem {
 
         // Use on fertilizable things
         if (useOnFertilizable(context.getStack(), world, blockPos)) {
-            if (!world.isClient) {
+            if (!world.isClient()) {
                 if (playerEntity != null) playerEntity.emitGameEvent(GameEvent.ITEM_INTERACT_FINISH);
                 world.syncWorldEvent(1505, blockPos, 15);
             }
@@ -94,14 +94,25 @@ public class StrangeFertilizerItem extends BoneMealItem {
         }
 
         // Revive Coral
-        if (!tryReviveCoral(context.getStack(), world, blockPos, world.getBlockState(blockPos))) {
-            return ActionResult.PASS;
-        } else {
+        if (tryReviveCoral(context.getStack(), world, blockPos, world.getBlockState(blockPos))) {
             if (playerEntity instanceof ServerPlayerEntity) {
                 Criteria.ITEM_USED_ON_BLOCK.trigger((ServerPlayerEntity) playerEntity, blockPos, itemStack);
             }
             return ActionResult.SUCCESS;
         }
+
+        // Trimmed Soul Rose
+        if (blockState.isOf(ModBlocks.SOUL_ROSE) && blockState.get(SoulRoseBlock.LEVEL, 0) > 1) {
+            if (!world.isClient()) {
+                if (playerEntity != null) playerEntity.emitGameEvent(GameEvent.ITEM_INTERACT_FINISH);
+                world.syncWorldEvent(1505, blockPos, 15);
+                context.getStack().decrement(1);
+                Block.dropStack(world, blockPos, new ItemStack(ModBlocks.TRIMMED_SOUL_ROSE));
+            }
+            return ActionResult.SUCCESS;
+        }
+
+        return ActionResult.PASS;
     }
 
     public static boolean useOnBush(ItemStack stack, World world, BlockPos blockPos) {
@@ -185,38 +196,45 @@ public class StrangeFertilizerItem extends BoneMealItem {
 
         Random random = world.getRandom();
 
-        label980:
+        outerLoop:
         for (int i = 0; i < 128; i++) {
             BlockPos blockPos2 = blockPos;
-            BlockState blockState = Blocks.SHORT_GRASS.getDefaultState();
 
             for (int j = 0; j < i / 16; j++) {
                 blockPos2 = blockPos2.add(random.nextInt(3) - 1, (random.nextInt(3) - 1) * random.nextInt(3) / 2, random.nextInt(3) - 1);
                 if (world.getBlockState(blockPos2).isFullCube(world, blockPos2)) {
-                    continue label980;
+                    continue outerLoop;
                 }
             }
 
             BlockState blockState2 = world.getBlockState(blockPos2);
             if (blockState2.isOf(Blocks.AIR)) {
+                BlockState toPlace;
                 BlockState floor = world.getBlockState(blockPos2.down());
+                if (floor.isOf(Blocks.CRIMSON_NYLIUM) || floor.isOf(Blocks.WARPED_NYLIUM)) {
+                    toPlace = Registries.BLOCK
+                            .getRandomEntry(CropCritters.ON_NYLIUM_STRANGE_FERTILIZERS, world.random)
+                            .map(blockEntry -> ((Block)blockEntry.value()).getDefaultState())
+                            .orElse(Blocks.NETHER_SPROUTS.getDefaultState());
+                } else if (floor.isOf(Blocks.MYCELIUM)) {
+                    toPlace = Registries.BLOCK
+                            .getRandomEntry(CropCritters.ON_MYCELIUM_STRANGE_FERTILIZERS, world.random)
+                            .map(blockEntry -> ((Block)blockEntry.value()).getDefaultState())
+                            .orElse(Blocks.BROWN_MUSHROOM.getDefaultState());
+                } else {
+                    toPlace = Registries.BLOCK
+                            .getRandomEntry((random.nextInt(4) == 0) ? CropCritters.ON_LAND_RARE_STRANGE_FERTILIZERS : CropCritters.ON_LAND_COMMON_STRANGE_FERTILIZERS, world.random)
+                            .map(blockEntry -> ((Block)blockEntry.value()).getDefaultState())
+                            .orElse(Blocks.SHORT_GRASS.getDefaultState());
+                }
 
-                blockState = (floor.isOf(Blocks.CRIMSON_NYLIUM) || floor.isOf(Blocks.WARPED_NYLIUM)) ?
-                        (BlockState)Registries.BLOCK
-                        .getRandomEntry(CropCritters.ON_NYLIUM_STRANGE_FERTILIZERS, world.random)
-                        .map(blockEntry -> ((Block)blockEntry.value()).getDefaultState())
-                        .orElse(blockState)
-                        :
-                        (BlockState)Registries.BLOCK
-                        .getRandomEntry((random.nextInt(4) == 0) ? CropCritters.ON_LAND_RARE_STRANGE_FERTILIZERS : CropCritters.ON_LAND_COMMON_STRANGE_FERTILIZERS, world.random)
-                        .map(blockEntry -> ((Block)blockEntry.value()).getDefaultState())
-                        .orElse(blockState);
-
-                if (!blockState.isIn(CropCritters.IGNORE_STRANGE_FERTILIZERS) && blockState.canPlaceAt(world, blockPos2)) {
-                    if (blockState.getBlock() instanceof TallPlantBlock && world.getBlockState(blockPos2.up()).isOf(Blocks.AIR)) {
-                        TallPlantBlock.placeAt(world, blockState, blockPos2, 3);
+                if (!toPlace.isIn(CropCritters.IGNORE_STRANGE_FERTILIZERS) && toPlace.canPlaceAt(world, blockPos2)) {
+                    if (toPlace.getBlock() instanceof TallPlantBlock) {
+                        if (world.getBlockState(blockPos2.up()).isOf(Blocks.AIR)) {
+                            TallPlantBlock.placeAt(world, toPlace, blockPos2, 3);
+                        }
                     } else {
-                        world.setBlockState(blockPos2, blockState, Block.NOTIFY_ALL);
+                        world.setBlockState(blockPos2, toPlace, Block.NOTIFY_ALL);
                     }
                 }
             }

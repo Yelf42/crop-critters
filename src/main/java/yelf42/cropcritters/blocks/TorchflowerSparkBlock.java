@@ -34,7 +34,7 @@ public class TorchflowerSparkBlock extends AirBlock {
     @Override
     public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
         super.randomDisplayTick(state, world, pos, random);
-        if (world.isClient) {
+        if (world.isClient()) {
             Vec3d p = pos.toCenterPos();
             world.addParticleClient(ParticleTypes.SOUL_FIRE_FLAME, p.x, p.y, p.z, 0F, 0F, 0F);
         }

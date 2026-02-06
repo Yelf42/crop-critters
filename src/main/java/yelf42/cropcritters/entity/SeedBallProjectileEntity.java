@@ -9,7 +9,6 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.thrown.ThrownItemEntity;
 import net.minecraft.item.Item;
@@ -24,11 +23,9 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.items.ModComponents;
 import yelf42.cropcritters.items.ModItems;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -65,7 +62,7 @@ public class SeedBallProjectileEntity extends ThrownItemEntity {
         if (status == 3) {
             ParticleEffect particleEffect = this.getParticleParameters();
             for(int i = 0; i < 8; ++i) {
-                this.getWorld().addParticleClient(particleEffect, this.getX(), this.getY(), this.getZ(), 0.0D, 0.0D, 0.0D);
+                this.getEntityWorld().addParticleClient(particleEffect, this.getX(), this.getY(), this.getZ(), 0.0D, 0.0D, 0.0D);
             }
         }
     }
@@ -80,16 +77,16 @@ public class SeedBallProjectileEntity extends ThrownItemEntity {
             int p = this.getStack().getOrDefault(ModComponents.POISONOUS_SEED_BALL, new ModComponents.PoisonousComponent(0)).poisonStacks();
             livingEntity.addStatusEffect((new StatusEffectInstance(StatusEffects.POISON, 20 * 6 * p, 0)));
         }
-        if (!this.getWorld().isClient) {
-            this.getWorld().sendEntityStatus(this, (byte)3);
+        if (!this.getEntityWorld().isClient()) {
+            this.getEntityWorld().sendEntityStatus(this, (byte)3);
             this.discard();
         }
     }
 
     @Override
     protected void onBlockCollision(BlockState state) {
-        World world = this.getWorld();
-        if (!world.isClient) {
+        World world = this.getEntityWorld();
+        if (!world.isClient()) {
             if (!state.isSolid()) return;
             if (!state.isIn(BlockTags.DIRT)) {
                 this.discard();
@@ -104,8 +101,7 @@ public class SeedBallProjectileEntity extends ThrownItemEntity {
 
             Iterable<BlockPos> iterable = BlockPos.iterateOutwards(this.getBlockPos(), 2, 3, 2);
             for(BlockPos blockPos : iterable) {
-                BlockState blockState = world.getBlockState(blockPos);
-                blockState = Registries.BLOCK.get(crops.get(this.random.nextInt(crops.size()))).getDefaultState();
+                BlockState blockState = Registries.BLOCK.get(crops.get(this.random.nextInt(crops.size()))).getDefaultState();
                 if ((world.random.nextInt(2) == 0 || blockPos == this.getBlockPos()) && blockState.canPlaceAt(world, blockPos) && world.getBlockState(blockPos).isAir()) {
                     world.setBlockState(blockPos, blockState);
                 }

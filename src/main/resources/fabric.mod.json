@@ -7,7 +7,7 @@
 	"authors": [
 		"Yelf42"
 	],
-	"icon": "assets/cropcritters/icon.png",
+	"icon": "icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
@@ -24,12 +24,6 @@
 			"environment": "client"
 		}
 	],
-	"depends": {
-		"fabricloader": ">=0.16.14",
-		"minecraft": "~1.21.6",
-		"java": ">=21",
-		"fabric-api": "*"
-	},
 	"suggests": {
 		"another-mod": "*"
 	}

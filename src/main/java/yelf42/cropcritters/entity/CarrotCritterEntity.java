@@ -37,11 +37,11 @@ public class CarrotCritterEntity extends AbstractCropCritterEntity {
     public void completeTargetGoal() {
         if (this.targetPos == null) return;
         this.playSound(SoundEvents.ITEM_HOE_TILL, 1.0F, 1.0F);
-        BlockState target = this.getWorld().getBlockState(this.targetPos);
+        BlockState target = this.getEntityWorld().getBlockState(this.targetPos);
         BlockState farmland = (target.isOf(Blocks.DIRT) || target.isOf(Blocks.GRASS_BLOCK)) ? Blocks.FARMLAND.getDefaultState() : (target.isOf(Blocks.SOUL_SAND) || target.isOf(Blocks.SOUL_SOIL)) ? ModBlocks.SOUL_FARMLAND.getDefaultState() : null;
         if (farmland == null) return;
-        this.getWorld().setBlockState(this.targetPos, farmland, Block.NOTIFY_ALL_AND_REDRAW);
-        this.getWorld().syncWorldEvent(this, 2001, this.targetPos, Block.getRawIdFromState(this.getWorld().getBlockState(this.targetPos)));
+        this.getEntityWorld().setBlockState(this.targetPos, farmland, Block.NOTIFY_ALL_AND_REDRAW);
+        this.getEntityWorld().syncWorldEvent(this, 2001, this.targetPos, Block.getRawIdFromState(this.getEntityWorld().getBlockState(this.targetPos)));
     }
 
     @Override
@@ -61,8 +61,8 @@ public class CarrotCritterEntity extends AbstractCropCritterEntity {
 
     @Override
     public boolean isAttractive(BlockPos pos) {
-        BlockState target = this.getWorld().getBlockState(pos);
-        BlockState above = this.getWorld().getBlockState(pos.up());
+        BlockState target = this.getEntityWorld().getBlockState(pos);
+        BlockState above = this.getEntityWorld().getBlockState(pos.up());
         return this.getTargetBlockFilter().test(target) && (above.isAir() || above.getBlock() instanceof PlantBlock);
     }
 }

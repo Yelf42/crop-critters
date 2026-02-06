@@ -24,6 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.config.ConfigManager;
+import yelf42.cropcritters.config.CritterHelper;
 import yelf42.cropcritters.entity.ModEntities;
 
 import static net.minecraft.block.Block.pushEntitiesUpBeforeBlockChange;
@@ -47,7 +48,6 @@ public abstract class PitcherCropBlockMixin {
 
     @Inject(method = "randomTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/PitcherCropBlock;tryGrow(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;I)V", shift = At.Shift.AFTER), cancellable = true)
     private void removeNutrientsAndSpawnCritters(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
-        state = world.getBlockState(pos);
         if (state.get(AGE, 0) <= 3) return;
 
         BlockState soilCheck = world.getBlockState(pos.down());
@@ -63,24 +63,7 @@ public abstract class PitcherCropBlockMixin {
             return;
         }
 
-        if (spawnCritter(world, world.random, pos)) return;
-    }
-
-    @Unique
-    private static boolean spawnCritter(ServerWorld world, Random random, BlockPos pos) {
-        BlockState soil = world.getBlockState(pos.down());
-        boolean bottomHalf = world.getBlockState(pos).get(HALF) == DoubleBlockHalf.LOWER;
-        boolean soulCheck = soil.isOf(Blocks.SOUL_SOIL) || soil.isOf(Blocks.SOUL_SAND) || soil.isOf(ModBlocks.SOUL_FARMLAND);
-        boolean soulSandValley = (world.getBiome(pos).matchesKey(BiomeKeys.SOUL_SAND_VALLEY));
-        int spawnChance = ConfigManager.CONFIG.critterSpawnChance * ((soulCheck) ? 2 : 1) * ((soulSandValley) ? 2 : 1);
-        if (bottomHalf && random.nextInt(100) + 1 < spawnChance) {
-            ModEntities.PITCHER_CRITTER.spawn(world, pos, SpawnReason.NATURAL);
-            world.setBlockState(pos, Blocks.AIR.getDefaultState(), Block.NOTIFY_LISTENERS);
-            world.playSound(null, pos, SoundEvents.ENTITY_ALLAY_AMBIENT_WITH_ITEM, SoundCategory.BLOCKS, 1F, 1F);
-            world.spawnParticles(ParticleTypes.SOUL_FIRE_FLAME, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 10, 0.5, 0.5, 0.5, 0F);
-            return true;
-        }
-        return false;
+        if (CritterHelper.spawnCritter(world, state, world.random, pos)) return;
     }
 
 }

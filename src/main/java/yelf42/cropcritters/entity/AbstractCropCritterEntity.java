@@ -9,6 +9,7 @@ import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.ai.pathing.MobNavigation;
 import net.minecraft.entity.ai.pathing.Path;
+import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
@@ -40,9 +41,9 @@ import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
-import software.bernie.geckolib.animatable.processing.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
+import software.bernie.geckolib.animation.AnimationController;
 import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.animation.object.PlayState;
 import software.bernie.geckolib.constant.DefaultAnimations;
 import software.bernie.geckolib.util.GeckoLibUtil;
 import yelf42.cropcritters.CropCritters;
@@ -84,6 +85,7 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
 
     public AbstractCropCritterEntity(EntityType<? extends TameableEntity> entityType, World world) {
         super(entityType, world);
+        setPathfindingPenalty(PathNodeType.DAMAGE_OTHER, 0.0f);
     }
 
     public void setTrusting(boolean trusting) {
@@ -115,7 +117,13 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
         controllerRegistrar.add(
-                new AnimationController<>("Sit", test -> ((this.dataTracker.get(TAMEABLE_FLAGS) & 0x01) != 0) ? (test.setAndContinue(SIT)) : PlayState.STOP),
+                new AnimationController<>("Sit", test -> {
+                    if ((this.dataTracker.get(TAMEABLE_FLAGS) & 0x01) != 0) {
+                        return (test.setAndContinue(SIT));
+                    }
+                    test.controller().reset();
+                    return PlayState.STOP;
+                }),
                 DefaultAnimations.genericWalkIdleController()
         );
     }
@@ -214,7 +222,7 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
 
     @Override
     public boolean damage(ServerWorld world, DamageSource source, float amount) {
-        if (this.isInvulnerableTo(world, source) || source.isOf(DamageTypes.CACTUS)) {
+        if (this.isInvulnerableTo(world, source) || source.isOf(DamageTypes.CACTUS) || source.isOf(DamageTypes.SWEET_BERRY_BUSH)) {
             return false;
         } else {
             if (this.targetWorkGoal != null) this.targetWorkGoal.cancel();
@@ -256,7 +264,7 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
     @Override
     public ActionResult interactMob(PlayerEntity player, Hand hand) {
         ItemStack itemStack = player.getStackInHand(hand);
-        if (!this.getWorld().isClient()) {
+        if (!this.getEntityWorld().isClient()) {
             if (itemStack.isOf(ModItems.LOST_SOUL) && !this.isTrusting()) {
                 this.eat(player, hand, itemStack);
                 this.tryTame(player);
@@ -265,7 +273,7 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
             } else if (this.isHealingItem(itemStack) && (this.getHealth() < this.getMaxHealth())) {
                 this.eat(player, hand, itemStack);
                 this.heal(4.f);
-                this.getWorld().sendEntityStatus(this, (byte)7);
+                this.getEntityWorld().sendEntityStatus(this, (byte)7);
                 this.setPersistent();
                 return ActionResult.SUCCESS;
             }
@@ -278,12 +286,12 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
         if (this.random.nextInt(2) == 0) {
             this.setTrusting(true);
             this.setTamedBy(player);
-            this.getWorld().sendEntityStatus(this, (byte)7);
+            this.getEntityWorld().sendEntityStatus(this, (byte)7);
             float newHealth = this.getMaxHealth() * 2F;
             this.getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(newHealth);
             this.setHealth(newHealth);
         } else {
-            this.getWorld().sendEntityStatus(this, (byte)6);
+            this.getEntityWorld().sendEntityStatus(this, (byte)6);
         }
     }
 
@@ -293,8 +301,8 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
     }
 
     public boolean isAttractive(BlockPos pos) {
-        BlockState target = this.getWorld().getBlockState(pos);
-        BlockState above = this.getWorld().getBlockState(pos.up());
+        BlockState target = this.getEntityWorld().getBlockState(pos);
+        BlockState above = this.getEntityWorld().getBlockState(pos.up());
         return this.getTargetBlockFilter().test(target) && above.isOf(Blocks.AIR);
     }
 
@@ -345,7 +353,7 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
                     AbstractCropCritterEntity.this.clearTargetPos();
                 } else {
                     Vec3d vec3d = Vec3d.ofBottomCenter(AbstractCropCritterEntity.this.targetPos).add(0.0F, getTargetOffset(), 0.0F);
-                    if (vec3d.squaredDistanceTo(AbstractCropCritterEntity.this.getPos()) > (double)1.0F) {
+                    if (vec3d.squaredDistanceTo(AbstractCropCritterEntity.this.getEntityPos()) > (double)1.0F) {
                         this.nextTarget = vec3d;
                         this.moveToNextTarget();
                     } else {
@@ -353,7 +361,7 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
                             this.nextTarget = vec3d;
                         }
 
-                        boolean bl = AbstractCropCritterEntity.this.getPos().distanceTo(this.nextTarget) <= 0.5;
+                        boolean bl = AbstractCropCritterEntity.this.getEntityPos().distanceTo(this.nextTarget) <= 0.5;
                         if (!bl && this.ticks > 600) {
                             AbstractCropCritterEntity.this.clearTargetPos();
                         } else if (bl) {
@@ -382,7 +390,7 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
 
             for(BlockPos blockPos : iterable) {
                 long l = this.unreachableTargetsPosCache.getOrDefault(blockPos.asLong(), Long.MIN_VALUE);
-                if (AbstractCropCritterEntity.this.getWorld().getTime() < l) {
+                if (AbstractCropCritterEntity.this.getEntityWorld().getTime() < l) {
                     long2LongOpenHashMap.put(blockPos.asLong(), l);
                 } else if (isAttractive(blockPos)) {
                     Path path = AbstractCropCritterEntity.this.navigation.findPathTo(blockPos, 0);
@@ -390,7 +398,7 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
                         return Optional.of(blockPos);
                     }
 
-                    long2LongOpenHashMap.put(blockPos.asLong(), AbstractCropCritterEntity.this.getWorld().getTime() + 600L);
+                    long2LongOpenHashMap.put(blockPos.asLong(), AbstractCropCritterEntity.this.getEntityWorld().getTime() + 600L);
                 }
             }
 

@@ -1,20 +1,21 @@
 package yelf42.cropcritters.particle;
 
 import net.minecraft.client.particle.*;
+import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.particle.SimpleParticleType;
+import net.minecraft.util.math.random.Random;
 import org.jetbrains.annotations.Nullable;
 
-public class WaterSprayParticle extends SpriteBillboardParticle {
-    public WaterSprayParticle(ClientWorld clientWorld, double x, double y, double z,
-                              SpriteProvider spriteProvider, double xSpeed, double ySpeed, double zSpeed) {
-        super(clientWorld, x, y, z, xSpeed, ySpeed, zSpeed);
+public class WaterSprayParticle extends BillboardParticle {
+    public WaterSprayParticle(ClientWorld world, double x, double y, double z, double velocityX, double velocityY, double velocityZ, SpriteProvider spriteProvider) {
+        super(world, x, y, z, velocityX, velocityY, velocityZ, spriteProvider.getFirst());
 
         this.velocityMultiplier = 1.0F;
         this.velocityY = 0F;
 
         this.maxAge = 20;
-        this.setSpriteForAge(spriteProvider);
+        //this.setSpriteForAge(spriteProvider.getFirst());
 
         this.scale = 0.25F;
 
@@ -24,8 +25,8 @@ public class WaterSprayParticle extends SpriteBillboardParticle {
     }
 
     @Override
-    public ParticleTextureSheet getType() {
-        return ParticleTextureSheet.PARTICLE_SHEET_TRANSLUCENT;
+    protected RenderType getRenderType() {
+        return RenderType.PARTICLE_ATLAS_TRANSLUCENT;
     }
 
     public static class Factory implements ParticleFactory<SimpleParticleType> {
@@ -35,11 +36,9 @@ public class WaterSprayParticle extends SpriteBillboardParticle {
             this.spriteProvider = spriteProvider;
         }
 
-        @Nullable
         @Override
-        public Particle createParticle(SimpleParticleType parameters, ClientWorld world, double x, double y, double z,
-                                       double velocityX, double velocityY, double velocityZ) {
-            return new WaterSprayParticle(world, x, y, z, this.spriteProvider, velocityX, velocityY, velocityZ);
+        public @Nullable Particle createParticle(SimpleParticleType parameters, ClientWorld world, double x, double y, double z, double velocityX, double velocityY, double velocityZ, Random random) {
+            return new WaterSprayParticle(world, x, y, z, velocityX, velocityY, velocityZ, this.spriteProvider);
         }
     }
 }

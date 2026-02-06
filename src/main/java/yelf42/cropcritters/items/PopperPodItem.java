@@ -1,0 +1,76 @@
+package yelf42.cropcritters.items;
+
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.FireworkRocketEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.item.*;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.stat.Stats;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
+import net.minecraft.util.math.BlockPointer;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Position;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
+import yelf42.cropcritters.entity.PopperPodEntity;
+
+public class PopperPodItem extends Item implements ProjectileItem {
+
+    public PopperPodItem(Item.Settings settings) {
+        super(settings);
+    }
+
+    public ActionResult useOnBlock(ItemUsageContext context) {
+        World world = context.getWorld();
+        PlayerEntity playerEntity = context.getPlayer();
+        if (playerEntity != null && playerEntity.isGliding()) {
+            return ActionResult.PASS;
+        } else {
+            if (world instanceof ServerWorld serverWorld) {
+                ItemStack itemStack = context.getStack();
+                Vec3d vec3d = context.getHitPos();
+                Direction direction = context.getSide();
+                ProjectileEntity.spawn(new PopperPodEntity(world, context.getPlayer(), vec3d.x + (double)direction.getOffsetX() * 0.15, vec3d.y + (double)direction.getOffsetY() * 0.15, vec3d.z + (double)direction.getOffsetZ() * 0.15, itemStack), serverWorld, itemStack);
+                itemStack.decrement(1);
+            }
+
+            return ActionResult.SUCCESS;
+        }
+    }
+
+    public ActionResult use(World world, PlayerEntity user, Hand hand) {
+        if (user.isGliding()) {
+            ItemStack itemStack = user.getStackInHand(hand);
+            if (world instanceof ServerWorld) {
+                ServerWorld serverWorld = (ServerWorld)world;
+                if (user.detachAllHeldLeashes((PlayerEntity)null)) {
+                    world.playSoundFromEntity((Entity)null, user, SoundEvents.ITEM_LEAD_BREAK, SoundCategory.NEUTRAL, 1.0F, 1.0F);
+                }
+
+                ProjectileEntity.spawn(new PopperPodEntity(world, itemStack, user), serverWorld, itemStack);
+                itemStack.decrementUnlessCreative(1, user);
+                user.incrementStat(Stats.USED.getOrCreateStat(this));
+            }
+
+            return ActionResult.SUCCESS;
+        } else {
+            return ActionResult.PASS;
+        }
+    }
+
+    public ProjectileEntity createEntity(World world, Position pos, ItemStack stack, Direction direction) {
+        return new PopperPodEntity(world, stack.copyWithCount(1), pos.getX(), pos.getY(), pos.getZ(), true);
+    }
+
+    public ProjectileItem.Settings getProjectileSettings() {
+        return ProjectileItem.Settings.builder().positionFunction(PopperPodItem::position).uncertainty(1.0F).power(0.5F).overrideDispenseEvent(1004).build();
+    }
+
+    private static Vec3d position(BlockPointer pointer, Direction facing) {
+        return pointer.centerPos().add((double)facing.getOffsetX() * 0.5f, (double)facing.getOffsetY() * 0.5f, (double)facing.getOffsetZ() * 0.5f);
+    }
+}

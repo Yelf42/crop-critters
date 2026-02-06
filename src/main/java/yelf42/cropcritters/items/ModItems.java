@@ -1,37 +1,21 @@
 package yelf42.cropcritters.items;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.fabricmc.fabric.api.item.v1.ComponentTooltipAppenderRegistry;
 import net.fabricmc.fabric.api.itemgroup.v1.*;
 import net.fabricmc.fabric.api.registry.*;
-import net.minecraft.block.Blocks;
-import net.minecraft.component.ComponentType;
-import net.minecraft.component.ComponentsAccess;
-import net.minecraft.component.DataComponentTypes;
+import net.minecraft.block.DispenserBlock;
+import net.minecraft.component.type.FoodComponent;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.*;
-import net.minecraft.item.tooltip.TooltipAppender;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.SpecialCraftingRecipe;
 import net.minecraft.registry.*;
 import net.minecraft.text.Text;
-import net.minecraft.text.TextCodecs;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.entity.ModEntities;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class ModItems {
@@ -56,12 +40,17 @@ public class ModItems {
                     itemGroup.add(ModItems.TORCHFLOWER_CRITTER_SPAWN_EGG);
                     itemGroup.add(ModItems.PITCHER_CRITTER_SPAWN_EGG);
                     itemGroup.add(ModItems.COCOA_CRITTER_SPAWN_EGG);
+                    itemGroup.add(ModItems.PUFFBOMB_SLICE);
+                    itemGroup.add(ModItems.COOKED_PUFFBOMB_STEAK);
+                    itemGroup.add(ModItems.POPPER_POD);
+                    itemGroup.add(ModItems.HERBICIDE);
                 });
 
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.INGREDIENTS)
                 .register((itemGroup) -> {
                     itemGroup.add(ModItems.STRANGE_FERTILIZER);
                     itemGroup.add(ModItems.LOST_SOUL);
+                    itemGroup.add(ModItems.PUFFBOMB_SLICE);
                 });
 
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.SPAWN_EGGS)
@@ -83,11 +72,15 @@ public class ModItems {
         // Compostable
         CompostingChanceRegistry.INSTANCE.add(ModItems.STRANGE_FERTILIZER, 1.0f);
         CompostingChanceRegistry.INSTANCE.add(ModItems.SEED_BALL, 0.8f);
+        CompostingChanceRegistry.INSTANCE.add(ModItems.PUFFBOMB_SLICE, 0.4f);
 
         // Fuel
         FuelRegistryEvents.BUILD.register((builder, context) -> {
             builder.add(ModItems.LOST_SOUL, 80 * 20);
         });
+
+        // Dispenser behaviours
+        DispenserBlock.registerProjectileBehavior(ModItems.SEED_BALL);
 
     }
     public static Item register(String name, Function<Item.Settings, Item> itemFactory, Item.Settings settings) {
@@ -118,6 +111,12 @@ public class ModItems {
     public static final Item LOST_SOUL = register("lost_soul", LostSoulItem::new, new Item.Settings().rarity(Rarity.UNCOMMON));
 
     public static final Item SEED_BALL = register("seed_ball", SeedBallItem::new, new Item.Settings().maxCount(16).component(ModComponents.POISONOUS_SEED_BALL, new ModComponents.PoisonousComponent(0)));
+    public static final Item POPPER_POD = register("popper_pod", PopperPodItem::new, new Item.Settings());
+    public static final Item HERBICIDE = register("herbicide", HerbicideItem::new, new Item.Settings().maxCount(16));
+
+    // Foods
+    public static final Item PUFFBOMB_SLICE = register("puffbomb_slice", Item::new, new Item.Settings().food((new FoodComponent.Builder()).nutrition(2).saturationModifier(0.4F).build()));
+    public static final Item COOKED_PUFFBOMB_STEAK = register("cooked_puffbomb_steak", Item::new, new Item.Settings().food((new FoodComponent.Builder()).nutrition(7).saturationModifier(0.9F).build()));
 
 
     // Spawn eggs
@@ -128,7 +127,7 @@ public class ModItems {
         // Register the item.
         return Registry.register(Registries.ITEM,
                 itemKey,
-                new SpawnEggItem(entityType, new Item.Settings().registryKey(itemKey)));
+                new SpawnEggItem(new Item.Settings().registryKey(itemKey).spawnEgg(entityType)));
     }
     public static final Item WHEAT_CRITTER_SPAWN_EGG = registerSpawnEgg("wheat_critter_spawn_egg", ModEntities.WHEAT_CRITTER);
     public static final Item MELON_CRITTER_SPAWN_EGG = registerSpawnEgg("melon_critter_spawn_egg", ModEntities.MELON_CRITTER);

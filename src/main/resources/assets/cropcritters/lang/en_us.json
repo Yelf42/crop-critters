@@ -3,6 +3,7 @@
 
   "item.cropcritters.strange_fertilizer": "Strange Fertilizer",
   "item.cropcritters.lost_soul": "Lost Soul",
+  "item.cropcritters.herbicide": "Herbicide",
 
   "tag.item.cropcritters.seed_ball_crops": "Seed Ball Crops",
   "item.cropcritters.seed_ball": "Seed Ball",
@@ -28,6 +29,33 @@
 
   "block.cropcritters.waftgrass": "Waftgrass",
   "item.cropcritters.waftgrass": "Waftgrass",
+
+  "block.cropcritters.strangle_fern": "Strangle Fern",
+  "item.cropcritters.strangle_fern": "Strangle Fern Spores",
+  "effect.cropcritters.spores_effect": "Spores",
+
+  "block.cropcritters.puffbomb_mushroom": "Puffbomb Mushroom",
+  "item.cropcritters.puffbomb_mushroom": "Puffbomb Mushroom",
+  "block.cropcritters.puffbomb_mushroom_block": "Puffbomb Mushroom Block",
+  "item.cropcritters.puffbomb_mushroom_block": "Puffbomb Mushroom Block",
+  "item.cropcritters.puffbomb_slice": "Puffbomb Slice",
+  "item.cropcritters.cooked_puffbomb_steak": "Cooked Puffbomb Steak",
+  "effect.cropcritters.puffbomb_poisoning": "Ticking",
+
+  "block.cropcritters.liverwort": "Liverwort",
+  "item.cropcritters.liverwort": "Liverwort",
+
+  "block.cropcritters.bone_trap": "Bonejaw",
+  "item.cropcritters.bone_trap": "Bony Seeds",
+
+  "item.cropcritters.popper_pod": "Popper Pod",
+  "block.cropcritters.popper_plant": "Popper Plant",
+  "item.cropcritters.popper_plant": "Popper Seed",
+
+  "block.cropcritters.soul_rose": "Soul Rose",
+  "item.cropcritters.soul_rose": "Soul Rose",
+  "block.cropcritters.trimmed_soul_rose": "Trimmed Soul Rose",
+  "item.cropcritters.trimmed_soul_rose": "Trimmed Soul Rose",
 
   "block.cropcritters.tall_bush": "Tall Bush",
   "item.cropcritters.tall_bush": "Tall Bush",

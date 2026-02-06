@@ -78,7 +78,7 @@ public class TorchflowerCritterEntity extends AbstractCropCritterEntity {
     @Override
     public ActionResult interactMob(PlayerEntity player, Hand hand) {
         ActionResult actionResult = super.interactMob(player, hand);
-        CropCritters.LOGGER.info(this.getOwner() == null ? "null" : "present");
+        //CropCritters.LOGGER.info(this.getOwner() == null ? "null" : "present");
         if (!actionResult.isAccepted() && this.isTrusting() && this.isOwner(player)) {
             this.setSitting(!this.isSitting());
             return ActionResult.SUCCESS;

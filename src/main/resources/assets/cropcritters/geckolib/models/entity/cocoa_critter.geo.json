@@ -18,8 +18,8 @@
 				{
 					"name": "RightHandItem",
 					"parent": "main",
-					"pivot": [0, 0.7, -5],
-					"rotation": [-45, 0, 0]
+					"pivot": [0, 2.7, -3],
+					"rotation": [-80, 0, 0]
 				},
 				{
 					"name": "LeftHandItem",

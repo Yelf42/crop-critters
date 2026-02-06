@@ -7,7 +7,7 @@ import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.constant.dataticket.DataTicket;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 import software.bernie.geckolib.renderer.base.GeoRenderState;
-import software.bernie.geckolib.renderer.layer.ItemInHandGeoLayer;
+import software.bernie.geckolib.renderer.layer.builtin.ItemInHandGeoLayer;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.entity.AbstractCropCritterEntity;
 import yelf42.cropcritters.model.entity.AbstractCritterModel;
@@ -23,7 +23,8 @@ public class AbstractCritterRenderer<R extends LivingEntityRenderState & GeoRend
         this.texture = Identifier.of(CropCritters.MOD_ID,"textures/entity/" + id.getPath() + ".png");
         this.trustingTexture = Identifier.of(CropCritters.MOD_ID,"textures/entity/" + id.getPath() + "_trusting.png");
         if (id.getPath().equals("cocoa_critter")) {
-            addRenderLayer(new ItemInHandGeoLayer<>(this));
+            //addRenderLayer(new ItemInHandGeoLayer<>(this));
+            withRenderLayer(new ItemInHandGeoLayer<>(this));
         }
     }
 
@@ -39,9 +40,9 @@ public class AbstractCritterRenderer<R extends LivingEntityRenderState & GeoRend
         entityRenderState.addGeckolibData(DataTickets.IS_SHAKING, entity.isShaking());
     }
 
-    @Override
-    public void addRenderData(AbstractCropCritterEntity animatable, Void relatedObject, R renderState) {
-        super.addRenderData(animatable, relatedObject, renderState);
-        renderState.addGeckolibData(TEXTURE_PATH, animatable.isTrusting() ? trustingTexture : texture);
-    }
+//    @Override
+//    public void addRenderData(AbstractCropCritterEntity animatable, Void relatedObject, R renderState) {
+//        super.addRenderData(animatable, relatedObject, renderState);
+//        renderState.addGeckolibData(TEXTURE_PATH, animatable.isTrusting() ? trustingTexture : texture);
+//    }
 }

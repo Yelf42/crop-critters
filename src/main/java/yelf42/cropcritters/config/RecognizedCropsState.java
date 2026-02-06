@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
+// TODO actually test with a farming mod
 public class RecognizedCropsState extends PersistentState {
     private final Set<Item> knownCrops = new HashSet<>();
 

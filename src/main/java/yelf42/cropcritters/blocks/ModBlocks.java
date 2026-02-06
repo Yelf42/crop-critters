@@ -3,14 +3,22 @@ package yelf42.cropcritters.blocks;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.registry.CompostingChanceRegistry;
 import net.minecraft.block.*;
+import net.minecraft.block.enums.NoteBlockInstrument;
 import net.minecraft.block.piston.PistonBehavior;
+import net.minecraft.component.type.ConsumableComponent;
+import net.minecraft.component.type.FoodComponents;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroups;
+import net.minecraft.item.consume.ApplyEffectsConsumeEffect;
+import net.minecraft.item.consume.UseAction;
 import net.minecraft.registry.*;
 import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Rarity;
 import yelf42.cropcritters.CropCritters;
+import yelf42.cropcritters.effects.ModEffects;
 import yelf42.cropcritters.items.ModItems;
 
 import java.util.function.Function;
@@ -35,6 +43,26 @@ public class ModBlocks {
         }
 
         return Registry.register(Registries.BLOCK, blockKey, block);
+    }
+
+    private static Block register(String name, Function<AbstractBlock.Settings, Block> blockFactory, AbstractBlock.Settings settings, Item.Settings itemSettings) {
+        // Create a registry key for the block
+        RegistryKey<Block> blockKey = keyOfBlock(name);
+        // Create the block instance
+        Block block = blockFactory.apply(settings.registryKey(blockKey));
+
+        RegistryKey<Item> itemKey = keyOfItem(name);
+
+        BlockItem blockItem = new BlockItem(block, itemSettings.registryKey(itemKey));
+        Registry.register(Registries.ITEM, itemKey, blockItem);
+
+        return Registry.register(Registries.BLOCK, blockKey, block);
+    }
+
+    private static Block registerPotted(String name, AbstractBlock.Settings settings, Block flower) {
+        // Create a registry key for the block
+        RegistryKey<Block> blockKey = keyOfBlock(name);
+        return Registry.register(Registries.BLOCK, blockKey, new FlowerPotBlock(flower, settings.registryKey(blockKey)));
     }
 
     public static final Block SOUL_FARMLAND = register(
@@ -71,7 +99,7 @@ public class ModBlocks {
                     .breakInstantly()
                     .sounds(BlockSoundGroup.GRASS)
                     .pistonBehavior(PistonBehavior.DESTROY),
-            true
+            new Item.Settings().rarity(Rarity.UNCOMMON)
     );
     public static final Block MAZEWOOD = register(
             "mazewood",
@@ -82,7 +110,7 @@ public class ModBlocks {
                     .strength(0.7f)
                     .sounds(BlockSoundGroup.SWEET_BERRY_BUSH)
                     .pistonBehavior(PistonBehavior.DESTROY),
-            true
+            new Item.Settings().rarity(Rarity.UNCOMMON)
     );
 
     public static final Block CRIMSON_THORNWEED = register(
@@ -127,6 +155,125 @@ public class ModBlocks {
             true
     );
 
+    public static final Block STRANGLE_FERN = register(
+            "strangle_fern",
+            StrangleFern::new,
+            AbstractBlock.Settings.create()
+                    .mapColor(MapColor.DARK_GREEN)
+                    .noCollision()
+                    .ticksRandomly()
+                    .strength(0.4f)
+                    .sounds(BlockSoundGroup.SWEET_BERRY_BUSH)
+                    .pistonBehavior(PistonBehavior.DESTROY),
+            true
+    );
+
+    public static final Block POPPER_PLANT = register(
+            "popper_plant",
+            PopperPlantBlock::new,
+            AbstractBlock.Settings.create()
+                    .mapColor(MapColor.DARK_GREEN)
+                    .noCollision()
+                    .ticksRandomly()
+                    .strength(0.4f)
+                    .sounds(BlockSoundGroup.SWEET_BERRY_BUSH)
+                    .offset(AbstractBlock.OffsetType.XZ)
+                    .pistonBehavior(PistonBehavior.DESTROY),
+            true
+    );
+
+    public static final Block BONE_TRAP = register(
+            "bone_trap",
+            BoneTrapBlock::new,
+            AbstractBlock.Settings.create()
+                    .mapColor(MapColor.WHITE_GRAY)
+                    .noCollision()
+                    .strength(0.4f)
+                    .sounds(BlockSoundGroup.BONE)
+                    .pistonBehavior(PistonBehavior.DESTROY),
+            true
+    );
+
+    public static final Block PUFFBOMB_MUSHROOM = register(
+            "puffbomb_mushroom",
+            PuffbombPlantBlock::new,
+            AbstractBlock.Settings.create()
+                    .mapColor(MapColor.WHITE_GRAY)
+                    .noCollision()
+                    .ticksRandomly()
+                    .breakInstantly()
+                    .sounds(BlockSoundGroup.FUNGUS)
+                    .pistonBehavior(PistonBehavior.DESTROY),
+            new Item.Settings().food(FoodComponents.CARROT,
+                    ConsumableComponent.builder()
+                            .consumeSeconds(1.6F)
+                            .useAction(UseAction.EAT)
+                            .sound(SoundEvents.ENTITY_GENERIC_EAT)
+                            .consumeParticles(true)
+                            .consumeEffect(new ApplyEffectsConsumeEffect(ModEffects.EATEN_PUFFBOMB_POISONING))
+                            .build())
+    );
+
+    public static final Block PUFFBOMB_MUSHROOM_BLOCK = register(
+            "puffbomb_mushroom_block",
+            MushroomBlock::new,
+            AbstractBlock.Settings.create()
+                    .mapColor(MapColor.WHITE_GRAY)
+                    .instrument(NoteBlockInstrument.BASS)
+                    .strength(0.2F)
+                    .sounds(BlockSoundGroup.WOOD)
+                    .burnable(),
+            true
+    );
+
+    public static final Block LIVERWORT = register(
+            "liverwort",
+            LiverwortBlock::new,
+            AbstractBlock.Settings.create()
+                    .replaceable()
+                    .noCollision()
+                    .breakInstantly()
+                    .sounds(BlockSoundGroup.GLOW_LICHEN)
+                    .burnable().pistonBehavior(PistonBehavior.DESTROY),
+            true
+    );
+
+    public static final Block SOUL_ROSE = register(
+            "soul_rose",
+            SoulRoseBlock::new,
+            AbstractBlock.Settings.create()
+                    .mapColor(MapColor.DIAMOND_BLUE)
+                    .noCollision()
+                    .strength(0.9f)
+                    .sounds(BlockSoundGroup.WEEPING_VINES_LOW_PITCH)
+                    .luminance((state) -> 3)
+                    .pistonBehavior(PistonBehavior.DESTROY),
+            new Item.Settings().rarity(Rarity.RARE)
+    );
+
+    public static final Block TRIMMED_SOUL_ROSE = register(
+            "trimmed_soul_rose",
+            TrimmedSoulRoseBlock::new,
+            AbstractBlock.Settings.create()
+                    .mapColor(MapColor.DIAMOND_BLUE)
+                    .noCollision()
+                    .breakInstantly()
+                    .sounds(BlockSoundGroup.WEEPING_VINES_LOW_PITCH)
+                    .luminance((state) -> 3)
+                    .pistonBehavior(PistonBehavior.DESTROY),
+            new Item.Settings().rarity(Rarity.RARE)
+    );
+
+    public static final Block POTTED_SOUL_ROSE = registerPotted(
+            "potted_soul_rose",
+            AbstractBlock.Settings.create()
+                    .breakInstantly()
+                    .luminance((state) -> 3)
+                    .nonOpaque()
+                    .pistonBehavior(PistonBehavior.DESTROY),
+            SOUL_ROSE
+    );
+
     public static final Block TALL_BUSH = register(
             "tall_bush",
             TallBushBlock::new,
@@ -167,7 +314,7 @@ public class ModBlocks {
                     .nonOpaque()
                     .ticksRandomly()
                     .pistonBehavior(PistonBehavior.DESTROY),
-            true
+            new Item.Settings().rarity(Rarity.UNCOMMON)
     );
 
     public static final Block TORCHFLOWER_SPARK = register(
@@ -180,7 +327,7 @@ public class ModBlocks {
                     .dropsNothing()
                     .ticksRandomly()
                     .air(),
-            true
+            false
     );
 
     private static RegistryKey<Block> keyOfBlock(String name) {
@@ -202,6 +349,14 @@ public class ModBlocks {
             itemGroup.add(ModBlocks.CRIMSON_THORNWEED.asItem());
             itemGroup.add(ModBlocks.WITHERING_SPITEWEED.asItem());
             itemGroup.add(ModBlocks.WAFTGRASS.asItem());
+            itemGroup.add(ModBlocks.STRANGLE_FERN.asItem());
+            itemGroup.add(ModBlocks.POPPER_PLANT.asItem());
+            itemGroup.add(ModBlocks.BONE_TRAP.asItem());
+            itemGroup.add(ModBlocks.PUFFBOMB_MUSHROOM.asItem());
+            itemGroup.add(ModBlocks.PUFFBOMB_MUSHROOM_BLOCK.asItem());
+            itemGroup.add(ModBlocks.LIVERWORT.asItem());
+            itemGroup.add(ModBlocks.SOUL_ROSE.asItem());
+            itemGroup.add(ModBlocks.TRIMMED_SOUL_ROSE.asItem());
             itemGroup.add(ModBlocks.TALL_BUSH.asItem());
             itemGroup.add(ModBlocks.ORNAMENTAL_BUSH.asItem());
             itemGroup.add(ModBlocks.LOST_SOUL_IN_A_JAR.asItem());
@@ -214,20 +369,33 @@ public class ModBlocks {
             itemGroup.add(ModBlocks.CRIMSON_THORNWEED.asItem());
             itemGroup.add(ModBlocks.WITHERING_SPITEWEED.asItem());
             itemGroup.add(ModBlocks.WAFTGRASS.asItem());
+            itemGroup.add(ModBlocks.STRANGLE_FERN.asItem());
+            itemGroup.add(ModBlocks.BONE_TRAP.asItem());
+            itemGroup.add(ModBlocks.PUFFBOMB_MUSHROOM.asItem());
+            itemGroup.add(ModBlocks.PUFFBOMB_MUSHROOM_BLOCK.asItem());
+            itemGroup.add(ModBlocks.LIVERWORT.asItem());
+            itemGroup.add(ModBlocks.SOUL_ROSE.asItem());
+            itemGroup.add(ModBlocks.TRIMMED_SOUL_ROSE.asItem());
             itemGroup.add(ModBlocks.TALL_BUSH.asItem());
             itemGroup.add(ModBlocks.ORNAMENTAL_BUSH.asItem());
         });
 
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register((itemGroup) -> {
+            itemGroup.add(ModBlocks.SOUL_ROSE.asItem());
             itemGroup.add(ModBlocks.LOST_SOUL_IN_A_JAR.asItem());
         });
 
         CompostingChanceRegistry.INSTANCE.add(ModBlocks.TALL_BUSH.asItem(), 0.8f);
         CompostingChanceRegistry.INSTANCE.add(ModBlocks.ORNAMENTAL_BUSH.asItem(), 0.8f);
         CompostingChanceRegistry.INSTANCE.add(ModBlocks.MAZEWOOD.asItem(), 0.8f);
+        CompostingChanceRegistry.INSTANCE.add(ModBlocks.PUFFBOMB_MUSHROOM.asItem(), 0.65f);
+        CompostingChanceRegistry.INSTANCE.add(ModBlocks.BONE_TRAP.asItem(), 0.6f);
         CompostingChanceRegistry.INSTANCE.add(ModBlocks.MAZEWOOD_SAPLING.asItem(), 0.4f);
         CompostingChanceRegistry.INSTANCE.add(ModBlocks.CRAWL_THISTLE.asItem(), 0.3f);
         CompostingChanceRegistry.INSTANCE.add(ModBlocks.CRIMSON_THORNWEED.asItem(), 0.2f);
+        CompostingChanceRegistry.INSTANCE.add(ModBlocks.STRANGLE_FERN.asItem(), 0.2f);
+        CompostingChanceRegistry.INSTANCE.add(ModBlocks.POPPER_PLANT.asItem(), 0.2f);
+        CompostingChanceRegistry.INSTANCE.add(ModBlocks.LIVERWORT.asItem(), 0.2f);
         CompostingChanceRegistry.INSTANCE.add(ModBlocks.WAFTGRASS.asItem(), 0.2f);
         CompostingChanceRegistry.INSTANCE.add(ModBlocks.WITHERING_SPITEWEED.asItem(), 0f);
 

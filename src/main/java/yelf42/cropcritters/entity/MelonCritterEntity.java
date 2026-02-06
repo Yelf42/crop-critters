@@ -124,7 +124,7 @@ public class MelonCritterEntity extends AbstractCropCritterEntity implements Ran
         double e = target.getEyeY() - 0.4F;
         double f = target.getZ() - this.getZ();
         double g = Math.sqrt(d * d + f * f) * (double)0.2F;
-        World var12 = this.getWorld();
+        World var12 = this.getEntityWorld();
         if (var12 instanceof ServerWorld serverWorld) {
             ItemStack itemStack = new ItemStack(Items.MELON_SEEDS);
             ProjectileEntity.spawn(new SpitSeedProjectileEntity(serverWorld, this, itemStack), serverWorld, itemStack, (entity) -> entity.setVelocity(d, e + g - entity.getY(), f, 1.2F, 3.0F));
@@ -167,7 +167,7 @@ public class MelonCritterEntity extends AbstractCropCritterEntity implements Ran
             MelonCritterEntity.this.navigation.stop();
             if (MelonCritterEntity.this.random.nextInt(10) == 0) {
                 BlockPos toWater = wateringTargets.get(MelonCritterEntity.this.random.nextInt(wateringTargets.size()));
-                World world = MelonCritterEntity.this.getWorld();
+                World world = MelonCritterEntity.this.getEntityWorld();
                 BlockState toWaterState = world.getBlockState(toWater);
                 if (toWaterState.getBlock() instanceof Fertilizable fertilizable) {
                     if (fertilizable.isFertilizable(world, toWater, toWaterState)) {
@@ -180,16 +180,16 @@ public class MelonCritterEntity extends AbstractCropCritterEntity implements Ran
                 }
             }
             Vec3d facing = MelonCritterEntity.this.getRotationVector().normalize().multiply(3);
-            Vec3d start = MelonCritterEntity.this.getPos().add(0F, 0.1F, 0F);
+            Vec3d start = MelonCritterEntity.this.getEntityPos().add(0F, 0.1F, 0F);
 
             CropCritters.WaterSprayS2CPayload payload = new CropCritters.WaterSprayS2CPayload(start, facing);
 
-            for (ServerPlayerEntity player : PlayerLookup.world((ServerWorld) MelonCritterEntity.this.getWorld())) {
-                if (start.isInRange(player.getPos(), 64)) {
+            for (ServerPlayerEntity player : PlayerLookup.world((ServerWorld) MelonCritterEntity.this.getEntityWorld())) {
+                if (start.isInRange(player.getEntityPos(), 64)) {
                     ServerPlayNetworking.send(player, payload);
                 }
             }
-            MelonCritterEntity.this.playSound(SoundEvents.WEATHER_RAIN, 0.1F, 0.8F / (MelonCritterEntity.this.getRandom().nextFloat() * 0.4F + 0.8F));
+            MelonCritterEntity.this.playSound(SoundEvents.WEATHER_RAIN, 0.01F, 0.8F / (MelonCritterEntity.this.getRandom().nextFloat() * 0.4F + 0.8F));
 
         }
 
@@ -200,7 +200,7 @@ public class MelonCritterEntity extends AbstractCropCritterEntity implements Ran
             for (int i = 0; i < 10; i++) {
                 Vec3d offset = facing.multiply(i * stepSize);
                 BlockPos check = start.add(Math.round((float)offset.x), 0 , Math.round((float)offset.z));
-                if (!MelonCritterEntity.this.getWorld().getBlockState(check).getCollisionShape(MelonCritterEntity.this.getWorld(), check).isEmpty()) return;
+                if (!MelonCritterEntity.this.getEntityWorld().getBlockState(check).getCollisionShape(MelonCritterEntity.this.getEntityWorld(), check).isEmpty()) return;
                 if (!wateringTargets.contains(check)) wateringTargets.add(check);
             }
         }
@@ -215,7 +215,7 @@ public class MelonCritterEntity extends AbstractCropCritterEntity implements Ran
         @Override
         protected void findClosestTarget() {
             ServerWorld serverWorld = getServerWorld(this.mob);
-            this.targetEntity = serverWorld.getClosestEntity(this.mob.getWorld().getEntitiesByClass(this.targetClass, this.getSearchBox(this.getFollowRange()), (livingEntity) -> true), this.getAndUpdateTargetPredicate(), this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
+            this.targetEntity = serverWorld.getClosestEntity(this.mob.getEntityWorld().getEntitiesByClass(this.targetClass, this.getSearchBox(this.getFollowRange()), (livingEntity) -> true), this.getAndUpdateTargetPredicate(), this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
         }
 
         private TargetPredicate getAndUpdateTargetPredicate() {

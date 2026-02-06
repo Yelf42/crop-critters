@@ -26,9 +26,9 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
-import software.bernie.geckolib.animatable.processing.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
+import software.bernie.geckolib.animation.AnimationController;
 import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.animation.object.PlayState;
 import software.bernie.geckolib.constant.DefaultAnimations;
 import yelf42.cropcritters.items.ModItems;
 
@@ -118,20 +118,20 @@ public class PitcherCritterEntity extends AbstractCropCritterEntity {
     @Override
     public void tick() {
         super.tick();
-        if (this.getWorld().isClient) return;
+        if (this.getEntityWorld().isClient()) return;
         if (this.consumptionTarget == null) {
             this.consume = 0;
             this.timeToConsume = false;
         } else {
             if (this.consume > 0) {
-                Vec3d mouth = this.getPos().add(0, this.getStandingEyeHeight() * 0.5, 0);
-                Vec3d dir = mouth.subtract(this.consumptionTarget.getPos()).normalize().multiply(0.2);
+                Vec3d mouth = this.getEntityPos().add(0, this.getStandingEyeHeight() * 0.5, 0);
+                Vec3d dir = mouth.subtract(this.consumptionTarget.getEntityPos()).normalize().multiply(0.2);
                 this.setYaw(lookAtPreyAngle);
                 this.consumptionTarget.setVelocity(dir);
                 this.consume--;
             }
             if (this.consume <= 1 && this.timeToConsume) {
-                consume(this.getWorld(), this.consumptionTarget);
+                consume(this.getEntityWorld(), this.consumptionTarget);
             }
         }
     }
@@ -150,8 +150,8 @@ public class PitcherCritterEntity extends AbstractCropCritterEntity {
         this.consume = 10;
         this.timeToConsume = true;
         this.consumptionTarget = target;
-        Vec3d mouth = this.getPos().add(0, this.getStandingEyeHeight() * 0.5, 0);
-        Vec3d dir = mouth.subtract(this.consumptionTarget.getPos()).normalize().multiply(0.2);
+        Vec3d mouth = this.getEntityPos().add(0, this.getStandingEyeHeight() * 0.5, 0);
+        Vec3d dir = mouth.subtract(this.consumptionTarget.getEntityPos()).normalize().multiply(0.2);
         this.lookAtPreyAngle = (float)(MathHelper.atan2(-dir.z, -dir.x) * (180F / Math.PI)) - 90F;
         triggerAnim("eat_controller", "eat");
         this.playSound(SoundEvents.ENTITY_DOLPHIN_EAT, 2F, 1F);
@@ -160,11 +160,11 @@ public class PitcherCritterEntity extends AbstractCropCritterEntity {
     }
 
     private void consume(World world, Entity target) {
-        if (world.isClient) return;
+        if (world.isClient()) return;
         if (target instanceof AbstractCropCritterEntity critter) {
             critter.drop((ServerWorld) world, target.getDamageSources().genericKill());
         } else {
-            Vec3d pos = target.getPos();
+            Vec3d pos = target.getEntityPos();
             ItemEntity item = new ItemEntity(world, pos.x, pos.y, pos.z, new ItemStack(ModItems.STRANGE_FERTILIZER));
             world.spawnEntity(item);
         }
