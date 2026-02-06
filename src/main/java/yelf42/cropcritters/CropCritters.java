@@ -45,7 +45,6 @@ import yelf42.cropcritters.items.StrangeFertilizerItem;
 import yelf42.cropcritters.particle.ModParticles;
 
 // TODO soul rose effects (iron)
-// TODO soul rose hint structure
 public class CropCritters implements ModInitializer {
 	public static final String MOD_ID = "cropcritters";
 
@@ -167,6 +166,13 @@ public class CropCritters implements ModInitializer {
                     BiomeSelectors.includeByKey(BiomeKeys.PLAINS),
                     GenerationStep.Feature.VEGETAL_DECORATION,
                     RegistryKey.of(RegistryKeys.PLACED_FEATURE, Identifier.of(CropCritters.MOD_ID, "plains_puffbomb_blob"))
+            );
+        }
+        if (ConfigManager.CONFIG.soulRoseHintGeneration) {
+            BiomeModifications.addFeature(
+                    BiomeSelectors.includeByKey(BiomeKeys.SOUL_SAND_VALLEY),
+                    GenerationStep.Feature.VEGETAL_DECORATION,
+                    RegistryKey.of(RegistryKeys.PLACED_FEATURE, Identifier.of(CropCritters.MOD_ID, "soul_rose_hint"))
             );
         }
 

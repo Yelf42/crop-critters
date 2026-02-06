@@ -10,13 +10,9 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.world.biome.BiomeKeys;
 import net.minecraft.world.event.GameEvent;
 import yelf42.cropcritters.CropCritters;
-import yelf42.cropcritters.area_affectors.AffectorPositions;
-import yelf42.cropcritters.area_affectors.AffectorType;
-import yelf42.cropcritters.area_affectors.TypedBlockArea;
 import yelf42.cropcritters.blocks.ModBlocks;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import static net.minecraft.block.Block.pushEntitiesUpBeforeBlockChange;
@@ -60,7 +56,7 @@ public class WeedHelper {
 
     public static void generateWeed(BlockState state, ServerWorld world, BlockPos pos, Random random, boolean nether) {
         // Cancel if in range of a gold Soul Rose
-        if (copperSoulRoseCheck(world, pos)) return;
+        if (AffectorsHelper.copperSoulRoseCheck(world, pos)) return;
 
         // Count how many neighbours are the same type of crop
         // More identical crops increases chance of weed growth
@@ -127,22 +123,5 @@ public class WeedHelper {
         world.setBlockState(pos.down(), below, Block.NOTIFY_LISTENERS);
         world.setBlockState(pos, weedState);
         world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
-    }
-    
-    public static boolean copperSoulRoseCheck(ServerWorld serverWorld, BlockPos blockPos) {
-        AffectorPositions affectorPositions = serverWorld.getAttachedOrElse(
-                CropCritters.AFFECTOR_POSITIONS_ATTACHMENT_TYPE,
-                AffectorPositions.EMPTY
-        );
-        Collection<? extends TypedBlockArea> affectorsInSection = affectorPositions.getAffectorsInSection(blockPos);
-        if (!affectorsInSection.isEmpty()) {
-            for (TypedBlockArea typedBlockArea : affectorsInSection) {
-                AffectorType type = typedBlockArea.type();
-                if (type == AffectorType.SOUL_ROSE_COPPER_3 || type == AffectorType.SOUL_ROSE_COPPER_2 || type == AffectorType.SOUL_ROSE_COPPER_1) {
-                    if (typedBlockArea.blockArea().isPositionInside(blockPos)) return true;
-                }
-            }
-        }
-        return false;
     }
 }

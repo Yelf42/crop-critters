@@ -39,4 +39,16 @@ public class ModFeatures {
                     RegistryKeys.CONFIGURED_FEATURE,
                     Identifier.of(CropCritters.MOD_ID, "liverwort_patch")
             );
+
+    public static final Feature<DefaultFeatureConfig> SOUL_ROSE_HINT_FEATURE =
+            Registry.register(
+                    Registries.FEATURE,
+                    Identifier.of(CropCritters.MOD_ID, "soul_rose_hint"),
+                    new SoulRoseHintFeature(DefaultFeatureConfig.CODEC)
+            );
+    public static final RegistryKey<ConfiguredFeature<?, ?>> SOUL_ROSE_HINT_CONFIGURED_FEATURE =
+            RegistryKey.of(
+                    RegistryKeys.CONFIGURED_FEATURE,
+                    Identifier.of(CropCritters.MOD_ID, "soul_rose_hint")
+            );
 }

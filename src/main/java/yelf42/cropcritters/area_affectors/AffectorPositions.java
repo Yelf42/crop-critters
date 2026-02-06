@@ -10,6 +10,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import yelf42.cropcritters.CropCritters;
+import yelf42.cropcritters.config.AffectorsHelper;
 
 import java.util.*;
 import java.util.function.Function;
@@ -141,7 +142,7 @@ public final class AffectorPositions {
     }
 
     private static Optional<AffectorType> getAffectorType(BlockState blockState) {
-        return Optional.ofNullable(BlockStateToAffectorType.getTypeFromBlockState(blockState));
+        return Optional.ofNullable(AffectorsHelper.getTypeFromBlockState(blockState));
     }
 
 

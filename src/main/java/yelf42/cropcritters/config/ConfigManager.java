@@ -39,6 +39,7 @@ public class ConfigManager {
                     case "critterSpawnChance" -> CONFIG.critterSpawnChance = Math.clamp(Integer.parseInt(value), 0, 100);
                     case "critterWorkSpeedMultiplier" -> CONFIG.critterWorkSpeedMultiplier = Math.clamp(Float.parseFloat(value), 0, 10);
                     case "deadCoralGeneration" -> CONFIG.deadCoralGeneration = Boolean.parseBoolean(value);
+                    case "soulRoseHintGeneration" -> CONFIG.soulRoseHintGeneration = Boolean.parseBoolean(value);
                     case "thornweedGeneration" -> CONFIG.thornweedGeneration = Boolean.parseBoolean(value);
                     case "waftgrassGeneration" -> CONFIG.waftgrassGeneration = Boolean.parseBoolean(value);
                     case "spiteweedGeneration" -> CONFIG.spiteweedGeneration = Boolean.parseBoolean(value);
@@ -83,6 +84,7 @@ public class ConfigManager {
             writer.write("# \n");
             writer.write("# Biome generation toggles: \n");
             writer.write("deadCoralGeneration = " + CONFIG.deadCoralGeneration + "\n");
+            writer.write("soulRoseHintGeneration = " + CONFIG.soulRoseHintGeneration + "\n");
             writer.write("thornweedGeneration = " + CONFIG.thornweedGeneration + "\n");
             writer.write("waftgrassGeneration = " + CONFIG.waftgrassGeneration + "\n");
             writer.write("spiteweedGeneration = " + CONFIG.spiteweedGeneration + "\n");

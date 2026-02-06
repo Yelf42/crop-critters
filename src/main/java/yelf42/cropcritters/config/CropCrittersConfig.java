@@ -12,6 +12,7 @@ public class CropCrittersConfig {
     public double critterWorkSpeedMultiplier = 1.0;
 
     public boolean deadCoralGeneration = true;
+    public boolean soulRoseHintGeneration = true;
     public boolean thornweedGeneration = true;
     public boolean waftgrassGeneration = true;
     public boolean spiteweedGeneration = true;

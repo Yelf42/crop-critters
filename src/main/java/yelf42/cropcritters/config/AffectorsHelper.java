@@ -1,15 +1,23 @@
-package yelf42.cropcritters.area_affectors;
+package yelf42.cropcritters.config;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.enums.DoubleBlockHalf;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.BlockPos;
 import org.jspecify.annotations.Nullable;
+import yelf42.cropcritters.CropCritters;
+import yelf42.cropcritters.area_affectors.AffectorPositions;
+import yelf42.cropcritters.area_affectors.AffectorType;
+import yelf42.cropcritters.area_affectors.TypedBlockArea;
 import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.blocks.SoulRoseBlock;
 import yelf42.cropcritters.blocks.SoulRoseType;
 
-// Converts block state to affector type
-public class BlockStateToAffectorType {
+import java.util.Collection;
 
+public class AffectorsHelper {
+
+    // Converts block state to affector type
     public static @Nullable AffectorType getTypeFromBlockState(BlockState state) {
         if (state.isOf(ModBlocks.SOUL_ROSE) && state.get(SoulRoseBlock.HALF, DoubleBlockHalf.UPPER) == DoubleBlockHalf.LOWER) {
             int level = state.get(SoulRoseBlock.LEVEL, 0);
@@ -37,6 +45,24 @@ public class BlockStateToAffectorType {
             };
         }
         return null;
+    }
+
+    // Checks if block affected by copper Soul Rose
+    public static boolean copperSoulRoseCheck(ServerWorld serverWorld, BlockPos blockPos) {
+        AffectorPositions affectorPositions = serverWorld.getAttachedOrElse(
+                CropCritters.AFFECTOR_POSITIONS_ATTACHMENT_TYPE,
+                AffectorPositions.EMPTY
+        );
+        Collection<? extends TypedBlockArea> affectorsInSection = affectorPositions.getAffectorsInSection(blockPos);
+        if (!affectorsInSection.isEmpty()) {
+            for (TypedBlockArea typedBlockArea : affectorsInSection) {
+                AffectorType type = typedBlockArea.type();
+                if (type == AffectorType.SOUL_ROSE_COPPER_3 || type == AffectorType.SOUL_ROSE_COPPER_2 || type == AffectorType.SOUL_ROSE_COPPER_1) {
+                    if (typedBlockArea.blockArea().isPositionInside(blockPos)) return true;
+                }
+            }
+        }
+        return false;
     }
 
 }

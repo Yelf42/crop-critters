@@ -25,18 +25,18 @@ public class SoulRoseBlockEntity extends BlockEntity {
     private static final Predicate<BlockState> CORE_MATERIALS = (blockState -> blockState.isOf(Blocks.RAW_COPPER_BLOCK) || blockState.isOf(Blocks.RAW_IRON_BLOCK) || blockState.isOf(Blocks.RAW_GOLD_BLOCK));
 
     // Central core
-    private static final Vec3i[] STAGE_1A = new Vec3i[]{
+    public static final Vec3i[] STAGE_1A = new Vec3i[]{
             new Vec3i(0,-3,0),
             new Vec3i(0,-4,0),
             new Vec3i(0,-5,0)
     };
-    private static final Vec3i[] STAGE_1B = new Vec3i[]{
+    public static final Vec3i[] STAGE_1B = new Vec3i[]{
             new Vec3i(1,-2,0),
             new Vec3i(2,-2,0),
             new Vec3i(3,-2,0),
     };
 
-    private static final Vec3i[] STAGE_2 = new Vec3i[]{
+    public static final Vec3i[] STAGE_2 = new Vec3i[]{
             new Vec3i(4,-2,0),
 
             new Vec3i(4,-3,0),
@@ -53,7 +53,7 @@ public class SoulRoseBlockEntity extends BlockEntity {
             new Vec3i(7,-2,0)
     };
 
-    private static final Vec3i[] STAGE_3 = new Vec3i[]{
+    public static final Vec3i[] STAGE_3 = new Vec3i[]{
             new Vec3i(8,-2,0),
 
             new Vec3i(8,-3,0),
@@ -188,7 +188,7 @@ public class SoulRoseBlockEntity extends BlockEntity {
         return 3;
     }
 
-    public static Vec3i rotate(Vec3i v, int dir) {
+    private static Vec3i rotate(Vec3i v, int dir) {
         int x = v.getX();
         int y = v.getY();
         int z = v.getZ();

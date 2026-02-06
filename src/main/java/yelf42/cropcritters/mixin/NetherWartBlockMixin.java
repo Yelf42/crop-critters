@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import yelf42.cropcritters.config.AffectorsHelper;
 import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.config.ConfigManager;
 import yelf42.cropcritters.config.CritterHelper;
@@ -33,7 +34,7 @@ public abstract class NetherWartBlockMixin {
 
     @Inject(method = "randomTick", at = @At("HEAD"), cancellable = true)
     private static void injectIntoRandomTicksHead(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
-        if (random.nextInt(100) < ConfigManager.CONFIG.goldSoulRoseSlowdown && WeedHelper.copperSoulRoseCheck(world, pos)) ci.cancel();
+        if (random.nextInt(100) < ConfigManager.CONFIG.goldSoulRoseSlowdown && AffectorsHelper.copperSoulRoseCheck(world, pos)) ci.cancel();
     }
 
     // Inject into randomTicks to turn into weed if mature
