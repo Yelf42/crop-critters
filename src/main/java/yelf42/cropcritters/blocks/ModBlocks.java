@@ -16,6 +16,7 @@ import net.minecraft.registry.*;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Rarity;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.effects.ModEffects;
 import yelf42.cropcritters.items.ModItems;
@@ -44,24 +45,24 @@ public class ModBlocks {
         return Registry.register(Registries.BLOCK, blockKey, block);
     }
 
-    private static Block register(String name, Function<AbstractBlock.Settings, Block> blockFactory, AbstractBlock.Settings settings, boolean shouldRegisterItem, Item.Settings itemSettings) {
+    private static Block register(String name, Function<AbstractBlock.Settings, Block> blockFactory, AbstractBlock.Settings settings, Item.Settings itemSettings) {
         // Create a registry key for the block
         RegistryKey<Block> blockKey = keyOfBlock(name);
         // Create the block instance
         Block block = blockFactory.apply(settings.registryKey(blockKey));
 
-        // Sometimes, you may not want to register an item for the block.
-        // Eg: if it's a technical block like `minecraft:moving_piston` or `minecraft:end_gateway`
-        if (shouldRegisterItem) {
-            // Items need to be registered with a different type of registry key, but the ID
-            // can be the same.
-            RegistryKey<Item> itemKey = keyOfItem(name);
+        RegistryKey<Item> itemKey = keyOfItem(name);
 
-            BlockItem blockItem = new BlockItem(block, itemSettings.registryKey(itemKey));
-            Registry.register(Registries.ITEM, itemKey, blockItem);
-        }
+        BlockItem blockItem = new BlockItem(block, itemSettings.registryKey(itemKey));
+        Registry.register(Registries.ITEM, itemKey, blockItem);
 
         return Registry.register(Registries.BLOCK, blockKey, block);
+    }
+
+    private static Block registerPotted(String name, AbstractBlock.Settings settings, Block flower) {
+        // Create a registry key for the block
+        RegistryKey<Block> blockKey = keyOfBlock(name);
+        return Registry.register(Registries.BLOCK, blockKey, new FlowerPotBlock(flower, settings.registryKey(blockKey)));
     }
 
     public static final Block SOUL_FARMLAND = register(
@@ -98,7 +99,7 @@ public class ModBlocks {
                     .breakInstantly()
                     .sounds(BlockSoundGroup.GRASS)
                     .pistonBehavior(PistonBehavior.DESTROY),
-            true
+            new Item.Settings().rarity(Rarity.UNCOMMON)
     );
     public static final Block MAZEWOOD = register(
             "mazewood",
@@ -109,7 +110,7 @@ public class ModBlocks {
                     .strength(0.7f)
                     .sounds(BlockSoundGroup.SWEET_BERRY_BUSH)
                     .pistonBehavior(PistonBehavior.DESTROY),
-            true
+            new Item.Settings().rarity(Rarity.UNCOMMON)
     );
 
     public static final Block CRIMSON_THORNWEED = register(
@@ -201,9 +202,8 @@ public class ModBlocks {
                     .noCollision()
                     .ticksRandomly()
                     .breakInstantly()
-                    .sounds(BlockSoundGroup.GRASS)
+                    .sounds(BlockSoundGroup.FUNGUS)
                     .pistonBehavior(PistonBehavior.DESTROY),
-            true,
             new Item.Settings().food(FoodComponents.CARROT,
                     ConsumableComponent.builder()
                             .consumeSeconds(1.6F)
@@ -220,7 +220,8 @@ public class ModBlocks {
             AbstractBlock.Settings.create()
                     .mapColor(MapColor.WHITE_GRAY)
                     .instrument(NoteBlockInstrument.BASS)
-                    .strength(0.2F).sounds(BlockSoundGroup.WOOD)
+                    .strength(0.2F)
+                    .sounds(BlockSoundGroup.WOOD)
                     .burnable(),
             true
     );
@@ -235,6 +236,42 @@ public class ModBlocks {
                     .sounds(BlockSoundGroup.GLOW_LICHEN)
                     .burnable().pistonBehavior(PistonBehavior.DESTROY),
             true
+    );
+
+    public static final Block SOUL_ROSE = register(
+            "soul_rose",
+            SoulRoseBlock::new,
+            AbstractBlock.Settings.create()
+                    .mapColor(MapColor.DIAMOND_BLUE)
+                    .noCollision()
+                    .strength(0.9f)
+                    .sounds(BlockSoundGroup.WEEPING_VINES_LOW_PITCH)
+                    .luminance((state) -> 3)
+                    .pistonBehavior(PistonBehavior.DESTROY),
+            new Item.Settings().rarity(Rarity.RARE)
+    );
+
+    public static final Block TRIMMED_SOUL_ROSE = register(
+            "trimmed_soul_rose",
+            TrimmedSoulRoseBlock::new,
+            AbstractBlock.Settings.create()
+                    .mapColor(MapColor.DIAMOND_BLUE)
+                    .noCollision()
+                    .breakInstantly()
+                    .sounds(BlockSoundGroup.WEEPING_VINES_LOW_PITCH)
+                    .luminance((state) -> 3)
+                    .pistonBehavior(PistonBehavior.DESTROY),
+            new Item.Settings().rarity(Rarity.RARE)
+    );
+
+    public static final Block POTTED_SOUL_ROSE = registerPotted(
+            "potted_soul_rose",
+            AbstractBlock.Settings.create()
+                    .breakInstantly()
+                    .luminance((state) -> 3)
+                    .nonOpaque()
+                    .pistonBehavior(PistonBehavior.DESTROY),
+            SOUL_ROSE
     );
 
     public static final Block TALL_BUSH = register(
@@ -277,7 +314,7 @@ public class ModBlocks {
                     .nonOpaque()
                     .ticksRandomly()
                     .pistonBehavior(PistonBehavior.DESTROY),
-            true
+            new Item.Settings().rarity(Rarity.UNCOMMON)
     );
 
     public static final Block TORCHFLOWER_SPARK = register(
@@ -290,7 +327,7 @@ public class ModBlocks {
                     .dropsNothing()
                     .ticksRandomly()
                     .air(),
-            true
+            false
     );
 
     private static RegistryKey<Block> keyOfBlock(String name) {
@@ -318,6 +355,8 @@ public class ModBlocks {
             itemGroup.add(ModBlocks.PUFFBOMB_MUSHROOM.asItem());
             itemGroup.add(ModBlocks.PUFFBOMB_MUSHROOM_BLOCK.asItem());
             itemGroup.add(ModBlocks.LIVERWORT.asItem());
+            itemGroup.add(ModBlocks.SOUL_ROSE.asItem());
+            itemGroup.add(ModBlocks.TRIMMED_SOUL_ROSE.asItem());
             itemGroup.add(ModBlocks.TALL_BUSH.asItem());
             itemGroup.add(ModBlocks.ORNAMENTAL_BUSH.asItem());
             itemGroup.add(ModBlocks.LOST_SOUL_IN_A_JAR.asItem());
@@ -335,11 +374,14 @@ public class ModBlocks {
             itemGroup.add(ModBlocks.PUFFBOMB_MUSHROOM.asItem());
             itemGroup.add(ModBlocks.PUFFBOMB_MUSHROOM_BLOCK.asItem());
             itemGroup.add(ModBlocks.LIVERWORT.asItem());
+            itemGroup.add(ModBlocks.SOUL_ROSE.asItem());
+            itemGroup.add(ModBlocks.TRIMMED_SOUL_ROSE.asItem());
             itemGroup.add(ModBlocks.TALL_BUSH.asItem());
             itemGroup.add(ModBlocks.ORNAMENTAL_BUSH.asItem());
         });
 
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register((itemGroup) -> {
+            itemGroup.add(ModBlocks.SOUL_ROSE.asItem());
             itemGroup.add(ModBlocks.LOST_SOUL_IN_A_JAR.asItem());
         });
 

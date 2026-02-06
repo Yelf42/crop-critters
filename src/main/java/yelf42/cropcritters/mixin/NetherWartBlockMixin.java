@@ -1,31 +1,25 @@
 package yelf42.cropcritters.mixin;
 
 import net.minecraft.block.*;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.BlockView;
-import net.minecraft.world.biome.BiomeKeys;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.config.ConfigManager;
-import yelf42.cropcritters.config.WeedPlacement;
-import yelf42.cropcritters.entity.ModEntities;
+import yelf42.cropcritters.config.CritterHelper;
+import yelf42.cropcritters.config.WeedHelper;
 
 @Mixin(NetherWartBlock.class)
-public class NetherWartBlockMixin {
+public abstract class NetherWartBlockMixin {
     @Shadow @Final public static IntProperty AGE;
 
     @Inject(method = "canPlantOnTop", at = @At("HEAD"), cancellable = true)
@@ -35,6 +29,11 @@ public class NetherWartBlockMixin {
             return;
         }
         cir.setReturnValue(false);
+    }
+
+    @Inject(method = "randomTick", at = @At("HEAD"), cancellable = true)
+    private static void injectIntoRandomTicksHead(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
+        if (random.nextInt(100) < ConfigManager.CONFIG.goldSoulRoseSlowdown && WeedHelper.copperSoulRoseCheck(world, pos)) ci.cancel();
     }
 
     // Inject into randomTicks to turn into weed if mature
@@ -52,26 +51,8 @@ public class NetherWartBlockMixin {
             return;
         }
 
-        if (spawnCritter(world, random, pos)) return;
+        if (CritterHelper.spawnCritter(world, state, random, pos)) return;
 
-        WeedPlacement.generateWeed(state, world, pos, random, true);
-    }
-
-    @Unique
-    private static boolean spawnCritter(ServerWorld world, Random random, BlockPos pos) {
-        boolean airCheck = world.getBlockState(pos.up()).isAir();
-        int spawnChance = ConfigManager.CONFIG.critterSpawnChance * 2;
-        if (world.getBiome(pos).matchesKey(BiomeKeys.SOUL_SAND_VALLEY)) spawnChance *= 2;
-
-        if (airCheck && random.nextInt(100) + 1 < spawnChance) {
-            for (int i = 0; i <= world.random.nextInt(3); i++) {
-                ModEntities.NETHER_WART_CRITTER.spawn(world, pos, SpawnReason.NATURAL);
-            }
-            world.setBlockState(pos, Blocks.AIR.getDefaultState(), Block.NOTIFY_LISTENERS);
-            world.playSound(null, pos, SoundEvents.ENTITY_ALLAY_AMBIENT_WITH_ITEM, SoundCategory.BLOCKS, 1F, 1F);
-            world.spawnParticles(ParticleTypes.SOUL_FIRE_FLAME, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 10, 0.5, 0.5, 0.5, 0F);
-            return true;
-        }
-        return false;
+        WeedHelper.generateWeed(state, world, pos, random, true);
     }
 }

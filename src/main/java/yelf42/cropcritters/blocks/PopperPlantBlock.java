@@ -25,7 +25,7 @@ public class PopperPlantBlock extends PlantBlock implements Fertilizable {
     public static final MapCodec<PopperPlantBlock> CODEC = createCodec(PopperPlantBlock::new);
     public static final int MAX_AGE = 3;
     public static final IntProperty AGE = Properties.AGE_3;
-    private static final VoxelShape SHAPE = Block.createColumnShape((double)16.0F, (double)0.0F, (double)13.0F);
+    private static final VoxelShape SHAPE = Block.createColumnShape((double)8.0F, (double)0.0F, (double)13.0F);
 
     protected PopperPlantBlock(Settings settings) {
         super(settings);
@@ -39,7 +39,7 @@ public class PopperPlantBlock extends PlantBlock implements Fertilizable {
 
     @Override
     protected VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return SHAPE;
+        return SHAPE.offset(state.getModelOffset(pos));
     }
 
     public int getMaxAge() {
@@ -81,16 +81,16 @@ public class PopperPlantBlock extends PlantBlock implements Fertilizable {
             BlockState toCheck = world.getBlockState(blockPos);
             if (toCheck.isOf(ModBlocks.POPPER_PLANT) && isMature(toCheck)) {
                 world.setBlockState(blockPos, toCheck.with(AGE, 0));
-                spawnPopperPod(world, blockPos);
+                spawnPopperPod(world, toCheck, blockPos);
             }
         }
 
-        spawnPopperPod(world, pos);
+        spawnPopperPod(world, state, pos);
     }
 
-    private void spawnPopperPod(ServerWorld world, BlockPos pos) {
+    private void spawnPopperPod(ServerWorld world, BlockState state, BlockPos pos) {
         ItemStack itemStack = new ItemStack(ModItems.POPPER_POD);
-        Vec3d center = pos.toCenterPos();
+        Vec3d center = pos.toCenterPos().add(state.getModelOffset(pos));
         ProjectileEntity.spawn(new PopperPodEntity(world, center.x, center.y, center.z, itemStack), world, itemStack);
     }
 

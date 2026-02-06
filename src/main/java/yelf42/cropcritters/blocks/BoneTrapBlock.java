@@ -112,6 +112,6 @@ public class BoneTrapBlock extends PlantBlock {
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
         builder.add(STAGE);
-        builder.add(new Property[]{FACING});
+        builder.add(FACING);
     }
 }

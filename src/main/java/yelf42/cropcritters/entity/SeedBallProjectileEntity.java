@@ -101,8 +101,7 @@ public class SeedBallProjectileEntity extends ThrownItemEntity {
 
             Iterable<BlockPos> iterable = BlockPos.iterateOutwards(this.getBlockPos(), 2, 3, 2);
             for(BlockPos blockPos : iterable) {
-                BlockState blockState = world.getBlockState(blockPos);
-                blockState = Registries.BLOCK.get(crops.get(this.random.nextInt(crops.size()))).getDefaultState();
+                BlockState blockState = Registries.BLOCK.get(crops.get(this.random.nextInt(crops.size()))).getDefaultState();
                 if ((world.random.nextInt(2) == 0 || blockPos == this.getBlockPos()) && blockState.canPlaceAt(world, blockPos) && world.getBlockState(blockPos).isAir()) {
                     world.setBlockState(blockPos, blockState);
                 }

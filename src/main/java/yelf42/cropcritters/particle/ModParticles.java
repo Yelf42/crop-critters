@@ -14,6 +14,9 @@ public class ModParticles {
     public static final SimpleParticleType WATER_SPRAY_PARTICLE =
             registerParticle("water_spray_particle", FabricParticleTypes.simple());
 
+    public static final SimpleParticleType SOUL_SIPHON_PARTICLE =
+            registerParticle("soul_siphon_particle", FabricParticleTypes.simple());
+
     public static final ParticleType<TintedParticleEffect> SPORE_PARTICLE = registerTintedParticle("spore_particle");
 
     private static SimpleParticleType registerParticle(String name, SimpleParticleType particleType) {

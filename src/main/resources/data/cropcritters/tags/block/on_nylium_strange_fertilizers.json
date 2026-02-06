@@ -9,6 +9,8 @@
     "minecraft:crimson_fungus",
     "minecraft:warped_fungus",
     "minecraft:nether_sprouts",
-    "cropcritters:crimson_thornweed"
+    "cropcritters:crimson_thornweed",
+    "cropcritters:waftgrass",
+    "cropcritters:bone_trap"
   ]
 }

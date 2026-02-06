@@ -16,7 +16,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldView;
 import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.tick.ScheduledTickView;
-import yelf42.cropcritters.config.WeedPlacement;
+import yelf42.cropcritters.config.WeedHelper;
 import yelf42.cropcritters.events.WeedGrowNotifier;
 
 import java.util.ArrayList;
@@ -97,7 +97,7 @@ public class SpreadingWeedBlock extends PlantBlock implements Fertilizable{
                         BlockState checkState = world.getBlockState(checkPos);
                         if (checkState.isOf(this)) neighbouringWeeds++;
                         BlockState checkBelowState = world.getBlockState(checkPos.down());
-                        if (canPlantOnTop(checkBelowState, world, checkPos.down()) && WeedPlacement.canWeedsReplace(checkState)) {
+                        if (canPlantOnTop(checkBelowState, world, checkPos.down()) && WeedHelper.canWeedsReplace(checkState)) {
                             canSpreadTo.add(checkPos);
                         }
                     }

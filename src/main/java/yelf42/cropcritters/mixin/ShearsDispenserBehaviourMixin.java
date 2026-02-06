@@ -20,7 +20,7 @@ import yelf42.cropcritters.blocks.PopperPlantBlock;
 import yelf42.cropcritters.items.ModItems;
 
 @Mixin(ShearsDispenserBehavior.class)
-public class ShearsDispenserBehaviourMixin {
+public abstract class ShearsDispenserBehaviourMixin {
 
     @Inject(method = "tryShearBlock", at = @At("TAIL"), cancellable = true)
     private static void shearPopperPlant(ServerWorld world, ItemStack tool, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {

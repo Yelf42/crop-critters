@@ -9,7 +9,7 @@ import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import yelf42.cropcritters.blocks.ModBlocks;
-import yelf42.cropcritters.config.WeedPlacement;
+import yelf42.cropcritters.config.WeedHelper;
 
 public class PopperSeedEntity extends ThrownItemEntity {
     private int lifespan = 0;
@@ -38,13 +38,13 @@ public class PopperSeedEntity extends ThrownItemEntity {
     protected void onBlockCollision(BlockState state) {
         if (this.getEntityWorld().getBlockState(this.getBlockPos()).isIn(BlockTags.DIRT)) {
             BlockState toCheckUp = this.getEntityWorld().getBlockState(this.getBlockPos().up());
-            if (WeedPlacement.canWeedsReplace(toCheckUp)) {
+            if (WeedHelper.canWeedsReplace(toCheckUp)) {
                 this.getEntityWorld().setBlockState(this.getBlockPos().up(), ModBlocks.POPPER_PLANT.getDefaultState());
                 this.discard();
             }
         } else if (this.getEntityWorld().getBlockState(this.getBlockPos().down()).isIn(BlockTags.DIRT)) {
             BlockState toCheck = this.getEntityWorld().getBlockState(this.getBlockPos());
-            if (WeedPlacement.canWeedsReplace(toCheck)) {
+            if (WeedHelper.canWeedsReplace(toCheck)) {
                 this.getEntityWorld().setBlockState(this.getBlockPos(), ModBlocks.POPPER_PLANT.getDefaultState());
                 this.discard();
             }

@@ -17,6 +17,7 @@ import yelf42.cropcritters.blocks.ModBlockEntities;
 import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.entity.ModEntities;
 import yelf42.cropcritters.particle.ModParticles;
+import yelf42.cropcritters.particle.SoulSiphonParticle;
 import yelf42.cropcritters.particle.SporeParticle;
 import yelf42.cropcritters.particle.WaterSprayParticle;
 import yelf42.cropcritters.renderer.blockentity.StrangleFernBlockEntityRenderer;
@@ -36,6 +37,9 @@ public class CropCrittersClient implements ClientModInitializer {
 		BlockRenderLayerMap.putBlock(ModBlocks.WITHERING_SPITEWEED, BlockRenderLayer.CUTOUT);
         BlockRenderLayerMap.putBlock(ModBlocks.POPPER_PLANT, BlockRenderLayer.CUTOUT);
         BlockRenderLayerMap.putBlock(ModBlocks.BONE_TRAP, BlockRenderLayer.CUTOUT);
+        BlockRenderLayerMap.putBlock(ModBlocks.SOUL_ROSE, BlockRenderLayer.CUTOUT);
+        BlockRenderLayerMap.putBlock(ModBlocks.TRIMMED_SOUL_ROSE, BlockRenderLayer.CUTOUT);
+        BlockRenderLayerMap.putBlock(ModBlocks.POTTED_SOUL_ROSE, BlockRenderLayer.CUTOUT);
 
         BlockRenderLayerMap.putBlock(ModBlocks.TALL_BUSH, BlockRenderLayer.CUTOUT);
         ColorProviderRegistry.BLOCK.register((state, world, pos, tintIndex) ->
@@ -92,6 +96,7 @@ public class CropCrittersClient implements ClientModInitializer {
 		// Particles
 		ParticleFactoryRegistry.getInstance().register(ModParticles.WATER_SPRAY_PARTICLE, WaterSprayParticle.Factory::new);
         ParticleFactoryRegistry.getInstance().register(ModParticles.SPORE_PARTICLE, SporeParticle.Factory::new);
+        ParticleFactoryRegistry.getInstance().register(ModParticles.SOUL_SIPHON_PARTICLE, SoulSiphonParticle.Factory::new);
 
 		// Packet Handling
 		ClientPlayNetworking.registerGlobalReceiver(CropCritters.WaterSprayS2CPayload.ID, (payload, context) -> {

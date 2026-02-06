@@ -9,8 +9,6 @@ import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.state.property.IntProperty;
-import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.random.Random;
@@ -20,12 +18,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldView;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.tick.ScheduledTickView;
-import yelf42.cropcritters.CropCritters;
-import yelf42.cropcritters.config.WeedPlacement;
-
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
+import yelf42.cropcritters.config.WeedHelper;
 
 public class LiverwortBlock extends MultifaceGrowthBlock implements Fertilizable {
     public static final MapCodec<LiverwortBlock> CODEC = createCodec(LiverwortBlock::new);
@@ -197,7 +190,7 @@ public class LiverwortBlock extends MultifaceGrowthBlock implements Fertilizable
 
         @Override
         protected boolean canGrow(BlockView world, BlockPos pos, BlockPos growPos, Direction direction, BlockState state) {
-            return super.canGrow(world, pos, growPos, direction, state) || WeedPlacement.canWeedsReplace(state);
+            return super.canGrow(world, pos, growPos, direction, state) || WeedHelper.canWeedsReplace(state);
         }
     }
 

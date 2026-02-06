@@ -1,6 +1,7 @@
 package yelf42.cropcritters.events;
 
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityCombatEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.block.*;
 import net.minecraft.enchantment.Enchantment;
@@ -9,7 +10,6 @@ import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.ItemTags;
@@ -20,10 +20,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import yelf42.cropcritters.CropCritters;
-import yelf42.cropcritters.blocks.ModBlocks;
-import yelf42.cropcritters.blocks.PopperPlantBlock;
-import yelf42.cropcritters.blocks.StrangleFern;
-import yelf42.cropcritters.blocks.StrangleFernBlockEntity;
+import yelf42.cropcritters.blocks.*;
 import yelf42.cropcritters.config.ConfigManager;
 import yelf42.cropcritters.items.ModItems;
 

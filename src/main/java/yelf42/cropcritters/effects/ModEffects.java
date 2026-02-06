@@ -21,6 +21,9 @@ public class ModEffects {
     public static final RegistryEntry<StatusEffect> PUFFBOMB_POISONING = register("puffbomb_poisoning", new PuffbombPoisoningEffect(StatusEffectCategory.HARMFUL, 16770790));
     public static final StatusEffectInstance EATEN_PUFFBOMB_POISONING = new StatusEffectInstance(PUFFBOMB_POISONING, 2400, 0, false, false, true);
 
+    public static final RegistryEntry<StatusEffect> SOUL_SIPHON = register("soul_siphon", new SoulSiphonEffect(StatusEffectCategory.HARMFUL, 7561558));
+
+
 
     private static RegistryEntry<StatusEffect> register(String id, StatusEffect statusEffect) {
         return Registry.registerReference(Registries.STATUS_EFFECT, Identifier.of(CropCritters.MOD_ID, id), statusEffect);
