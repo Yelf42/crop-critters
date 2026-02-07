@@ -68,7 +68,7 @@ public class ModComponents {
 
         @Override
         public void appendTooltip(Item.TooltipContext context, Consumer<Text> tooltip, TooltipType type, ComponentsAccess components) {
-            if (poisonStacks > 0) tooltip.accept(Text.translatable("item.cropcritters.tooltip.poisonous_seed_ball").formatted(Formatting.GREEN));
+            if (poisonStacks > 0) tooltip.accept(Text.translatable("item.cropcritters.tooltip.poisonous_seed_ball").append(CropCritters.INT_TO_ROMAN[poisonStacks]).formatted(Formatting.GREEN));
         }
     }
 
