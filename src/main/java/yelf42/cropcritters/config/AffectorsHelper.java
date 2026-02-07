@@ -65,4 +65,26 @@ public class AffectorsHelper {
         return false;
     }
 
+    // returns level if block affected by iron Soul Rose
+    public static int ironSoulRoseCheck(ServerWorld serverWorld, BlockPos blockPos) {
+        AffectorPositions affectorPositions = serverWorld.getAttachedOrElse(
+                CropCritters.AFFECTOR_POSITIONS_ATTACHMENT_TYPE,
+                AffectorPositions.EMPTY
+        );
+        Collection<? extends TypedBlockArea> affectorsInSection = affectorPositions.getAffectorsInSection(blockPos);
+        int largest = 0;
+        for (TypedBlockArea area : affectorsInSection) {
+            AffectorType type = area.type();
+            if ((type == AffectorType.SOUL_ROSE_IRON_3 ||
+                    type == AffectorType.SOUL_ROSE_IRON_2 ||
+                    type == AffectorType.SOUL_ROSE_IRON_1) &&
+                    area.blockArea().isPositionInside(blockPos)) {
+
+                if (type == AffectorType.SOUL_ROSE_IRON_3) return 3;
+                largest = Math.max(largest, (type == AffectorType.SOUL_ROSE_IRON_2) ? 2 : 1);
+            }
+        }
+        return largest;
+    }
+
 }

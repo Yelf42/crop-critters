@@ -5,6 +5,7 @@
   "mixins": [
     "AttachedStemBlockMixin",
     "BiomeMixin",
+    "BlockMixin",
     "CropBlockMixin",
     "FarmlandBlockMixin",
     "FlowerPotBlockMixin",

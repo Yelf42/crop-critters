@@ -15,6 +15,7 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeKeys;
+import yelf42.cropcritters.area_affectors.AffectorType;
 import yelf42.cropcritters.effects.ModEffects;
 import yelf42.cropcritters.particle.ModParticles;
 
@@ -148,7 +149,7 @@ public class SoulRoseBlockEntity extends BlockEntity {
     }
 
     private static double levelToRadius(int level) {
-        return 7.0F * level - 1.0F;
+        return (level == 3) ? AffectorType.SOUL_ROSE_COPPER_3.width : (level == 2) ? AffectorType.SOUL_ROSE_COPPER_2.width : AffectorType.SOUL_ROSE_COPPER_1.width;
     }
 
     private static int updateLevel(World world, BlockPos pos) {

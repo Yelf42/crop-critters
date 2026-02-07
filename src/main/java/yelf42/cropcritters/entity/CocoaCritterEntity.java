@@ -163,11 +163,16 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
         List<ItemStack> items = state.getDroppedStacks(builder);
         if (items.isEmpty()) return;
 
-        ItemStack toDrop = items.get(world.random.nextInt(items.size()));
-        toDrop.setCount(1);
+        int index = world.random.nextInt(items.size());
+        ItemStack toDrop = items.remove(index);
+        toDrop.setCount(Math.clamp(toDrop.getCount(), 1, 5));
         this.equipStack(EquipmentSlot.MAINHAND, toDrop);
         this.setDropGuaranteed(EquipmentSlot.MAINHAND);
         recordCrop(toDrop.getItem());
+        items.forEach((stack) -> {
+            recordCrop(stack.getItem());
+            Block.dropStack(world, this.targetPos, stack);
+        });
 
         world.syncWorldEvent(this, 2001, this.targetPos, Block.getRawIdFromState(state));
         world.setBlockState(this.targetPos, Blocks.AIR.getDefaultState(), Block.NOTIFY_LISTENERS);
@@ -244,11 +249,11 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
         ItemStack itemStack = itemEntity.getStack();
         if (this.canPickupItem(itemStack)) {
             int i = itemStack.getCount();
-            if (i > 1) {
-                this.dropItem(itemStack.split(i - 1));
+            if (i > 5) {
+                this.dropItem(itemStack.split(i - 5));
             }
             this.triggerItemPickedUpByEntityCriteria(itemEntity);
-            this.equipStack(EquipmentSlot.MAINHAND, itemStack.split(1));
+            this.equipStack(EquipmentSlot.MAINHAND, itemStack.split(5));
             this.setDropGuaranteed(EquipmentSlot.MAINHAND);
             this.sendPickup(itemEntity, itemStack.getCount());
             itemEntity.discard();

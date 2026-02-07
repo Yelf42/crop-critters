@@ -5,7 +5,6 @@ import net.minecraft.util.StringIdentifiable;
 
 import java.util.Locale;
 
-// WARNING if changing ranges, need to update levelToRadius(int level) in SoulRoseBlockEntity
 public enum AffectorType implements StringIdentifiable {
     DEFAULT(ShapeType.CUBOID, 0, 0),
 
