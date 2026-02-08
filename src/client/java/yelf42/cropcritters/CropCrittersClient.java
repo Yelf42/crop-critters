@@ -1,6 +1,7 @@
 package yelf42.cropcritters;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockRenderLayerMap;
@@ -10,7 +11,11 @@ import net.minecraft.client.render.BlockRenderLayer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 import net.minecraft.client.render.entity.EntityRendererFactories;
 import net.minecraft.client.render.entity.FlyingItemEntityRenderer;
+import net.minecraft.client.render.item.model.special.SpecialModelTypes;
+import net.minecraft.client.render.model.UnbakedModel;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import yelf42.cropcritters.blocks.ModBlockEntities;
@@ -20,6 +25,8 @@ import yelf42.cropcritters.particle.ModParticles;
 import yelf42.cropcritters.particle.SoulSiphonParticle;
 import yelf42.cropcritters.particle.SporeParticle;
 import yelf42.cropcritters.particle.WaterSprayParticle;
+import yelf42.cropcritters.renderer.blockentity.SoulPotBlockEntityRenderer;
+import yelf42.cropcritters.renderer.blockentity.SoulPotModelRenderer;
 import yelf42.cropcritters.renderer.blockentity.StrangleFernBlockEntityRenderer;
 import yelf42.cropcritters.renderer.entity.AbstractCritterRenderer;
 import yelf42.cropcritters.renderer.entity.PopperPodEntityRenderer;
@@ -73,6 +80,12 @@ public class CropCrittersClient implements ClientModInitializer {
                         ? BiomeColors.getGrassColor(world, pos)
                         : 0x91BD59, ModBlocks.STRANGLE_FERN
         );
+
+        SpecialModelTypes.ID_MAPPER.put(
+                Identifier.of(CropCritters.MOD_ID, "soul_pot"),
+                SoulPotModelRenderer.Unbaked.CODEC
+        );
+        BlockEntityRendererFactories.register(ModBlockEntities.SOUL_POT, SoulPotBlockEntityRenderer::new);
 
         // Entities
         EntityRendererFactories.register(ModEntities.WHEAT_CRITTER, context -> new AbstractCritterRenderer<>(context, Identifier.of(CropCritters.MOD_ID, "wheat_critter"), true));

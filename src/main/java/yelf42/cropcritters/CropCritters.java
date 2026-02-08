@@ -44,6 +44,9 @@ import yelf42.cropcritters.items.ModItems;
 import yelf42.cropcritters.items.StrangeFertilizerItem;
 import yelf42.cropcritters.particle.ModParticles;
 
+// TODO seed bar (recipe + resets critter timer)
+// TODO wither -> soul rose fanfare
+// TODO painting for soul rose system?
 public class CropCritters implements ModInitializer {
 	public static final String MOD_ID = "cropcritters";
 

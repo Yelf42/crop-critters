@@ -317,6 +317,17 @@ public class ModBlocks {
             new Item.Settings().rarity(Rarity.UNCOMMON)
     );
 
+    public static final Block SOUL_POT = register(
+            "soul_pot",
+            SoulPotBlock::new,
+            AbstractBlock.Settings.create()
+                    .mapColor(MapColor.TERRACOTTA_RED)
+                    .strength(0.0F, 0.0F)
+                    .pistonBehavior(PistonBehavior.DESTROY)
+                    .nonOpaque(),
+            true
+    );
+
     public static final Block TORCHFLOWER_SPARK = register(
             "torchflower_spark",
             TorchflowerSparkBlock::new,
@@ -360,6 +371,7 @@ public class ModBlocks {
             itemGroup.add(ModBlocks.TALL_BUSH.asItem());
             itemGroup.add(ModBlocks.ORNAMENTAL_BUSH.asItem());
             itemGroup.add(ModBlocks.LOST_SOUL_IN_A_JAR.asItem());
+            itemGroup.add(ModBlocks.SOUL_POT.asItem());
         });
 
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.NATURAL).register((itemGroup) -> {
@@ -383,6 +395,7 @@ public class ModBlocks {
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register((itemGroup) -> {
             itemGroup.add(ModBlocks.SOUL_ROSE.asItem());
             itemGroup.add(ModBlocks.LOST_SOUL_IN_A_JAR.asItem());
+            itemGroup.add(ModBlocks.SOUL_POT.asItem());
         });
 
         CompostingChanceRegistry.INSTANCE.add(ModBlocks.TALL_BUSH.asItem(), 0.8f);

@@ -20,8 +20,8 @@ public class AbstractCritterRenderer<R extends LivingEntityRenderState & GeoRend
 
     public AbstractCritterRenderer(EntityRendererFactory.Context context, Identifier id, boolean basicAnimation) {
         super(context, new AbstractCritterModel(id, basicAnimation));
-        this.texture = Identifier.of(CropCritters.MOD_ID,"textures/entity/" + id.getPath() + ".png");
-        this.trustingTexture = Identifier.of(CropCritters.MOD_ID,"textures/entity/" + id.getPath() + "_trusting.png");
+        this.texture = Identifier.of(CropCritters.MOD_ID,"textures/entity/critters/" + id.getPath() + ".png");
+        this.trustingTexture = Identifier.of(CropCritters.MOD_ID,"textures/entity/critters/" + id.getPath() + "_trusting.png");
         if (id.getPath().equals("cocoa_critter")) {
             //addRenderLayer(new ItemInHandGeoLayer<>(this));
             withRenderLayer(new ItemInHandGeoLayer<>(this));
