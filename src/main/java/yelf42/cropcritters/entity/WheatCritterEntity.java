@@ -8,14 +8,13 @@ import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.state.property.Properties;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.blocks.StrangleFern;
+import yelf42.cropcritters.sound.ModSounds;
 
 import java.util.function.Predicate;
 
@@ -37,7 +36,7 @@ public class WheatCritterEntity extends AbstractCropCritterEntity {
     @Override
     public void completeTargetGoal() {
         if (this.targetPos == null) return;
-        this.playSound(SoundEvents.ITEM_SHEARS_SNIP, 1.0F, 1.0F);
+        this.playSound(ModSounds.ENTITY_CRITTER_SHEAR, 1.0F, 1.0F);
         this.getEntityWorld().syncWorldEvent(this, 2001, this.targetPos, Block.getRawIdFromState(this.getEntityWorld().getBlockState(this.targetPos)));
         this.getEntityWorld().setBlockState(this.targetPos, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL_AND_REDRAW);
     }

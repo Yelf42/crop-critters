@@ -19,7 +19,6 @@ import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.loot.context.LootWorldContext;
 import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
 import net.minecraft.util.ActionResult;
@@ -38,6 +37,7 @@ import software.bernie.geckolib.constant.DefaultAnimations;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.config.RecognizedCropsState;
 import yelf42.cropcritters.items.ModItems;
+import yelf42.cropcritters.sound.ModSounds;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -225,7 +225,7 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
             }
             itemEntity.setPickupDelay(40);
             itemEntity.setThrower(this);
-            this.playSound(SoundEvents.ENTITY_FOX_SPIT, 1.0F, 1.0F);
+            this.playSound(ModSounds.ENTITY_CRITTER_DROP, 1.0F, 1.0F);
             this.getEntityWorld().spawnEntity(itemEntity);
             this.equipStack(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
             return true;

@@ -1,30 +1,25 @@
 package yelf42.cropcritters;
 
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.minecraft.client.color.world.BiomeColors;
+import net.minecraft.client.particle.DustPlumeParticle;
+import net.minecraft.client.particle.SuspendParticle;
 import net.minecraft.client.render.BlockRenderLayer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 import net.minecraft.client.render.entity.EntityRendererFactories;
 import net.minecraft.client.render.entity.FlyingItemEntityRenderer;
 import net.minecraft.client.render.item.model.special.SpecialModelTypes;
-import net.minecraft.client.render.model.UnbakedModel;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import yelf42.cropcritters.blocks.ModBlockEntities;
 import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.entity.ModEntities;
-import yelf42.cropcritters.particle.ModParticles;
-import yelf42.cropcritters.particle.SoulSiphonParticle;
-import yelf42.cropcritters.particle.SporeParticle;
-import yelf42.cropcritters.particle.WaterSprayParticle;
+import yelf42.cropcritters.particle.*;
 import yelf42.cropcritters.renderer.blockentity.SoulPotBlockEntityRenderer;
 import yelf42.cropcritters.renderer.blockentity.SoulPotModelRenderer;
 import yelf42.cropcritters.renderer.blockentity.StrangleFernBlockEntityRenderer;
@@ -107,9 +102,13 @@ public class CropCrittersClient implements ClientModInitializer {
         EntityRendererFactories.register(ModEntities.HERBICIDE_PROJECTILE, FlyingItemEntityRenderer::new);
 
 		// Particles
-		ParticleFactoryRegistry.getInstance().register(ModParticles.WATER_SPRAY_PARTICLE, WaterSprayParticle.Factory::new);
-        ParticleFactoryRegistry.getInstance().register(ModParticles.SPORE_PARTICLE, SporeParticle.Factory::new);
-        ParticleFactoryRegistry.getInstance().register(ModParticles.SOUL_SIPHON_PARTICLE, SoulSiphonParticle.Factory::new);
+		ParticleFactoryRegistry.getInstance().register(ModParticles.WATER_SPRAY, WaterSprayParticle.Factory::new);
+        ParticleFactoryRegistry.getInstance().register(ModParticles.SPORES, SporeParticle.Factory::new);
+        ParticleFactoryRegistry.getInstance().register(ModParticles.SOUL_SIPHON, SoulSiphonParticle.Factory::new);
+        ParticleFactoryRegistry.getInstance().register(ModParticles.SOUL_GLOW, SoulGlowParticle.Factory::new);
+        ParticleFactoryRegistry.getInstance().register(ModParticles.SOUL_GLINT, SuspendParticle.HappyVillagerFactory::new);
+        ParticleFactoryRegistry.getInstance().register(ModParticles.SOUL_GLINT_PLUME, SoulGlintPlumeParticle.Factory::new);
+
 
 		// Packet Handling
 		ClientPlayNetworking.registerGlobalReceiver(CropCritters.WaterSprayS2CPayload.ID, (payload, context) -> {
@@ -121,7 +120,7 @@ public class CropCrittersClient implements ClientModInitializer {
 
 			Vec3d pos = payload.pos();
 			Vec3d dir = payload.dir();
-			world.addParticleClient(ModParticles.WATER_SPRAY_PARTICLE, pos.x, pos.y + 0.2, pos.z, dir.x, 0, dir.z);
+			world.addParticleClient(ModParticles.WATER_SPRAY, pos.x, pos.y + 0.2, pos.z, dir.x, 0, dir.z);
 		});
 	}
 }

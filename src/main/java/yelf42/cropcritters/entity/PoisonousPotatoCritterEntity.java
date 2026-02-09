@@ -6,6 +6,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.CropBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
@@ -29,6 +30,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.blocks.ModBlocks;
+import yelf42.cropcritters.sound.ModSounds;
 
 import java.util.function.Predicate;
 
@@ -63,7 +65,7 @@ public class PoisonousPotatoCritterEntity extends AbstractCropCritterEntity impl
 
     @Override
     public void playAmbientSound() {
-        playSound(SoundEvents.ENTITY_VEX_AMBIENT);
+        playSound(ModSounds.ENTITY_CRITTER_EVIL_AMBIENT);
     }
 
     @Override
@@ -151,7 +153,7 @@ public class PoisonousPotatoCritterEntity extends AbstractCropCritterEntity impl
         super.tickMovement();
         if (this.getEntityWorld() instanceof ServerWorld serverWorld) {
             if (this.isAlive()) {
-                for(MobEntity mobEntity : serverWorld.getEntitiesByClass(MobEntity.class, this.getBoundingBox().expand(0.3), POISON_PREDICATE)) {
+                for(LivingEntity mobEntity : serverWorld.getEntitiesByClass(LivingEntity.class, this.getBoundingBox().expand(0.3), POISON_PREDICATE)) {
                     if (mobEntity.isAlive()) {
                         this.sting(serverWorld, mobEntity);
                     }
@@ -161,10 +163,10 @@ public class PoisonousPotatoCritterEntity extends AbstractCropCritterEntity impl
 
     }
 
-    private void sting(ServerWorld world, MobEntity target) {
+    private void sting(ServerWorld world, LivingEntity target) {
         if (target.damage(world, this.getDamageSources().mobAttack(this), (float)(1))) {
-            target.addStatusEffect(new StatusEffectInstance(StatusEffects.POISON, 20 * 5, 0), this);
-            this.playSound(SoundEvents.ENTITY_PUFFER_FISH_STING, 1.0F, 1.0F);
+            target.addStatusEffect(new StatusEffectInstance(StatusEffects.POISON, 20 * 3, 0), this);
+            this.playSound(ModSounds.ENTITY_CRITTER_EVIL_STING, 1.0F, 1.0F);
         }
     }
 
@@ -174,11 +176,11 @@ public class PoisonousPotatoCritterEntity extends AbstractCropCritterEntity impl
         }
 
         public void tickStepping(WorldAccess world, BlockPos pos) {
-            world.playSound((Entity)null, pos, SoundEvents.ENTITY_ZOMBIE_DESTROY_EGG, SoundCategory.HOSTILE, 0.5F, 0.9F + PoisonousPotatoCritterEntity.this.random.nextFloat() * 0.2F);
+            world.playSound(null, pos, SoundEvents.ENTITY_ZOMBIE_DESTROY_EGG, SoundCategory.HOSTILE, 0.5F, 0.9F + PoisonousPotatoCritterEntity.this.random.nextFloat() * 0.2F);
         }
 
         public void onDestroyBlock(World world, BlockPos pos) {
-            world.playSound((Entity)null, pos, SoundEvents.ENTITY_TURTLE_EGG_BREAK, SoundCategory.BLOCKS, 0.7F, 0.9F + world.random.nextFloat() * 0.2F);
+            world.playSound(null, pos, SoundEvents.ENTITY_TURTLE_EGG_BREAK, SoundCategory.BLOCKS, 0.7F, 0.9F + world.random.nextFloat() * 0.2F);
         }
 
         public double getDesiredDistanceToTarget() {

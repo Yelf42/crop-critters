@@ -6,9 +6,7 @@ import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
@@ -16,16 +14,13 @@ import net.minecraft.world.World;
 import net.minecraft.world.tick.TickPriority;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.area_affectors.AffectorPositions;
-import yelf42.cropcritters.area_affectors.AffectorType;
 import yelf42.cropcritters.area_affectors.TypedBlockArea;
-import yelf42.cropcritters.entity.TorchflowerCritterEntity;
 
 import java.util.Collection;
-import java.util.List;
 
 public class TrimmedSoulRoseBlock extends PlantBlock {
     public static final MapCodec<TrimmedSoulRoseBlock> CODEC = createCodec(TrimmedSoulRoseBlock::new);
-    private static final VoxelShape SHAPE = Block.createColumnShape((double)8.0F, (double)0.0F, (double)8.0F);
+    private static final VoxelShape SHAPE = Block.createColumnShape(8.0F, 0.0F, 8.0F);
 
     public MapCodec<? extends TrimmedSoulRoseBlock> getCodec() {
         return CODEC;

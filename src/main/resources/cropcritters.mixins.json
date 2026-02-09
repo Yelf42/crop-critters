@@ -8,7 +8,6 @@
     "BlockMixin",
     "CropBlockMixin",
     "FarmlandBlockMixin",
-    "FlowerPotBlockMixin",
     "LandPathNodeMakerMixin",
     "LightningEntityMixin",
     "NetherWartBlockMixin",

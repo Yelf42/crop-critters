@@ -1,0 +1,61 @@
+package yelf42.cropcritters.sound;
+
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.util.Identifier;
+import yelf42.cropcritters.CropCritters;
+
+public class ModSounds {
+
+    public static final SoundEvent BONE_TRAP_CLOSE = register("bone_trap_close");
+    public static final SoundEvent BONE_TRAP_OPEN = register("bone_trap_open");
+
+    public static final SoundEvent LOST_SOUL_JAR_CHIME = register("lost_soul_jar_chime");
+
+    public static final SoundEvent MAZEWOOD_MATURE = register("mazewood_mature");
+    public static final SoundEvent MAZEWOOD_GROW = register("mazewood_grow");
+
+    public static final SoundEvent TICKING = register("ticking");
+    public static final RegistryEntry<SoundEvent> PUFFBOMB_EXPLODE = registerEntry("puffbomb_explode");
+
+    public static final SoundEvent SPORE_INFEST = register("spore_infest");
+
+    public static final SoundEvent SPAWN_SLIME = register("spawn_slime");
+    public static final SoundEvent SPAWN_CRITTER = register("spawn_critter");
+
+    public static final SoundEvent THROW_SEED_BALL = register("throw_seed_ball");
+
+    public static final SoundEvent REVIVE_CORAL = register("revive_coral");
+
+    public static final SoundEvent ENTITY_CRITTER_AMBIENT = register("entity_critter_ambient");
+    public static final SoundEvent ENTITY_CRITTER_EVIL_AMBIENT = register("entity_critter_evil_ambient");
+    public static final SoundEvent ENTITY_CRITTER_EVIL_STING = register("entity_critter_evil_sting");
+    public static final SoundEvent ENTITY_CRITTER_HURT = register("entity_critter_hurt");
+    public static final SoundEvent ENTITY_CRITTER_DEATH = register("entity_critter_death");
+    public static final SoundEvent ENTITY_CRITTER_LARGE = register("entity_critter_large");
+    public static final SoundEvent ENTITY_CRITTER_TILL = register("entity_critter_till");
+    public static final SoundEvent ENTITY_CRITTER_SHEAR = register("entity_critter_shear");
+    public static final SoundEvent ENTITY_CRITTER_DROP = register("entity_critter_drop");
+    public static final SoundEvent ENTITY_CRITTER_SPIT = register("entity_critter_spit");
+    public static final SoundEvent ENTITY_CRITTER_WATER = register("entity_critter_water");
+    public static final SoundEvent ENTITY_CRITTER_EAT = register("entity_critter_eat");
+
+    public static final SoundEvent POPPER_POD_POP = register("popper_pod_pop");
+    public static final SoundEvent POPPER_POD_LAUNCH = register("popper_pod_launch");
+
+
+    private static SoundEvent register(String name) {
+        Identifier id = Identifier.of(CropCritters.MOD_ID, name);
+        return Registry.register(Registries.SOUND_EVENT, id, SoundEvent.of(id));
+    }
+    private static RegistryEntry<SoundEvent> registerEntry(String name) {
+        Identifier id = Identifier.of(CropCritters.MOD_ID, name);
+        return Registry.registerReference(Registries.SOUND_EVENT, id, SoundEvent.of(id));
+    }
+
+    public static void initialize() {
+        CropCritters.LOGGER.info("Registering Sounds for " + CropCritters.MOD_ID);
+    }
+}

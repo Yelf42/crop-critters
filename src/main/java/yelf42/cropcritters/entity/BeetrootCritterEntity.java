@@ -8,10 +8,10 @@ import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import yelf42.cropcritters.sound.ModSounds;
 
 import java.util.function.Predicate;
 
@@ -31,7 +31,7 @@ public class BeetrootCritterEntity extends AbstractCropCritterEntity {
     @Override
     public void completeTargetGoal() {
         if (this.targetPos == null) return;
-        this.playSound(SoundEvents.ITEM_HOE_TILL, 1.0F, 1.0F);
+        this.playSound(ModSounds.ENTITY_CRITTER_TILL, 1.0F, 1.0F);
         this.getEntityWorld().setBlockState(this.targetPos, Blocks.DIRT.getDefaultState(), Block.NOTIFY_ALL_AND_REDRAW);
         this.getEntityWorld().syncWorldEvent(this, 2001, this.targetPos, Block.getRawIdFromState(this.getEntityWorld().getBlockState(this.targetPos)));
     }

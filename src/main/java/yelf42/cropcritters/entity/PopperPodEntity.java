@@ -9,11 +9,9 @@ import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
 import net.minecraft.util.hit.BlockHitResult;
@@ -26,6 +24,7 @@ import net.minecraft.world.event.GameEvent;
 import org.jspecify.annotations.Nullable;
 import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.items.ModItems;
+import yelf42.cropcritters.sound.ModSounds;
 
 import java.util.List;
 import java.util.OptionalInt;
@@ -140,7 +139,7 @@ public class PopperPodEntity extends ProjectileEntity implements FlyingItemEntit
         this.updateRotation();
         if (this.life == 0 && !this.isSilent()) {
             // Launch sfx
-            this.getEntityWorld().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.BLOCK_CANDLE_EXTINGUISH, SoundCategory.AMBIENT, 2.0F, 1.0F + (random.nextFloat() * 0.8F - 0.4F));
+            this.getEntityWorld().playSound(null, this.getX(), this.getY(), this.getZ(), ModSounds.POPPER_POD_LAUNCH, SoundCategory.AMBIENT, 2.0F, 1.0F + (random.nextFloat() * 0.8F - 0.4F));
         }
 
         ++this.life;
@@ -160,7 +159,7 @@ public class PopperPodEntity extends ProjectileEntity implements FlyingItemEntit
     private void explodeAndRemove(ServerWorld world) {
         world.sendEntityStatus(this, (byte)17);
         this.emitGameEvent(GameEvent.EXPLODE, this.getOwner()); // IDK what this does
-        this.getEntityWorld().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.UI_HUD_BUBBLE_POP, SoundCategory.AMBIENT, 2.0F, 1.0F + (random.nextFloat() * 0.8F - 0.4F));
+        this.getEntityWorld().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), ModSounds.POPPER_POD_POP, SoundCategory.AMBIENT, 2.0F, 1.0F + (random.nextFloat() * 0.8F - 0.4F));
         if (this.shouldExplode) this.explode(world);
         this.discard();
     }

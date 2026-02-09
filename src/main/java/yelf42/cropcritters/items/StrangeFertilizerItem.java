@@ -11,7 +11,6 @@ import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
@@ -25,6 +24,7 @@ import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.blocks.SoulRoseBlock;
 import yelf42.cropcritters.blocks.TallBushBlock;
+import yelf42.cropcritters.sound.ModSounds;
 
 import java.util.Map;
 import java.util.Optional;
@@ -248,7 +248,7 @@ public class StrangeFertilizerItem extends BoneMealItem {
         if (optional.isPresent()) {
             world.setBlockState(pos, (BlockState) optional.get(), Block.NOTIFY_ALL_AND_REDRAW);
             world.emitGameEvent(null, GameEvent.BLOCK_CHANGE, pos);
-            world.playSound(null, pos, SoundEvents.ITEM_AXE_STRIP, SoundCategory.BLOCKS, 1.0F, 1.0F);
+            world.playSound(null, pos, ModSounds.REVIVE_CORAL, SoundCategory.BLOCKS, 1.0F, 1.0F);
             stack.decrement(1);
             return true;
         }

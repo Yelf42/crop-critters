@@ -8,13 +8,13 @@ import net.minecraft.entity.effect.StatusEffectCategory;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.collection.Pool;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
 import net.minecraft.world.explosion.ExplosionBehavior;
+import yelf42.cropcritters.sound.ModSounds;
 
 public class PuffbombPoisoningEffect extends StatusEffect {
 
@@ -36,10 +36,10 @@ public class PuffbombPoisoningEffect extends StatusEffect {
         int duration = entity.getStatusEffect(ModEffects.PUFFBOMB_POISONING).getDuration();
         if (duration <= 20) {
             BlockPos pos = BlockPos.ofFloored(entity.getEntityPos());
-            world.createExplosion(null, null, POP, pos.getX(), pos.getY(), pos.getZ(), 4F, false, World.ExplosionSourceType.BLOCK, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, Pool.empty(), SoundEvents.ENTITY_BREEZE_WIND_BURST);
+            world.createExplosion(null, null, POP, pos.getX(), pos.getY(), pos.getZ(), 4F, false, World.ExplosionSourceType.BLOCK, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, Pool.empty(), ModSounds.PUFFBOMB_EXPLODE);
             entity.removeStatusEffect(ModEffects.PUFFBOMB_POISONING);
         } else {
-            world.playSound(null, entity.getBlockPos(), SoundEvents.BLOCK_COPPER_BULB_TURN_ON, SoundCategory.HOSTILE, 0.5f, 0.8f + 0.05f * (float)world.random.nextInt(8));
+            world.playSound(null, entity.getBlockPos(), ModSounds.TICKING, SoundCategory.HOSTILE, 0.5f, 0.8f + 0.05f * (float)world.random.nextInt(8));
         }
 
         return true;

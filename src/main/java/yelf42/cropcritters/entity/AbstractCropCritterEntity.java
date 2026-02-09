@@ -28,7 +28,6 @@ import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
 import net.minecraft.util.ActionResult;
@@ -49,6 +48,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.config.ConfigManager;
 import yelf42.cropcritters.items.ModItems;
+import yelf42.cropcritters.sound.ModSounds;
 
 import java.util.EnumSet;
 import java.util.Optional;
@@ -159,10 +159,10 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
     public void playAmbientSound() {
         if (this.getBoundingBox().getLengthX() > 0.51) {
             // Big
-            playSound(SoundEvents.ENTITY_ALLAY_ITEM_GIVEN, 1F, 0.6F);
+            playSound(ModSounds.ENTITY_CRITTER_AMBIENT, 1F, 0.6F);
         } else {
             // Smol
-            playSound(SoundEvents.ENTITY_ALLAY_ITEM_GIVEN);
+            playSound(ModSounds.ENTITY_CRITTER_AMBIENT);
         }
     }
 
@@ -170,11 +170,11 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
     protected void playHurtSound(DamageSource damageSource) {
         if (this.getBoundingBox().getLengthX() > 0.51) {
             // Big
-            playSound(SoundEvents.ENTITY_GLOW_SQUID_DEATH, 1F, 1.1F);
-            playSound(SoundEvents.ENTITY_ALLAY_HURT, 1F, 0.6F);
+            playSound(ModSounds.ENTITY_CRITTER_LARGE, 1F, 1.1F);
+            playSound(ModSounds.ENTITY_CRITTER_HURT, 1F, 0.6F);
         } else {
             // Smol
-            playSound(SoundEvents.ENTITY_ALLAY_HURT);
+            playSound(ModSounds.ENTITY_CRITTER_HURT);
         }
     }
 
@@ -182,12 +182,11 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
     protected @Nullable SoundEvent getDeathSound() {
         if (this.getBoundingBox().getLengthX() > 0.51) {
             // Big
-            playSound(SoundEvents.ENTITY_GLOW_SQUID_DEATH, 1F, 1.1F);
-            return SoundEvents.ENTITY_ALLAY_DEATH;
+            playSound(ModSounds.ENTITY_CRITTER_LARGE, 1F, 1.1F);
+            return ModSounds.ENTITY_CRITTER_DEATH;
         } else {
             // Smol
-            playSound(SoundEvents.ENTITY_AXOLOTL_DEATH);
-            return SoundEvents.ENTITY_ALLAY_DEATH;
+            return ModSounds.ENTITY_CRITTER_DEATH;
         }
     }
 

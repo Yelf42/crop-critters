@@ -27,6 +27,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
 import net.minecraft.world.explosion.ExplosionBehavior;
 import yelf42.cropcritters.blocks.ModBlocks;
+import yelf42.cropcritters.particle.ModParticles;
 
 import java.util.function.Predicate;
 
@@ -90,7 +91,7 @@ public class NetherWartCritterEntity extends AbstractCropCritterEntity {
         if (target.isOf(Blocks.SOUL_SAND) || target.isOf(Blocks.SOUL_SOIL) || target.isOf(ModBlocks.SOUL_FARMLAND)) {
             this.playSound(SoundEvents.BLOCK_SOUL_SAND_PLACE, 1.0F, 1.0F);
             this.getEntityWorld().setBlockState(this.targetPos.up(), Blocks.NETHER_WART.getDefaultState(), Block.NOTIFY_ALL_AND_REDRAW);
-            ((ServerWorld)this.getEntityWorld()).spawnParticles(ParticleTypes.HAPPY_VILLAGER, this.targetPos.getX() + 0.5, this.targetPos.getY() + 1.0, this.targetPos.getZ() + 0.5, 10, 0.5, 0.5, 0.5, 0.0);
+            ((ServerWorld)this.getEntityWorld()).spawnParticles(ModParticles.SOUL_GLINT, this.targetPos.getX() + 0.5, this.targetPos.getY() + 1.0, this.targetPos.getZ() + 0.5, 10, 0.5, 0.5, 0.5, 0.0);
             this.discard();
         } else {
             explode();
@@ -145,7 +146,6 @@ public class NetherWartCritterEntity extends AbstractCropCritterEntity {
     private void explode() {
         if (this.getEntityWorld() instanceof ServerWorld serverWorld) {
             Vec3d p = this.getEntityPos();
-            //serverWorld.createExplosion(this, Explosion.createDamageSource(this.getEntityWorld(), this), BURST, p.x, p.y, p.z, 1.5F, false, World.ExplosionSourceType.MOB, ParticleTypes.GUST_EMITTER_SMALL, ParticleTypes.GUST_EMITTER_LARGE, SoundEvents.ENTITY_BREEZE_WIND_BURST);
             serverWorld.createExplosion(this, Explosion.createDamageSource(this.getEntityWorld(), this), BURST, p.x, p.y, p.z, 1.5F, false, World.ExplosionSourceType.MOB);
             for (int i = -1; i <= 1; i++) {
                 for (int j = -1; j <= 1; j++) {

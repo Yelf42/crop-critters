@@ -7,7 +7,6 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
@@ -25,6 +24,7 @@ import net.minecraft.world.tick.TickPriority;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.events.WeedGrowNotifier;
 import yelf42.cropcritters.features.ModFeatures;
+import yelf42.cropcritters.sound.ModSounds;
 
 public class PuffbombPlantBlock extends MushroomPlantBlock {
 
@@ -90,11 +90,11 @@ public class PuffbombPlantBlock extends MushroomPlantBlock {
                 world.scheduleBlockTick(pos, state.getBlock(), 40, TickPriority.EXTREMELY_LOW);
                 break;
             case 1:
-                world.playSound(null, pos, SoundEvents.BLOCK_COPPER_BULB_TURN_ON, SoundCategory.BLOCKS, 0.2f, 0.8f + 0.05f * (float)random.nextInt(8));
+                world.playSound(null, pos, ModSounds.TICKING, SoundCategory.BLOCKS, 0.2f, 0.8f + 0.05f * (float)random.nextInt(8));
                 world.scheduleBlockTick(pos, state.getBlock(), 20, TickPriority.EXTREMELY_LOW);
                 break;
             case 2:
-                world.playSound(null, pos, SoundEvents.BLOCK_COPPER_BULB_TURN_ON, SoundCategory.BLOCKS, 0.2f, 0.8f + 0.05f * (float)random.nextInt(8));
+                world.playSound(null, pos, ModSounds.TICKING, SoundCategory.BLOCKS, 0.2f, 0.8f + 0.05f * (float)random.nextInt(8));
                 world.scheduleBlockTick(pos, state.getBlock(), 10, TickPriority.EXTREMELY_LOW);
                 break;
             default:
@@ -116,7 +116,7 @@ public class PuffbombPlantBlock extends MushroomPlantBlock {
     @Override
     public void grow(ServerWorld world, Random random, BlockPos pos, BlockState state) {
         if (isMature(state)) {
-            world.createExplosion(null, null, BURST, pos.getX(), pos.getY(), pos.getZ(), 3F, false, World.ExplosionSourceType.BLOCK, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, Pool.empty(), SoundEvents.ENTITY_BREEZE_WIND_BURST);
+            world.createExplosion(null, null, BURST, pos.getX(), pos.getY(), pos.getZ(), 3F, false, World.ExplosionSourceType.BLOCK, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, Pool.empty(), ModSounds.PUFFBOMB_EXPLODE);
             super.grow(world, random, pos, state);
             return;
         }

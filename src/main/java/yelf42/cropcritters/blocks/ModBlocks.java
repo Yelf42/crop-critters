@@ -65,6 +65,14 @@ public class ModBlocks {
         return Registry.register(Registries.BLOCK, blockKey, new FlowerPotBlock(flower, settings.registryKey(blockKey)));
     }
 
+    private static RegistryKey<Block> keyOfBlock(String name) {
+        return RegistryKey.of(RegistryKeys.BLOCK, Identifier.of(CropCritters.MOD_ID, name));
+    }
+
+    private static RegistryKey<Item> keyOfItem(String name) {
+        return RegistryKey.of(RegistryKeys.ITEM, Identifier.of(CropCritters.MOD_ID, name));
+    }
+
     public static final Block SOUL_FARMLAND = register(
             "soul_farmland",
             SoulFarmland::new,
@@ -340,14 +348,6 @@ public class ModBlocks {
                     .air(),
             false
     );
-
-    private static RegistryKey<Block> keyOfBlock(String name) {
-        return RegistryKey.of(RegistryKeys.BLOCK, Identifier.of(CropCritters.MOD_ID, name));
-    }
-
-    private static RegistryKey<Item> keyOfItem(String name) {
-        return RegistryKey.of(RegistryKeys.ITEM, Identifier.of(CropCritters.MOD_ID, name));
-    }
 
     public static void initialize() {
         CropCritters.LOGGER.info("Initializing blocks for " + CropCritters.MOD_ID);

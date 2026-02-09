@@ -4,7 +4,6 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
@@ -25,7 +24,6 @@ import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
-import net.minecraft.state.property.Property;
 import net.minecraft.util.*;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -38,10 +36,8 @@ import net.minecraft.world.WorldView;
 import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.tick.ScheduledTickView;
 import org.jspecify.annotations.Nullable;
-import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.items.ModItems;
-
-import java.util.List;
+import yelf42.cropcritters.particle.ModParticles;
 
 public class SoulPotBlock extends BlockWithEntity implements Waterloggable {
     public static final MapCodec<SoulPotBlock> CODEC = createCodec(SoulPotBlock::new);
@@ -60,7 +56,7 @@ public class SoulPotBlock extends BlockWithEntity implements Waterloggable {
     }
 
     protected BlockState getStateForNeighborUpdate(BlockState state, WorldView world, ScheduledTickView tickView, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, Random random) {
-        if ((Boolean)state.get(WATERLOGGED)) {
+        if (state.get(WATERLOGGED)) {
             tickView.scheduleFluidTick(pos, Fluids.WATER, Fluids.WATER.getTickRate(world));
         }
 
@@ -72,9 +68,43 @@ public class SoulPotBlock extends BlockWithEntity implements Waterloggable {
         return ((this.getDefaultState().with(FACING, ctx.getHorizontalPlayerFacing())).with(WATERLOGGED, fluidState.getFluid() == Fluids.WATER)).with(CRACKED, false);
     }
 
+    @Override
+    public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
+        if (world.getTime() % 6L == 0L && world.getBlockState(pos.up()).isOf(Blocks.POTTED_WITHER_ROSE)) {
+            BlockEntity blockEntity = world.getBlockEntity(pos);
+            if (blockEntity instanceof SoulPotBlockEntity soulPotBlockEntity && soulPotBlockEntity.getStack().getCount() > 0) {
+                world.addParticleClient(ParticleTypes.SOUL_FIRE_FLAME,
+                        pos.getX() + 0.5,
+                        pos.getY() + 1.4,
+                        pos.getZ() + 0.5,
+                        0.0, 0.05, 0.0);
+            }
+        }
+    }
+
+    @Override
+    protected boolean hasRandomTicks(BlockState state) {
+        return true;
+    }
+
+    @Override
+    protected void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
+        BlockState above = world.getBlockState(pos.up());
+        if (above.isOf(Blocks.POTTED_WITHER_ROSE)) {
+            BlockEntity blockEntity = world.getBlockEntity(pos);
+            if (blockEntity instanceof SoulPotBlockEntity soulPotBlockEntity) {
+                ItemStack inv = soulPotBlockEntity.getStack();
+                if (inv != null && inv.isOf(ModItems.LOST_SOUL) && inv.getCount() >= 24) {
+                    soulPotBlockEntity.setStack(inv.copyWithCount(inv.getCount() - 24));
+                    world.setBlockState(pos.up(), ModBlocks.POTTED_SOUL_ROSE.getDefaultState());
+                }
+            }
+        }
+    }
+
     protected ActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        BlockEntity var9 = world.getBlockEntity(pos);
-        if (var9 instanceof SoulPotBlockEntity soulPotBlockEntity) {
+        BlockEntity blockEntity = world.getBlockEntity(pos);
+        if (blockEntity instanceof SoulPotBlockEntity soulPotBlockEntity) {
             if (world.isClient() || !stack.isOf(ModItems.LOST_SOUL)) {
                 return ActionResult.SUCCESS;
             } else {
@@ -92,10 +122,9 @@ public class SoulPotBlock extends BlockWithEntity implements Waterloggable {
                         f = (float)itemStack.getCount() / (float)itemStack.getMaxCount();
                     }
 
-                    world.playSound((Entity)null, pos, SoundEvents.BLOCK_DECORATED_POT_INSERT, SoundCategory.BLOCKS, 1.0F, 0.7F + 0.5F * f);
-                    if (world instanceof ServerWorld) {
-                        ServerWorld serverWorld = (ServerWorld)world;
-                        serverWorld.spawnParticles(ParticleTypes.DUST_PLUME, (double)pos.getX() + (double)0.5F, (double)pos.getY() + 1.2, (double)pos.getZ() + (double)0.5F, 7, (double)0.0F, (double)0.0F, (double)0.0F, (double)0.0F);
+                    world.playSound(null, pos, SoundEvents.BLOCK_DECORATED_POT_INSERT, SoundCategory.BLOCKS, 1.0F, 0.7F + 0.5F * f);
+                    if (world instanceof ServerWorld serverWorld) {
+                        serverWorld.spawnParticles(ModParticles.SOUL_GLINT_PLUME, (double)pos.getX() + (double)0.5F, (double)pos.getY() + 1.2, (double)pos.getZ() + (double)0.5F, 5, 0.0F, 0.0F, 0.0F, 0.0F);
                     }
 
                     soulPotBlockEntity.markDirty();
@@ -131,7 +160,7 @@ public class SoulPotBlock extends BlockWithEntity implements Waterloggable {
     }
 
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        builder.add(new Property[]{FACING, WATERLOGGED, CRACKED});
+        builder.add(FACING, WATERLOGGED, CRACKED);
     }
 
     public @Nullable BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
@@ -154,18 +183,18 @@ public class SoulPotBlock extends BlockWithEntity implements Waterloggable {
     }
 
     protected FluidState getFluidState(BlockState state) {
-        return (Boolean)state.get(WATERLOGGED) ? Fluids.WATER.getStill(false) : super.getFluidState(state);
+        return state.get(WATERLOGGED) ? Fluids.WATER.getStill(false) : super.getFluidState(state);
     }
 
     protected BlockSoundGroup getSoundGroup(BlockState state) {
-        return (Boolean)state.get(CRACKED) ? BlockSoundGroup.DECORATED_POT_SHATTER : BlockSoundGroup.DECORATED_POT;
+        return state.get(CRACKED) ? BlockSoundGroup.DECORATED_POT_SHATTER : BlockSoundGroup.DECORATED_POT;
     }
 
     protected void onProjectileHit(World world, BlockState state, BlockHitResult hit, ProjectileEntity projectile) {
         BlockPos blockPos = hit.getBlockPos();
         if (world instanceof ServerWorld serverWorld) {
             if (projectile.canModifyAt(serverWorld, blockPos) && projectile.canBreakBlocks(serverWorld)) {
-                world.setBlockState(blockPos, (BlockState)state.with(CRACKED, true), 260);
+                world.setBlockState(blockPos, state.with(CRACKED, true), 260);
                 world.breakBlock(blockPos, true, projectile);
             }
         }
@@ -181,17 +210,17 @@ public class SoulPotBlock extends BlockWithEntity implements Waterloggable {
     }
 
     protected BlockState rotate(BlockState state, BlockRotation rotation) {
-        return (BlockState)state.with(FACING, rotation.rotate((Direction)state.get(FACING)));
+        return state.with(FACING, rotation.rotate(state.get(FACING)));
     }
 
     protected BlockState mirror(BlockState state, BlockMirror mirror) {
-        return state.rotate(mirror.getRotation((Direction)state.get(FACING)));
+        return state.rotate(mirror.getRotation(state.get(FACING)));
     }
 
     static {
         FACING = Properties.HORIZONTAL_FACING;
         CRACKED = Properties.CRACKED;
         WATERLOGGED = Properties.WATERLOGGED;
-        SHAPE = Block.createColumnShape((double)14.0F, (double)0.0F, (double)16.0F);
+        SHAPE = Block.createColumnShape(14.0F, 0.0F, 16.0F);
     }
 }

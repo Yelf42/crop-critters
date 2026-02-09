@@ -7,13 +7,13 @@ import net.minecraft.block.PlantBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.tick.TickPriority;
+import yelf42.cropcritters.sound.ModSounds;
 
 import java.util.ArrayDeque;
 
@@ -69,7 +69,7 @@ public class MazewoodSaplingBlockEntity extends BlockEntity {
 
         if (growInto.isEmpty()) {
             BlockState matureMazewood = ModBlocks.MAZEWOOD.getDefaultState();
-            world.playSound(null, pos, SoundEvents.BLOCK_BAMBOO_PLACE, SoundCategory.BLOCKS);
+            world.playSound(null, pos, ModSounds.MAZEWOOD_MATURE, SoundCategory.BLOCKS);
 
             world.setBlockState(pos, matureMazewood);
             world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, matureMazewood));
@@ -91,7 +91,7 @@ public class MazewoodSaplingBlockEntity extends BlockEntity {
         BlockState checkBelowState = world.getBlockState(growPos.down());
         boolean planted = false;
         if (canPlantAt(checkState, checkBelowState)) {
-            world.playSound(null, growPos, SoundEvents.BLOCK_MANGROVE_ROOTS_STEP, SoundCategory.BLOCKS);
+            world.playSound(null, growPos, ModSounds.MAZEWOOD_GROW, SoundCategory.BLOCKS);
             BlockState blockState = getCachedState().with(MazewoodSaplingBlock.SPREAD, getCachedState().get(MazewoodSaplingBlock.SPREAD) - 1);
             world.setBlockState(growPos, blockState);
             world.emitGameEvent(GameEvent.BLOCK_CHANGE, growPos, GameEvent.Emitter.of(null, blockState));

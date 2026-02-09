@@ -9,15 +9,14 @@ import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import yelf42.cropcritters.blocks.ModBlocks;
-import java.util.function.Predicate;
+import yelf42.cropcritters.sound.ModSounds;
 
-import static net.minecraft.block.Block.pushEntitiesUpBeforeBlockChange;
+import java.util.function.Predicate;
 
 public class CarrotCritterEntity extends AbstractCropCritterEntity {
     public CarrotCritterEntity(EntityType<? extends TameableEntity> entityType, World world) {
@@ -36,7 +35,7 @@ public class CarrotCritterEntity extends AbstractCropCritterEntity {
     @Override
     public void completeTargetGoal() {
         if (this.targetPos == null) return;
-        this.playSound(SoundEvents.ITEM_HOE_TILL, 1.0F, 1.0F);
+        this.playSound(ModSounds.ENTITY_CRITTER_TILL, 1.0F, 1.0F);
         BlockState target = this.getEntityWorld().getBlockState(this.targetPos);
         BlockState farmland = (target.isOf(Blocks.DIRT) || target.isOf(Blocks.GRASS_BLOCK)) ? Blocks.FARMLAND.getDefaultState() : (target.isOf(Blocks.SOUL_SAND) || target.isOf(Blocks.SOUL_SOIL)) ? ModBlocks.SOUL_FARMLAND.getDefaultState() : null;
         if (farmland == null) return;

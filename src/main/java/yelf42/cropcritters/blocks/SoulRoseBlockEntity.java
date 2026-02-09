@@ -95,7 +95,7 @@ public class SoulRoseBlockEntity extends BlockEntity {
                 double angle = random.nextDouble() * Math.PI * 2.0F;
                 double radius = random.nextDouble() * levelToRadius(level) - 1.0F;
                 mutable.set(i + radius * Math.sin(angle), j - random.nextInt(2), k + radius * Math.cos(angle));
-                world.addParticleClient(ModParticles.SOUL_SIPHON_PARTICLE, (double)mutable.getX() + random.nextDouble(), mutable.getY(), (double)mutable.getZ() + random.nextDouble(), (double)0.0F, (double)0.0F, (double)0.0F);
+                world.addParticleClient(ModParticles.SOUL_SIPHON, (double)mutable.getX() + random.nextDouble(), mutable.getY(), (double)mutable.getZ() + random.nextDouble(), (double)0.0F, (double)0.0F, (double)0.0F);
             }
         }
 

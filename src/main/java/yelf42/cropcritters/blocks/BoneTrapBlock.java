@@ -23,6 +23,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.tick.TickPriority;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.events.WeedGrowNotifier;
+import yelf42.cropcritters.sound.ModSounds;
 
 public class BoneTrapBlock extends PlantBlock {
     public static final MapCodec<BoneTrapBlock> CODEC = createCodec(BoneTrapBlock::new);
@@ -69,10 +70,10 @@ public class BoneTrapBlock extends PlantBlock {
     protected void scheduledTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
         if (this.getStage(state) == 2) {
             world.setBlockState(pos, state.with(STAGE, 1));
-            world.playSound(null, pos, SoundEvents.ENTITY_SKELETON_STEP, SoundCategory.BLOCKS, 0.5F, 1.0F + (world.random.nextFloat() * 0.6F - 0.3F));
+            world.playSound(null, pos, ModSounds.BONE_TRAP_OPEN, SoundCategory.BLOCKS, 0.5F, 1.0F + (world.random.nextFloat() * 0.6F - 0.3F));
             world.scheduleBlockTick(pos, this, 100 + world.random.nextInt(60), TickPriority.EXTREMELY_LOW);
         } else {
-            world.playSound(null, pos, SoundEvents.ENTITY_SKELETON_STEP, SoundCategory.BLOCKS, 0.5F, 1.0F + (world.random.nextFloat() * 0.6F - 0.3F));
+            world.playSound(null, pos, ModSounds.BONE_TRAP_OPEN, SoundCategory.BLOCKS, 0.5F, 1.0F + (world.random.nextFloat() * 0.6F - 0.3F));
             world.setBlockState(pos, state.with(STAGE, 0));
         }
     }
@@ -83,7 +84,7 @@ public class BoneTrapBlock extends PlantBlock {
             double dist = livingEntity.getEntityPos().distanceTo(pos.toBottomCenterPos());
             if (this.getStage(state) == 0 && dist <= 0.2F) {
 
-                world.playSound(null, pos, SoundEvents.ENTITY_EVOKER_FANGS_ATTACK, SoundCategory.BLOCKS, 0.5F, 1.0F + (world.random.nextFloat() * 0.6F - 0.3F));
+                world.playSound(null, pos, ModSounds.BONE_TRAP_CLOSE, SoundCategory.BLOCKS, 0.5F, 1.0F + (world.random.nextFloat() * 0.6F - 0.3F));
 
                 if (world instanceof ServerWorld serverWorld) {
                     if (!(livingEntity.getType().isIn(CropCritters.WEED_IMMUNE))) livingEntity.damage(serverWorld, world.getDamageSources().sweetBerryBush(), 4.0F);

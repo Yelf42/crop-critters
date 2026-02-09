@@ -43,10 +43,10 @@ import yelf42.cropcritters.items.ModComponents;
 import yelf42.cropcritters.items.ModItems;
 import yelf42.cropcritters.items.StrangeFertilizerItem;
 import yelf42.cropcritters.particle.ModParticles;
+import yelf42.cropcritters.sound.ModSounds;
 
 // TODO seed bar (recipe + resets critter timer)
 // TODO wither -> soul rose fanfare
-// TODO painting for soul rose system?
 public class CropCritters implements ModInitializer {
 	public static final String MOD_ID = "cropcritters";
 
@@ -90,15 +90,16 @@ public class CropCritters implements ModInitializer {
 		// Config load:
 		ConfigManager.load();
 
+        ModParticles.initialize();
+        ModSounds.initialize();
+        ModComponents.initialize();
+        ModEffects.initialize();
+        ModFeatures.initialize();
 		ModEntities.initialize();
 		ModItems.initialize();
 		ModBlocks.initialize();
-        ModComponents.initialize();
 		ModBlockEntities.initialize();
 		ModEvents.initialize();
-		ModParticles.initialize();
-        ModEffects.initialize();
-        ModFeatures.initialize();
 
 		// Strange fertilizer dispenser behaviour
 		LOGGER.info("Registering dispenser behaviours for " + CropCritters.MOD_ID);

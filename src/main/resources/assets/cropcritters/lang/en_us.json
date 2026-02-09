@@ -68,6 +68,7 @@
 
   "block.cropcritters.soul_pot": "Soul Pot",
   "item.cropcritters.soul_pot": "Soul Pot",
+  "painting.cropcritters.ritual.title" : "Ritual",
 
   "block.cropcritters.torchflower_spark": "Torchflower Spark",
 
@@ -102,5 +103,35 @@
   "item.cropcritters.pitcher_critter_spawn_egg": "Pitcher Critter Spawn Egg",
 
   "entity.cropcritters.cocoa_critter": "Cocoa Critter",
-  "item.cropcritters.cocoa_critter_spawn_egg": "Cocoa Critter Spawn Egg"
+  "item.cropcritters.cocoa_critter_spawn_egg": "Cocoa Critter Spawn Egg",
+
+
+
+  "sounds.cropcritters.ticking": "Ticking",
+  "sounds.cropcritters.puffbomb_explode": "Puffbomb Explosion",
+  "sounds.cropcritters.bone_trap_close": "Bone Trap Close",
+  "sounds.cropcritters.bone_trap_open": "Bone Trap Open",
+  "sounds.cropcritters.lost_soul_jar_chime": "Lost Soul in a Bottle Chime",
+  "sounds.cropcritters.mazewood_mature": "Mazewood Mature",
+  "sounds.cropcritters.mazewood_grow": "Mazewood Grow",
+  "sounds.cropcritters.spore_infest": "Spore Infest",
+  "sounds.cropcritters.spawn_slime": "Slime Spawned",
+  "sounds.cropcritters.spawn_critter": "Critter Spawned",
+  "sounds.cropcritters.throw_seed_ball": "Seed Ball Thrown",
+  "sounds.cropcritters.revive_coral": "Revived Coral",
+
+  "sounds.cropcritters.entity_critter_ambient": "Crop Critter",
+  "sounds.cropcritters.entity_critter_evil_ambient": "Evil Crop Critter",
+  "sounds.cropcritters.entity_critter_evil_sting": "Evil Crop Critter Stings",
+  "sounds.cropcritters.entity_critter_hurt": "Crop Critter Hurt",
+  "sounds.cropcritters.entity_critter_death": "Crop Critter Died",
+  "sounds.cropcritters.entity_critter_till": "Crop Critter Tills",
+  "sounds.cropcritters.entity_critter_shear": "Crop Critter Shears",
+  "sounds.cropcritters.entity_critter_drop": "Crop Critter Drops",
+  "sounds.cropcritters.entity_critter_spit": "Crop Critter Spit",
+  "sounds.cropcritters.entity_critter_water": "Crop Critter Waters",
+  "sounds.cropcritters.entity_critter_eat": "Crop Critter Eat",
+  "sounds.cropcritters.popper_pod_pop": "Popper Pod Pop",
+  "sounds.cropcritters.popper_pod_launch": "Popper Pod Launch"
+
 }

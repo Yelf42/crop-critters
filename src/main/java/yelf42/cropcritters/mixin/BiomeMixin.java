@@ -3,7 +3,6 @@ package yelf42.cropcritters.mixin;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.CropBlock;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.LightType;
 import net.minecraft.world.WorldView;
 import net.minecraft.world.biome.Biome;
 import org.spongepowered.asm.mixin.Mixin;

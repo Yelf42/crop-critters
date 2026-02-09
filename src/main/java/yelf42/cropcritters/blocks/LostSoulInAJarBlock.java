@@ -21,6 +21,8 @@ import net.minecraft.world.World;
 import net.minecraft.world.tick.TickPriority;
 import org.jetbrains.annotations.Nullable;
 import yelf42.cropcritters.events.WeedGrowNotifier;
+import yelf42.cropcritters.particle.ModParticles;
+import yelf42.cropcritters.sound.ModSounds;
 
 public class LostSoulInAJarBlock extends LanternBlock {
     public static final BooleanProperty POWERED = Properties.POWERED;
@@ -52,12 +54,12 @@ public class LostSoulInAJarBlock extends LanternBlock {
             double e = (double)pos.getY() - random.nextDouble() * (double)4.0F;
             double f = (double)pos.getZ() + random.nextDouble() * (double)10.0F - (double)5.0F;
             //world.addParticleClient(ParticleTypes.GLOW, d, world.getTopY(Heightmap.Type.WORLD_SURFACE, (int)d, (int)f), f, 0.0F, 1.0F, 0.0F);
-            world.addParticleClient(ParticleTypes.GLOW, d, e, f, 0.0F, 1.0F, 0.0F);
+            world.addParticleClient(ModParticles.SOUL_GLOW, d, e, f, 0.0F, 1.0F, 0.0F);
         }
     }
 
     public void ring(World world, BlockPos pos, Random random) {
-        world.playSound(null, pos, SoundEvents.BLOCK_NOTE_BLOCK_CHIME.value(), SoundCategory.BLOCKS, 2.0f, 1.0f + 0.5f * (float)random.nextInt(7));
+        world.playSound(null, pos, ModSounds.LOST_SOUL_JAR_CHIME, SoundCategory.BLOCKS, 2.0f, 1.0f + 0.5f * (float)random.nextInt(7));
 
         world.addSyncedBlockEvent(pos, this, 0, random.nextInt(360));
     }

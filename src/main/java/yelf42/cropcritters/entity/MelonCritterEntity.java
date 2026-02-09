@@ -23,7 +23,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -31,6 +30,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.items.ModItems;
+import yelf42.cropcritters.sound.ModSounds;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -129,7 +129,7 @@ public class MelonCritterEntity extends AbstractCropCritterEntity implements Ran
             ItemStack itemStack = new ItemStack(Items.MELON_SEEDS);
             ProjectileEntity.spawn(new SpitSeedProjectileEntity(serverWorld, this, itemStack), serverWorld, itemStack, (entity) -> entity.setVelocity(d, e + g - entity.getY(), f, 1.2F, 3.0F));
         }
-        this.playSound(SoundEvents.UI_HUD_BUBBLE_POP, 2.0F, 0.4F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
+        this.playSound(ModSounds.ENTITY_CRITTER_SPIT, 2.0F, 0.4F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
     }
 
     class WateringGoal extends Goal {
@@ -189,7 +189,7 @@ public class MelonCritterEntity extends AbstractCropCritterEntity implements Ran
                     ServerPlayNetworking.send(player, payload);
                 }
             }
-            MelonCritterEntity.this.playSound(SoundEvents.WEATHER_RAIN, 0.01F, 0.8F / (MelonCritterEntity.this.getRandom().nextFloat() * 0.4F + 0.8F));
+            MelonCritterEntity.this.playSound(ModSounds.ENTITY_CRITTER_WATER, 0.01F, 0.8F / (MelonCritterEntity.this.getRandom().nextFloat() * 0.4F + 0.8F));
 
         }
 

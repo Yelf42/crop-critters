@@ -20,7 +20,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -31,6 +30,7 @@ import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.animation.object.PlayState;
 import software.bernie.geckolib.constant.DefaultAnimations;
 import yelf42.cropcritters.items.ModItems;
+import yelf42.cropcritters.sound.ModSounds;
 
 import java.util.function.Predicate;
 
@@ -154,8 +154,7 @@ public class PitcherCritterEntity extends AbstractCropCritterEntity {
         Vec3d dir = mouth.subtract(this.consumptionTarget.getEntityPos()).normalize().multiply(0.2);
         this.lookAtPreyAngle = (float)(MathHelper.atan2(-dir.z, -dir.x) * (180F / Math.PI)) - 90F;
         triggerAnim("eat_controller", "eat");
-        this.playSound(SoundEvents.ENTITY_DOLPHIN_EAT, 2F, 1F);
-        this.playSound(SoundEvents.ENTITY_PANDA_EAT, 2F, 1F);
+        this.playSound(ModSounds.ENTITY_CRITTER_EAT, 2F, 1F);
         return true;
     }
 

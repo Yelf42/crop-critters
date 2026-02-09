@@ -21,7 +21,7 @@ import java.util.Collection;
 public class SoulSiphonEffect extends StatusEffect {
 
     protected SoulSiphonEffect(StatusEffectCategory statusEffectCategory, int i) {
-        super(statusEffectCategory, i, ModParticles.SOUL_SIPHON_PARTICLE);
+        super(statusEffectCategory, i, ModParticles.SOUL_SIPHON);
     }
 
     public void onEntityRemoval(ServerWorld world, LivingEntity entity, int amplifier, Entity.RemovalReason reason) {

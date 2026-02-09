@@ -15,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import yelf42.cropcritters.config.AffectorsHelper;
+import yelf42.cropcritters.particle.ModParticles;
 
 import java.util.List;
 
@@ -30,7 +31,7 @@ public class BlockMixin {
                 for (int i = list.size() - 1; i >= 0; i--) {
                     list.add(i + 1, list.get(i));
                 }
-                world.spawnParticles(ParticleTypes.GLOW, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 5, 0.5, 0.5, 0.5, 0.0);
+                world.spawnParticles(ModParticles.SOUL_GLINT, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 7, 0.5, 0.5, 0.5, 0.0);
                 cir.setReturnValue(list);
             }
         }
@@ -43,7 +44,7 @@ public class BlockMixin {
                 for (int i = list.size() - 1; i >= 0; i--) {
                     list.add(i + 1, list.get(i));
                 }
-                world.spawnParticles(ParticleTypes.GLOW, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 5, 0.5, 0.5, 0.5, 0.0);
+                world.spawnParticles(ModParticles.SOUL_GLINT, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 7, 0.5, 0.5, 0.5, 0.0);
                 cir.setReturnValue(list);
             }
         }

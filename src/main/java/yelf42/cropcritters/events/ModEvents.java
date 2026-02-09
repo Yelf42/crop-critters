@@ -23,6 +23,7 @@ import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.blocks.*;
 import yelf42.cropcritters.config.ConfigManager;
 import yelf42.cropcritters.items.ModItems;
+import yelf42.cropcritters.sound.ModSounds;
 
 import java.util.Optional;
 
@@ -108,7 +109,7 @@ public class ModEvents {
 
                     stack.decrementUnlessCreative(1, player);
 
-                    world.playSound(null, pos, SoundEvents.BLOCK_SWEET_BERRY_BUSH_PLACE, SoundCategory.BLOCKS, 1.0F, 1.0F);
+                    world.playSound(null, pos, ModSounds.SPORE_INFEST, SoundCategory.BLOCKS, 1.0F, 1.0F);
                     return ActionResult.SUCCESS;
                 }
             }

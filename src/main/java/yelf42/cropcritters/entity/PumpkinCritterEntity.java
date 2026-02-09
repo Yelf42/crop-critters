@@ -21,7 +21,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -35,6 +34,7 @@ import software.bernie.geckolib.constant.DefaultAnimations;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.blocks.SoulFarmland;
 import yelf42.cropcritters.items.ModItems;
+import yelf42.cropcritters.sound.ModSounds;
 
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -96,7 +96,7 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
             ItemStack itemStack = new ItemStack(ModItems.SEED_BALL);
             ProjectileEntity.spawn(new SeedBallProjectileEntity(serverWorld, this, itemStack), serverWorld, itemStack, (entity) -> entity.setVelocity(dir.x, 1.8F, dir.z, 0.4F, 0.0F));
         }
-        this.playSound(SoundEvents.UI_HUD_BUBBLE_POP, 2.0F, 0.4F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
+        this.playSound(ModSounds.ENTITY_CRITTER_SPIT, 2.0F, 0.4F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
     }
 
     @Override
@@ -135,7 +135,7 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
             ItemStack itemStack = new ItemStack(Items.PUMPKIN_SEEDS);
             ProjectileEntity.spawn(new SpitSeedProjectileEntity(serverWorld, this, itemStack), serverWorld, itemStack, (entity) -> entity.setVelocity(d, e + g - entity.getY(), f, 1.2F, 3.0F));
         }
-        this.playSound(SoundEvents.UI_HUD_BUBBLE_POP, 2.0F, 0.4F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
+        this.playSound(ModSounds.ENTITY_CRITTER_SPIT, 2.0F, 0.4F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
     }
 
 
