@@ -23,5 +23,10 @@
 			"config": "cropcritters.client.mixins.json",
 			"environment": "client"
 		}
-	]
+	],
+  "depends": {
+    "fabric": "*",
+    "java": ">=21",
+    "geckolib": "*"
+  }
 }
