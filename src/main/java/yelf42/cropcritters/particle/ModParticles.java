@@ -19,6 +19,9 @@ public class ModParticles {
 
     public static final ParticleType<TintedParticleEffect> SPORES = registerTintedParticle("spore_particle");
 
+    public static final SimpleParticleType SOUL_HEART =
+            registerParticle("soul_heart_particle", FabricParticleTypes.simple());
+
     public static final SimpleParticleType SOUL_GLOW =
             registerParticle("soul_glow_particle", FabricParticleTypes.simple());
 

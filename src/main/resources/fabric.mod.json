@@ -23,8 +23,5 @@
 			"config": "cropcritters.client.mixins.json",
 			"environment": "client"
 		}
-	],
-	"suggests": {
-		"another-mod": "*"
-	}
+	]
 }

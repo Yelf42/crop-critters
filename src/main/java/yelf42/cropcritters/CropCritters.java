@@ -16,7 +16,10 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.particle.ParticleEffect;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.BiomeTags;
@@ -45,14 +48,10 @@ import yelf42.cropcritters.items.StrangeFertilizerItem;
 import yelf42.cropcritters.particle.ModParticles;
 import yelf42.cropcritters.sound.ModSounds;
 
-// TODO seed bar (recipe + resets critter timer)
-// TODO wither -> soul rose fanfare
+// TODO update fabric.mod.json
 public class CropCritters implements ModInitializer {
 	public static final String MOD_ID = "cropcritters";
 
-	// This logger is used to write text to the console and the log file.
-	// It is considered best practice to use your mod id as the logger's name.
-	// That way, it's clear which mod wrote info, warnings, and errors.
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     public static final String[] INT_TO_ROMAN = {" ", " I", " II", " III", " IV", " V", " VI", " VII", " VIII", " IX", " X"};
@@ -107,7 +106,7 @@ public class CropCritters implements ModInitializer {
 			protected ItemStack dispenseSilently(BlockPointer pointer, ItemStack stack) {
 				this.setSuccess(true);
 				World world = pointer.world();
-				Direction facing = (Direction)pointer.state().get(DispenserBlock.FACING);
+				Direction facing = pointer.state().get(DispenserBlock.FACING);
 				BlockPos blockPos = pointer.pos().offset(facing);
 				BlockState state = world.getBlockState(blockPos);
 				if (!StrangeFertilizerItem.tryReviveCoral(stack, world, blockPos, state)
@@ -184,6 +183,7 @@ public class CropCritters implements ModInitializer {
 
 		// S2C Packets
 		PayloadTypeRegistry.playS2C().register(WaterSprayS2CPayload.ID, WaterSprayS2CPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(ParticleRingS2CPayload.ID, ParticleRingS2CPayload.CODEC);
 
 	}
 
@@ -191,11 +191,32 @@ public class CropCritters implements ModInitializer {
 	public record WaterSprayS2CPayload(Vec3d pos, Vec3d dir) implements CustomPayload {
 		public static final Identifier WATER_SPRAY_PAYLOAD_ID = Identifier.of(CropCritters.MOD_ID, "water_spray_packet");
 		public static final CustomPayload.Id<WaterSprayS2CPayload> ID = new CustomPayload.Id<>(WATER_SPRAY_PAYLOAD_ID);
-		public static final PacketCodec<RegistryByteBuf, WaterSprayS2CPayload> CODEC = PacketCodec.tuple(Vec3d.PACKET_CODEC, WaterSprayS2CPayload::pos, Vec3d.PACKET_CODEC, WaterSprayS2CPayload::dir, WaterSprayS2CPayload::new);
+		public static final PacketCodec<RegistryByteBuf, WaterSprayS2CPayload> CODEC = PacketCodec.tuple(
+                Vec3d.PACKET_CODEC, WaterSprayS2CPayload::pos,
+                Vec3d.PACKET_CODEC, WaterSprayS2CPayload::dir,
+                WaterSprayS2CPayload::new
+        );
 
 		@Override
 		public Id<? extends CustomPayload> getId() {
 			return ID;
 		}
 	}
+
+    public record ParticleRingS2CPayload(Vec3d pos, float radius, int count, ParticleEffect effect) implements CustomPayload {
+        public static final Identifier PARTICLE_RING_PAYLOAD_ID = Identifier.of(CropCritters.MOD_ID, "particle_ring_packet");
+        public static final CustomPayload.Id<ParticleRingS2CPayload> ID = new CustomPayload.Id<>(PARTICLE_RING_PAYLOAD_ID);
+        public static final PacketCodec<RegistryByteBuf, ParticleRingS2CPayload> CODEC = PacketCodec.tuple(
+                Vec3d.PACKET_CODEC, ParticleRingS2CPayload::pos,
+                PacketCodecs.FLOAT, ParticleRingS2CPayload::radius,
+                PacketCodecs.INTEGER, ParticleRingS2CPayload::count,
+                ParticleTypes.PACKET_CODEC, ParticleRingS2CPayload::effect,
+                ParticleRingS2CPayload::new
+        );
+
+        @Override
+        public Id<? extends CustomPayload> getId() {
+            return ID;
+        }
+    }
 }

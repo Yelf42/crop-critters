@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.minecraft.client.color.world.BiomeColors;
 import net.minecraft.client.particle.DustPlumeParticle;
+import net.minecraft.client.particle.EmotionParticle;
 import net.minecraft.client.particle.SuspendParticle;
 import net.minecraft.client.render.BlockRenderLayer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
@@ -14,6 +15,7 @@ import net.minecraft.client.render.entity.EntityRendererFactories;
 import net.minecraft.client.render.entity.FlyingItemEntityRenderer;
 import net.minecraft.client.render.item.model.special.SpecialModelTypes;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.particle.ParticleEffect;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import yelf42.cropcritters.blocks.ModBlockEntities;
@@ -105,6 +107,7 @@ public class CropCrittersClient implements ClientModInitializer {
 		ParticleFactoryRegistry.getInstance().register(ModParticles.WATER_SPRAY, WaterSprayParticle.Factory::new);
         ParticleFactoryRegistry.getInstance().register(ModParticles.SPORES, SporeParticle.Factory::new);
         ParticleFactoryRegistry.getInstance().register(ModParticles.SOUL_SIPHON, SoulSiphonParticle.Factory::new);
+        ParticleFactoryRegistry.getInstance().register(ModParticles.SOUL_HEART, EmotionParticle.HeartFactory::new);
         ParticleFactoryRegistry.getInstance().register(ModParticles.SOUL_GLOW, SoulGlowParticle.Factory::new);
         ParticleFactoryRegistry.getInstance().register(ModParticles.SOUL_GLINT, SuspendParticle.HappyVillagerFactory::new);
         ParticleFactoryRegistry.getInstance().register(ModParticles.SOUL_GLINT_PLUME, SoulGlintPlumeParticle.Factory::new);
@@ -113,14 +116,24 @@ public class CropCrittersClient implements ClientModInitializer {
 		// Packet Handling
 		ClientPlayNetworking.registerGlobalReceiver(CropCritters.WaterSprayS2CPayload.ID, (payload, context) -> {
 			ClientWorld world = context.client().world;
-
-			if (world == null) {
-				return;
-			}
+			if (world == null) return;
 
 			Vec3d pos = payload.pos();
 			Vec3d dir = payload.dir();
 			world.addParticleClient(ModParticles.WATER_SPRAY, pos.x, pos.y + 0.2, pos.z, dir.x, 0, dir.z);
 		});
+        ClientPlayNetworking.registerGlobalReceiver(CropCritters.ParticleRingS2CPayload.ID, (payload, context) -> {
+            ClientWorld world = context.client().world;
+            if (world == null) return;
+
+            Vec3d pos = payload.pos();
+            float radius = payload.radius();
+            int count = payload.count();
+            ParticleEffect effect = payload.effect();
+            float angle = (float) ((Math.PI * 2.0) / ((float)count));
+            for (int i = 0; i < count; i++) {
+                world.addParticleClient(effect, pos.x + Math.sin(angle * i) * radius, pos.y, pos.z + Math.cos(angle * i) * radius, 0, 0, 0);
+            }
+        });
 	}
 }

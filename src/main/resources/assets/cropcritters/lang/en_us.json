@@ -4,6 +4,7 @@
   "item.cropcritters.strange_fertilizer": "Strange Fertilizer",
   "item.cropcritters.lost_soul": "Lost Soul",
   "item.cropcritters.herbicide": "Herbicide",
+  "item.cropcritters.seed_bar": "Farmer's Treat",
 
   "tag.item.cropcritters.seed_ball_crops": "Seed Ball Crops",
   "item.cropcritters.seed_ball": "Seed Ball",
@@ -118,6 +119,7 @@
   "sounds.cropcritters.spawn_slime": "Slime Spawned",
   "sounds.cropcritters.spawn_critter": "Critter Spawned",
   "sounds.cropcritters.throw_seed_ball": "Seed Ball Thrown",
+  "sounds.cropcritters.wither_rose_convert": "Wither Rose Conversion",
   "sounds.cropcritters.revive_coral": "Revived Coral",
 
   "sounds.cropcritters.entity_critter_ambient": "Crop Critter",

@@ -24,6 +24,8 @@ import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.particle.ParticleEffect;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.world.ServerWorld;
@@ -48,6 +50,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.config.ConfigManager;
 import yelf42.cropcritters.items.ModItems;
+import yelf42.cropcritters.particle.ModParticles;
 import yelf42.cropcritters.sound.ModSounds;
 
 import java.util.EnumSet;
@@ -191,6 +194,22 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
     }
 
     @Override
+    protected void showEmoteParticle(boolean positive) {
+        ParticleEffect particleEffect = ModParticles.SOUL_HEART;
+        if (!positive) {
+            particleEffect = ParticleTypes.SMOKE;
+        }
+
+        for(int i = 0; i < 3; ++i) {
+            double d = this.random.nextGaussian() * 0.02;
+            double e = this.random.nextGaussian() * 0.02;
+            double f = this.random.nextGaussian() * 0.02;
+            this.getEntityWorld().addParticleClient(particleEffect, this.getParticleX(1.0F), this.getRandomBodyY() + (double)0.5F, this.getParticleZ(1.0F), d, e, f);
+        }
+
+    }
+
+    @Override
     protected EntityNavigation createNavigation(World world) {
         MobNavigation mobNavigation = new MobNavigation(this, world);
         mobNavigation.setCanSwim(true);
@@ -262,8 +281,8 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
 
     @Override
     public ActionResult interactMob(PlayerEntity player, Hand hand) {
-        ItemStack itemStack = player.getStackInHand(hand);
         if (!this.getEntityWorld().isClient()) {
+            ItemStack itemStack = player.getStackInHand(hand);
             if (itemStack.isOf(ModItems.LOST_SOUL) && !this.isTrusting()) {
                 this.eat(player, hand, itemStack);
                 this.tryTame(player);
@@ -275,6 +294,22 @@ public abstract class AbstractCropCritterEntity extends TameableEntity implement
                 this.getEntityWorld().sendEntityStatus(this, (byte)7);
                 this.setPersistent();
                 return ActionResult.SUCCESS;
+            } else if (itemStack.isOf(ModItems.SEED_BAR) && this.isTrusting()) {
+                boolean didSomething = false;
+                if (this.getHealth() < this.getMaxHealth()) {
+                    this.heal(4.f);
+                    didSomething = true;
+                }
+                if (this.ticksUntilCanWork > 20) {
+                    this.ticksUntilCanWork = 10;
+                    didSomething = true;
+                }
+                if (didSomething) {
+                    this.eat(player, hand, itemStack);
+                    this.getEntityWorld().sendEntityStatus(this, (byte)7);
+                    return ActionResult.SUCCESS;
+                }
+                return ActionResult.PASS;
             }
         }
 

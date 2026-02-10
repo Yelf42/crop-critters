@@ -44,9 +44,17 @@ public class ModItems {
                     itemGroup.add(ModItems.COCOA_CRITTER_SPAWN_EGG);
                     itemGroup.add(ModItems.PUFFBOMB_SLICE);
                     itemGroup.add(ModItems.COOKED_PUFFBOMB_STEAK);
+                    itemGroup.add(ModItems.SEED_BAR);
                     itemGroup.add(ModItems.POPPER_POD);
                     itemGroup.add(ModItems.HERBICIDE);
                 });
+
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.FOOD_AND_DRINK)
+                        .register((itemGroup) -> {
+                            itemGroup.add(ModItems.PUFFBOMB_SLICE);
+                            itemGroup.add(ModItems.COOKED_PUFFBOMB_STEAK);
+                            itemGroup.add(ModItems.SEED_BAR);
+                        });
 
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.INGREDIENTS)
                 .register((itemGroup) -> {
@@ -74,6 +82,7 @@ public class ModItems {
         // Compostable
         CompostingChanceRegistry.INSTANCE.add(ModItems.STRANGE_FERTILIZER, 1.0f);
         CompostingChanceRegistry.INSTANCE.add(ModItems.SEED_BALL, 0.8f);
+        CompostingChanceRegistry.INSTANCE.add(ModItems.SEED_BAR, 0.8f);
         CompostingChanceRegistry.INSTANCE.add(ModItems.PUFFBOMB_SLICE, 0.4f);
 
         // Fuel
@@ -120,6 +129,8 @@ public class ModItems {
     public static final Item PUFFBOMB_SLICE = register("puffbomb_slice", Item::new, new Item.Settings().food((new FoodComponent.Builder()).nutrition(2).saturationModifier(0.4F).build()));
     public static final Item COOKED_PUFFBOMB_STEAK = register("cooked_puffbomb_steak", Item::new, new Item.Settings().food((new FoodComponent.Builder()).nutrition(7).saturationModifier(0.9F).build()));
 
+    public static final Item SEED_BAR = register("seed_bar", Item::new, new Item.Settings().food((new FoodComponent.Builder()).nutrition(5).saturationModifier(0.7F).build()));
+
 
     // Spawn eggs
     public static Item registerSpawnEgg(String name, EntityType<? extends MobEntity> entityType) {
@@ -145,5 +156,6 @@ public class ModItems {
 
     // Custom recipe types
     public static final RecipeSerializer<SeedBallRecipe> SEED_BALL_RECIPE = Registry.register(Registries.RECIPE_SERIALIZER, Identifier.of(CropCritters.MOD_ID, "crafting_special_seed_ball"), new SpecialCraftingRecipe.SpecialRecipeSerializer<>(SeedBallRecipe::new));
+    public static final RecipeSerializer<SeedBarRecipe> SEED_BAR_RECIPE = Registry.register(Registries.RECIPE_SERIALIZER, Identifier.of(CropCritters.MOD_ID, "crafting_special_seed_bar"), new SpecialCraftingRecipe.SpecialRecipeSerializer<>(SeedBarRecipe::new));
 
 }

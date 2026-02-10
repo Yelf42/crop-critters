@@ -20,6 +20,9 @@ public class ModSounds {
     public static final SoundEvent TICKING = register("ticking");
     public static final RegistryEntry<SoundEvent> PUFFBOMB_EXPLODE = registerEntry("puffbomb_explode");
 
+    public static final SoundEvent WITHER_ROSE_CONVERT = register("wither_rose_convert");
+    public static final SoundEvent WITHER_ROSE_CONVERT_EXTRA = register("wither_rose_convert_extra");
+
     public static final SoundEvent SPORE_INFEST = register("spore_infest");
 
     public static final SoundEvent SPAWN_SLIME = register("spawn_slime");

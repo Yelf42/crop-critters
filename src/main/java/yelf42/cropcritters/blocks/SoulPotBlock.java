@@ -1,6 +1,8 @@
 package yelf42.cropcritters.blocks;
 
 import com.mojang.serialization.MapCodec;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -15,6 +17,7 @@ import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.tag.EnchantmentTags;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.screen.ScreenHandler;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundCategory;
@@ -28,6 +31,7 @@ import net.minecraft.util.*;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
@@ -36,8 +40,11 @@ import net.minecraft.world.WorldView;
 import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.tick.ScheduledTickView;
 import org.jspecify.annotations.Nullable;
+import yelf42.cropcritters.CropCritters;
+import yelf42.cropcritters.entity.MelonCritterEntity;
 import yelf42.cropcritters.items.ModItems;
 import yelf42.cropcritters.particle.ModParticles;
+import yelf42.cropcritters.sound.ModSounds;
 
 public class SoulPotBlock extends BlockWithEntity implements Waterloggable {
     public static final MapCodec<SoulPotBlock> CODEC = createCodec(SoulPotBlock::new);
@@ -70,7 +77,7 @@ public class SoulPotBlock extends BlockWithEntity implements Waterloggable {
 
     @Override
     public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
-        if (world.getTime() % 6L == 0L && world.getBlockState(pos.up()).isOf(Blocks.POTTED_WITHER_ROSE)) {
+        if (world.getTime() % 3L == 0L && world.getBlockState(pos.up()).isOf(Blocks.POTTED_WITHER_ROSE)) {
             BlockEntity blockEntity = world.getBlockEntity(pos);
             if (blockEntity instanceof SoulPotBlockEntity soulPotBlockEntity && soulPotBlockEntity.getStack().getCount() > 0) {
                 world.addParticleClient(ParticleTypes.SOUL_FIRE_FLAME,
@@ -97,10 +104,23 @@ public class SoulPotBlock extends BlockWithEntity implements Waterloggable {
                 if (inv != null && inv.isOf(ModItems.LOST_SOUL) && inv.getCount() >= 24) {
                     soulPotBlockEntity.setStack(inv.copyWithCount(inv.getCount() - 24));
                     world.setBlockState(pos.up(), ModBlocks.POTTED_SOUL_ROSE.getDefaultState());
+
+                    world.playSound(null, pos.up(), ModSounds.WITHER_ROSE_CONVERT, SoundCategory.BLOCKS);
+                    world.playSound(null, pos.up(), ModSounds.WITHER_ROSE_CONVERT_EXTRA, SoundCategory.BLOCKS);
+
+                    Vec3d center = pos.up().toCenterPos();
+                    CropCritters.ParticleRingS2CPayload payload = new CropCritters.ParticleRingS2CPayload(center, 0.5F, 10, ModParticles.SOUL_GLOW);
+                    for (ServerPlayerEntity player : PlayerLookup.world(world)) {
+                        if (center.isInRange(player.getEntityPos(), 64)) {
+                            ServerPlayNetworking.send(player, payload);
+                        }
+                    }
                 }
             }
         }
     }
+
+
 
     protected ActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         BlockEntity blockEntity = world.getBlockEntity(pos);

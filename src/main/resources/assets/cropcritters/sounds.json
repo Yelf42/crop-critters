@@ -173,6 +173,56 @@
       "random/bow"
     ]
   },
+  "wither_rose_convert": {
+    "subtitle" : "sounds.cropcritters.wither_rose_convert",
+    "sounds" : [
+      {
+        "name": "enchant/soulspeed/soulspeed4",
+        "volume": 0.5
+      },
+      {
+        "name": "enchant/soulspeed/soulspeed5",
+        "volume": 0.5
+      },
+      {
+        "name": "enchant/soulspeed/soulspeed6",
+        "volume": 0.5
+      },
+      {
+        "name": "enchant/soulspeed/soulspeed7",
+        "volume": 0.5
+      },
+      {
+        "name": "enchant/soulspeed/soulspeed8",
+        "volume": 0.5
+      },
+      {
+        "name": "enchant/soulspeed/soulspeed9",
+        "volume": 0.5
+      },
+      {
+        "name": "enchant/soulspeed/soulspeed10",
+        "volume": 0.5
+      },
+      {
+        "name": "enchant/soulspeed/soulspeed11",
+        "volume": 0.5
+      },
+      {
+        "name": "enchant/soulspeed/soulspeed12",
+        "volume": 0.5
+      },
+      {
+        "name": "enchant/soulspeed/soulspeed13",
+        "volume": 0.5
+      }
+    ]
+  },
+  "wither_rose_convert_extra": {
+    "sounds" : [
+      "block/amethyst/shimmer"
+    ]
+  },
   "revive_coral": {
     "subtitle" : "sounds.cropcritters.revive_coral",
     "sounds" : [
