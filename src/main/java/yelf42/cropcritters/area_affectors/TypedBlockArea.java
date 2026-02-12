@@ -2,7 +2,7 @@ package yelf42.cropcritters.area_affectors;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 
 public record TypedBlockArea(AffectorType type, BlockArea blockArea) {
     public static final Codec<TypedBlockArea> CODEC = RecordCodecBuilder.create(instance -> instance.group(

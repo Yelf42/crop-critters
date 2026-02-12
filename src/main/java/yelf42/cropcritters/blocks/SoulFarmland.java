@@ -1,48 +1,55 @@
 package yelf42.cropcritters.blocks;
 
-import net.minecraft.block.*;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.World;
-import net.minecraft.world.event.GameEvent;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.FarmBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
 import org.jetbrains.annotations.Nullable;
+import yelf42.cropcritters.CropCritters;
 
-public class SoulFarmland extends FarmlandBlock {
+public class SoulFarmland extends FarmBlock {
 
-    public SoulFarmland(AbstractBlock.Settings settings) {
+    public SoulFarmland(BlockBehaviour.Properties settings) {
         super(settings);
-        this.setDefaultState(this.stateManager.getDefaultState().with(MOISTURE, 7));
+        this.registerDefaultState(this.stateDefinition.any().setValue(MOISTURE, 7));
     }
 
-    public static void setToSoulSoil(@Nullable Entity entity, BlockState state, World world, BlockPos pos) {
-        BlockState blockState = pushEntitiesUpBeforeBlockChange(state, Blocks.SOUL_SOIL.getDefaultState(), world, pos);
-        world.setBlockState(pos, blockState);
-        world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(entity, blockState));
+    public static void setToSoulSoil(@Nullable Entity entity, BlockState state, Level world, BlockPos pos) {
+        BlockState blockState = pushEntitiesUp(state, Blocks.SOUL_SOIL.defaultBlockState(), world, pos);
+        world.setBlockAndUpdate(pos, blockState);
+        world.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(entity, blockState));
     }
 
     @Override
-    public void onLandedUpon(World world, BlockState state, BlockPos pos, Entity entity, double fallDistance) {
-        if (world instanceof ServerWorld serverWorld) {
-            if ((double)world.random.nextFloat() < fallDistance - (double)0.5F && entity instanceof LivingEntity && (entity instanceof PlayerEntity || (Boolean)serverWorld.getGameRules().getValue(net.minecraft.world.rule.GameRules.DO_MOB_GRIEFING)) && entity.getWidth() * entity.getWidth() * entity.getHeight() > 0.512F) {
+    public void fallOn(Level world, BlockState state, BlockPos pos, Entity entity, double fallDistance) {
+        if (world instanceof ServerLevel serverWorld) {
+            if ((double)world.random.nextFloat() < fallDistance - (double)0.5F
+                    && entity instanceof LivingEntity
+                    && (entity instanceof Player || serverWorld.getGameRules().get(net.minecraft.world.level.gamerules.GameRules.MOB_GRIEFING))
+                    && (entity.getBbWidth() * entity.getBbWidth() * entity.getBbHeight() > 0.512F || entity.getType().is(CropCritters.CROP_CRITTERS))) {
                 setToSoulSoil(entity, state, world, pos);
             }
         }
-        Blocks.SOUL_SOIL.onLandedUpon(world, state, pos, entity, fallDistance);
+        Blocks.SOUL_SOIL.fallOn(world, state, pos, entity, fallDistance);
     }
 
     @Override
-    protected void scheduledTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
-        if (!state.canPlaceAt(world, pos)) {
-            setToSoulSoil((Entity)null, state, world, pos);
+    protected void tick(BlockState state, ServerLevel world, BlockPos pos, RandomSource random) {
+        if (!state.canSurvive(world, pos)) {
+            setToSoulSoil(null, state, world, pos);
         }
     }
 
     @Override
-    protected boolean hasRandomTicks(BlockState state) {
+    protected boolean isRandomlyTicking(BlockState state) {
         return false;
     }
 }

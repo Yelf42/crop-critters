@@ -1,25 +1,26 @@
 package yelf42.cropcritters.renderer.blockentity;
 
-import net.minecraft.block.Blocks;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.*;
-import net.minecraft.client.render.block.BlockModelRenderer;
-import net.minecraft.client.render.block.BlockRenderManager;
-import net.minecraft.client.render.block.entity.BlockEntityRenderer;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
-import net.minecraft.client.render.command.ModelCommandRenderer;
-import net.minecraft.client.render.command.OrderedRenderCommandQueue;
-import net.minecraft.client.render.model.BlockStateModel;
-import net.minecraft.client.render.state.CameraRenderState;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.ModelBlockRenderer;
+import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.renderer.state.CameraRenderState;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 import yelf42.cropcritters.blocks.StrangleFernBlockEntity;
 
 
 public class StrangleFernBlockEntityRenderer implements BlockEntityRenderer<StrangleFernBlockEntity, StrangleFernBlockEntityRenderState> {
 
-    public StrangleFernBlockEntityRenderer(BlockEntityRendererFactory.Context ctx) {}
+    public StrangleFernBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {}
 
     @Override
     public StrangleFernBlockEntityRenderState createRenderState() {
@@ -27,33 +28,33 @@ public class StrangleFernBlockEntityRenderer implements BlockEntityRenderer<Stra
     }
 
     @Override
-    public void updateRenderState(StrangleFernBlockEntity blockEntity, StrangleFernBlockEntityRenderState state, float tickProgress, Vec3d cameraPos, ModelCommandRenderer.@Nullable CrumblingOverlayCommand crumblingOverlay) {
-        BlockEntityRenderer.super.updateRenderState(blockEntity, state, tickProgress, cameraPos, crumblingOverlay);
+    public void extractRenderState(StrangleFernBlockEntity blockEntity, StrangleFernBlockEntityRenderState state, float tickProgress, Vec3 cameraPos, ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
+        BlockEntityRenderer.super.extractRenderState(blockEntity, state, tickProgress, cameraPos, crumblingOverlay);
         state.infestedBlock = blockEntity.getInfestedState();
     }
 
     @Override
-    public void render(StrangleFernBlockEntityRenderState state, MatrixStack matrices, OrderedRenderCommandQueue queue, CameraRenderState cameraState) {
-        if (state.infestedBlock == null || state.infestedBlock.isOf(Blocks.AIR)) return;
+    public void submit(StrangleFernBlockEntityRenderState state, PoseStack matrices, SubmitNodeCollector queue, CameraRenderState cameraState) {
+        if (state.infestedBlock == null || state.infestedBlock.is(Blocks.AIR)) return;
         //queue.submitBlock(matrices, state.infestedBlock, state.lightmapCoordinates, OverlayTexture.DEFAULT_UV, 0);
 
-        MinecraftClient client = MinecraftClient.getInstance();
+        Minecraft client = Minecraft.getInstance();
 
-        int tint = client.getBlockColors().getColor(state.infestedBlock, client.world, state.pos, 0);
+        int tint = client.getBlockColors().getColor(state.infestedBlock, client.level, state.blockPos, 0);
         float r = (float)((tint >> 16) & 0xFF) / 255f;
         float g = (float)((tint >> 8) & 0xFF) / 255f;
         float b = (float)(tint & 0xFF) / 255f;
 
-        BlockRenderManager blockRenderManager = client.getBlockRenderManager();
-        BlockStateModel model = blockRenderManager.getModel(state.infestedBlock);
+        BlockRenderDispatcher blockRenderManager = client.getBlockRenderer();
+        BlockStateModel model = blockRenderManager.getBlockModel(state.infestedBlock);
 
-        BlockModelRenderer.render(
-                matrices.peek(),
-                client.getBufferBuilders().getEntityVertexConsumers().getBuffer(RenderLayers.cutout()),
+        ModelBlockRenderer.renderModel(
+                matrices.last(),
+                client.renderBuffers().bufferSource().getBuffer(RenderTypes.cutoutMovingBlock()),
                 model,
                 r, g, b,
-                state.lightmapCoordinates,
-                OverlayTexture.DEFAULT_UV
+                state.lightCoords,
+                OverlayTexture.NO_OVERLAY
         );
     }
 }

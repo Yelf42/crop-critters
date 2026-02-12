@@ -1,29 +1,30 @@
 package yelf42.cropcritters.renderer.blockentity;
 
-import net.minecraft.block.entity.DecoratedPotBlockEntity;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.world.level.block.entity.DecoratedPotBlockEntity;
 import net.minecraft.client.model.*;
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.RenderLayers;
-import net.minecraft.client.render.TexturedRenderLayers;
-import net.minecraft.client.render.block.entity.BlockEntityRenderer;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
-import net.minecraft.client.render.command.ModelCommandRenderer;
-import net.minecraft.client.render.command.OrderedRenderCommandQueue;
-import net.minecraft.client.render.entity.model.EntityModelLayers;
-import net.minecraft.client.render.entity.model.LoadedEntityModels;
-import net.minecraft.client.render.item.model.special.SpecialModelRenderer;
-import net.minecraft.client.render.state.CameraRenderState;
-import net.minecraft.client.texture.Sprite;
-import net.minecraft.client.texture.SpriteAtlasTexture;
-import net.minecraft.client.texture.SpriteHolder;
-import net.minecraft.client.util.SpriteIdentifier;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RotationAxis;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.geom.EntityModelSet;
+import net.minecraft.client.renderer.special.SpecialModelRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.client.resources.model.Material;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.resources.Identifier;
+import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
+import com.mojang.math.Axis;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 import yelf42.cropcritters.CropCritters;
@@ -35,10 +36,10 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public class SoulPotBlockEntityRenderer implements BlockEntityRenderer<SoulPotBlockEntity, SoulPotBlockEntityRenderState> {
-    private static final Map<Integer, SpriteIdentifier> COVER_SPRITES = new HashMap<>();
-    private static final Map<Integer, SpriteIdentifier> INSIDE_SPRITES = new HashMap<>();
+    private static final Map<Integer, Material> COVER_SPRITES = new HashMap<>();
+    private static final Map<Integer, Material> INSIDE_SPRITES = new HashMap<>();
 
-    private final SpriteHolder materials;
+    private final MaterialSet materials;
     private final ModelPart neck;
     private final ModelPart front;
     private final ModelPart back;
@@ -47,21 +48,21 @@ public class SoulPotBlockEntityRenderer implements BlockEntityRenderer<SoulPotBl
     private final ModelPart top;
     private final ModelPart bottom;
 
-    public SoulPotBlockEntityRenderer(BlockEntityRendererFactory.Context context) {
-        this(context.loadedEntityModels(), context.spriteHolder());
+    public SoulPotBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
+        this(context.entityModelSet(), context.materials());
     }
 
-    public SoulPotBlockEntityRenderer(SpecialModelRenderer.BakeContext context) {
-        this(context.entityModelSet(), context.spriteHolder());
+    public SoulPotBlockEntityRenderer(SpecialModelRenderer.BakingContext context) {
+        this(context.entityModelSet(), context.materials());
     }
 
-    public SoulPotBlockEntityRenderer(LoadedEntityModels entityModelSet, SpriteHolder materials) {
+    public SoulPotBlockEntityRenderer(EntityModelSet entityModelSet, MaterialSet materials) {
         this.materials = materials;
-        ModelPart modelPart = entityModelSet.getModelPart(EntityModelLayers.DECORATED_POT_BASE);
+        ModelPart modelPart = entityModelSet.bakeLayer(ModelLayers.DECORATED_POT_BASE);
         this.neck = modelPart.getChild("neck");
         this.top = modelPart.getChild("top");
         this.bottom = modelPart.getChild("bottom");
-        ModelPart modelPart2 = entityModelSet.getModelPart(EntityModelLayers.DECORATED_POT_SIDES);
+        ModelPart modelPart2 = entityModelSet.bakeLayer(ModelLayers.DECORATED_POT_SIDES);
         this.front = modelPart2.getChild("front");
         this.back = modelPart2.getChild("back");
         this.left = modelPart2.getChild("left");
@@ -72,61 +73,61 @@ public class SoulPotBlockEntityRenderer implements BlockEntityRenderer<SoulPotBl
         return new SoulPotBlockEntityRenderState();
     }
 
-    public void updateRenderState(SoulPotBlockEntity soulPotBlockEntity, SoulPotBlockEntityRenderState soulPotBlockEntityRenderState, float f, Vec3d vec3d, ModelCommandRenderer.@Nullable CrumblingOverlayCommand crumblingOverlayCommand) {
-        BlockEntityRenderer.super.updateRenderState(soulPotBlockEntity, soulPotBlockEntityRenderState, f, vec3d, crumblingOverlayCommand);
+    public void extractRenderState(SoulPotBlockEntity soulPotBlockEntity, SoulPotBlockEntityRenderState soulPotBlockEntityRenderState, float f, Vec3 vec3d, ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlayCommand) {
+        BlockEntityRenderer.super.extractRenderState(soulPotBlockEntity, soulPotBlockEntityRenderState, f, vec3d, crumblingOverlayCommand);
         soulPotBlockEntityRenderState.facing = soulPotBlockEntity.getHorizontalFacing();
         SoulPotBlockEntity.WobbleType wobbleType = soulPotBlockEntity.lastWobbleType;
-        if (wobbleType != null && soulPotBlockEntity.getWorld() != null) {
-            soulPotBlockEntityRenderState.wobbleAnimationProgress = ((float)(soulPotBlockEntity.getWorld().getTime() - soulPotBlockEntity.lastWobbleTime) + f) / (float)wobbleType.lengthInTicks;
+        if (wobbleType != null && soulPotBlockEntity.getLevel() != null) {
+            soulPotBlockEntityRenderState.wobbleAnimationProgress = ((float)(soulPotBlockEntity.getLevel().getGameTime() - soulPotBlockEntity.lastWobbleTime) + f) / (float)wobbleType.lengthInTicks;
         } else {
             soulPotBlockEntityRenderState.wobbleAnimationProgress = 0.0F;
         }
-        soulPotBlockEntityRenderState.level = soulPotBlockEntity.getStack().isOf(ModItems.LOST_SOUL) ? Math.clamp(soulPotBlockEntity.getStack().getCount() / 2, 0, 12) : 0;
+        soulPotBlockEntityRenderState.level = soulPotBlockEntity.getTheItem().is(ModItems.LOST_SOUL) ? Math.clamp(soulPotBlockEntity.getTheItem().getCount() / 2, 0, 12) : 0;
     }
 
-    public void render(SoulPotBlockEntityRenderState soulPotBlockEntityRenderState, MatrixStack matrixStack, OrderedRenderCommandQueue orderedRenderCommandQueue, CameraRenderState cameraRenderState) {
-        matrixStack.push();
+    public void submit(SoulPotBlockEntityRenderState soulPotBlockEntityRenderState, PoseStack matrixStack, SubmitNodeCollector orderedRenderCommandQueue, CameraRenderState cameraRenderState) {
+        matrixStack.pushPose();
         Direction direction = soulPotBlockEntityRenderState.facing;
         matrixStack.translate(0.5F, 0.0F, (double)0.5F);
-        matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180.0F - direction.getPositiveHorizontalDegrees()));
+        matrixStack.mulPose(Axis.YP.rotationDegrees(180.0F - direction.toYRot()));
         matrixStack.translate(-0.5F, 0.0F, (double)-0.5F);
         if (soulPotBlockEntityRenderState.wobbleAnimationProgress >= 0.0F && soulPotBlockEntityRenderState.wobbleAnimationProgress <= 1.0F) {
-            if (soulPotBlockEntityRenderState.wobbleType == DecoratedPotBlockEntity.WobbleType.POSITIVE) {
+            if (soulPotBlockEntityRenderState.wobbleType == DecoratedPotBlockEntity.WobbleStyle.POSITIVE) {
                 float g = soulPotBlockEntityRenderState.wobbleAnimationProgress * ((float)Math.PI * 2F);
-                float h = -1.5F * (MathHelper.cos(g) + 0.5F) * MathHelper.sin((double)(g / 2.0F));
-                matrixStack.multiply(RotationAxis.POSITIVE_X.rotation(h * 0.015625F), 0.5F, 0.0F, 0.5F);
-                float i = MathHelper.sin(g);
-                matrixStack.multiply(RotationAxis.POSITIVE_Z.rotation(i * 0.015625F), 0.5F, 0.0F, 0.5F);
+                float h = -1.5F * (Mth.cos(g) + 0.5F) * Mth.sin((double)(g / 2.0F));
+                matrixStack.rotateAround(Axis.XP.rotation(h * 0.015625F), 0.5F, 0.0F, 0.5F);
+                float i = Mth.sin(g);
+                matrixStack.rotateAround(Axis.ZP.rotation(i * 0.015625F), 0.5F, 0.0F, 0.5F);
             } else {
-                float f = MathHelper.sin(-soulPotBlockEntityRenderState.wobbleAnimationProgress * 3.0F * (float)Math.PI) * 0.125F;
+                float f = Mth.sin(-soulPotBlockEntityRenderState.wobbleAnimationProgress * 3.0F * (float)Math.PI) * 0.125F;
                 float g = 1.0F - soulPotBlockEntityRenderState.wobbleAnimationProgress;
-                matrixStack.multiply(RotationAxis.POSITIVE_Y.rotation(f * g), 0.5F, 0.0F, 0.5F);
+                matrixStack.rotateAround(Axis.YP.rotation(f * g), 0.5F, 0.0F, 0.5F);
             }
         }
 
-        this.render(matrixStack, orderedRenderCommandQueue, soulPotBlockEntityRenderState.lightmapCoordinates, OverlayTexture.DEFAULT_UV, 0, soulPotBlockEntityRenderState.level);
-        matrixStack.pop();
+        this.render(matrixStack, orderedRenderCommandQueue, soulPotBlockEntityRenderState.lightCoords, OverlayTexture.NO_OVERLAY, 0, soulPotBlockEntityRenderState.level);
+        matrixStack.popPose();
     }
 
-    public void render(MatrixStack matrices, OrderedRenderCommandQueue queue, int light, int overlay, int i, int level) {
-        RenderLayer renderLayer = TexturedRenderLayers.DECORATED_POT_BASE.getRenderLayer(RenderLayers::entitySolid);
-        Sprite sprite = this.materials.getSprite(TexturedRenderLayers.DECORATED_POT_BASE);
+    public void render(PoseStack matrices, SubmitNodeCollector queue, int light, int overlay, int i, int level) {
+        RenderType renderLayer = Sheets.DECORATED_POT_BASE.renderType(RenderTypes::entitySolid);
+        TextureAtlasSprite sprite = this.materials.get(Sheets.DECORATED_POT_BASE);
         queue.submitModelPart(this.neck, matrices, renderLayer, light, overlay, sprite, false, false, -1, null, i);
         queue.submitModelPart(this.top, matrices, renderLayer, light, overlay, sprite, false, false, -1, null, i);
         queue.submitModelPart(this.bottom, matrices, renderLayer, light, overlay, sprite, false, false, -1, null, i);
 
-        SpriteIdentifier spriteIdentifier = COVER_SPRITES.get(level);
-        Sprite stageSprite = this.materials.getSprite(spriteIdentifier);
-        RenderLayer coverLayer = spriteIdentifier.getRenderLayer(RenderLayers::entityCutout);
+        Material spriteIdentifier = COVER_SPRITES.get(level);
+        TextureAtlasSprite stageSprite = this.materials.get(spriteIdentifier);
+        RenderType coverLayer = spriteIdentifier.renderType(RenderTypes::entityCutout);
         queue.submitModelPart(this.front, matrices, coverLayer, light, overlay, stageSprite, false, false, -1, null, i);
         queue.submitModelPart(this.back, matrices, coverLayer, light, overlay, stageSprite, false, false, -1, null, i);
         queue.submitModelPart(this.left, matrices, coverLayer, light, overlay, stageSprite, false, false, -1, null, i);
         queue.submitModelPart(this.right, matrices, coverLayer, light, overlay, stageSprite, false, false, -1, null, i);
 
         if (level > 0) {
-            SpriteIdentifier spriteIdentifier2 = INSIDE_SPRITES.get(level);
-            Sprite stageSprite2 = this.materials.getSprite(spriteIdentifier2);
-            RenderLayer insideLayer = spriteIdentifier2.getRenderLayer(RenderLayers::entityCutout);
+            Material spriteIdentifier2 = INSIDE_SPRITES.get(level);
+            TextureAtlasSprite stageSprite2 = this.materials.get(spriteIdentifier2);
+            RenderType insideLayer = spriteIdentifier2.renderType(RenderTypes::entityCutout);
             queue.submitModelPart(this.front, matrices, insideLayer, 15728880, overlay, stageSprite2, false, false, -1, null, i);
             queue.submitModelPart(this.back, matrices, insideLayer, 15728880, overlay, stageSprite2, false, false, -1, null, i);
             queue.submitModelPart(this.left, matrices, insideLayer, 15728880, overlay, stageSprite2, false, false, -1, null, i);
@@ -135,21 +136,21 @@ public class SoulPotBlockEntityRenderer implements BlockEntityRenderer<SoulPotBl
     }
 
     public void collectVertices(Consumer<Vector3fc> consumer) {
-        MatrixStack matrixStack = new MatrixStack();
-        this.neck.collectVertices(matrixStack, consumer);
-        this.top.collectVertices(matrixStack, consumer);
-        this.bottom.collectVertices(matrixStack, consumer);
+        PoseStack matrixStack = new PoseStack();
+        this.neck.getExtentsForGui(matrixStack, consumer);
+        this.top.getExtentsForGui(matrixStack, consumer);
+        this.bottom.getExtentsForGui(matrixStack, consumer);
     }
 
     static {
         for (int i = 0; i < 13; i++) {
-            COVER_SPRITES.put(i, new SpriteIdentifier(
-                    SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE,
-                    Identifier.of(CropCritters.MOD_ID, "block/soul_pot/soul_pot_cover_" + String.format("%02d", i))
+            COVER_SPRITES.put(i, new Material(
+                    TextureAtlas.LOCATION_BLOCKS,
+                    Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, "block/soul_pot/soul_pot_cover_" + String.format("%02d", i))
             ));
-            INSIDE_SPRITES.put(i, new SpriteIdentifier(
-                    SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE,
-                    Identifier.of(CropCritters.MOD_ID, "block/soul_pot/soul_pot_inside_" + String.format("%02d", i))
+            INSIDE_SPRITES.put(i, new Material(
+                    TextureAtlas.LOCATION_BLOCKS,
+                    Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, "block/soul_pot/soul_pot_inside_" + String.format("%02d", i))
             ));
         }
     }

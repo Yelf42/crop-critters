@@ -2,21 +2,28 @@ package yelf42.cropcritters.blocks;
 
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.registry.CompostingChanceRegistry;
-import net.minecraft.block.*;
-import net.minecraft.block.enums.NoteBlockInstrument;
-import net.minecraft.block.piston.PistonBehavior;
-import net.minecraft.component.type.ConsumableComponent;
-import net.minecraft.component.type.FoodComponents;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroups;
-import net.minecraft.item.consume.ApplyEffectsConsumeEffect;
-import net.minecraft.item.consume.UseAction;
-import net.minecraft.registry.*;
-import net.minecraft.sound.BlockSoundGroup;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Rarity;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.FlowerPotBlock;
+import net.minecraft.world.level.block.HugeMushroomBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
+import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.item.component.Consumable;
+import net.minecraft.world.food.Foods;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
+import net.minecraft.world.item.ItemUseAnimation;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.Rarity;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.effects.ModEffects;
 import yelf42.cropcritters.items.ModItems;
@@ -25,326 +32,326 @@ import java.util.function.Function;
 
 public class ModBlocks {
 
-    private static Block register(String name, Function<AbstractBlock.Settings, Block> blockFactory, AbstractBlock.Settings settings, boolean shouldRegisterItem) {
+    private static Block register(String name, Function<BlockBehaviour.Properties, Block> blockFactory, BlockBehaviour.Properties settings, boolean shouldRegisterItem) {
         // Create a registry key for the block
-        RegistryKey<Block> blockKey = keyOfBlock(name);
+        ResourceKey<Block> blockKey = keyOfBlock(name);
         // Create the block instance
-        Block block = blockFactory.apply(settings.registryKey(blockKey));
+        Block block = blockFactory.apply(settings.setId(blockKey));
 
         // Sometimes, you may not want to register an item for the block.
         // Eg: if it's a technical block like `minecraft:moving_piston` or `minecraft:end_gateway`
         if (shouldRegisterItem) {
             // Items need to be registered with a different type of registry key, but the ID
             // can be the same.
-            RegistryKey<Item> itemKey = keyOfItem(name);
+            ResourceKey<Item> itemKey = keyOfItem(name);
 
-            BlockItem blockItem = new BlockItem(block, new Item.Settings().registryKey(itemKey));
-            Registry.register(Registries.ITEM, itemKey, blockItem);
+            BlockItem blockItem = new BlockItem(block, new net.minecraft.world.item.Item.Properties().setId(itemKey));
+            Registry.register(BuiltInRegistries.ITEM, itemKey, blockItem);
         }
 
-        return Registry.register(Registries.BLOCK, blockKey, block);
+        return Registry.register(BuiltInRegistries.BLOCK, blockKey, block);
     }
 
-    private static Block register(String name, Function<AbstractBlock.Settings, Block> blockFactory, AbstractBlock.Settings settings, Item.Settings itemSettings) {
+    private static Block register(String name, Function<BlockBehaviour.Properties, Block> blockFactory, BlockBehaviour.Properties settings, net.minecraft.world.item.Item.Properties itemSettings) {
         // Create a registry key for the block
-        RegistryKey<Block> blockKey = keyOfBlock(name);
+        ResourceKey<Block> blockKey = keyOfBlock(name);
         // Create the block instance
-        Block block = blockFactory.apply(settings.registryKey(blockKey));
+        Block block = blockFactory.apply(settings.setId(blockKey));
 
-        RegistryKey<Item> itemKey = keyOfItem(name);
+        ResourceKey<Item> itemKey = keyOfItem(name);
 
-        BlockItem blockItem = new BlockItem(block, itemSettings.registryKey(itemKey));
-        Registry.register(Registries.ITEM, itemKey, blockItem);
+        BlockItem blockItem = new BlockItem(block, itemSettings.setId(itemKey));
+        Registry.register(BuiltInRegistries.ITEM, itemKey, blockItem);
 
-        return Registry.register(Registries.BLOCK, blockKey, block);
+        return Registry.register(BuiltInRegistries.BLOCK, blockKey, block);
     }
 
-    private static Block registerPotted(String name, AbstractBlock.Settings settings, Block flower) {
+    private static Block registerPotted(String name, BlockBehaviour.Properties settings, Block flower) {
         // Create a registry key for the block
-        RegistryKey<Block> blockKey = keyOfBlock(name);
-        return Registry.register(Registries.BLOCK, blockKey, new FlowerPotBlock(flower, settings.registryKey(blockKey)));
+        ResourceKey<Block> blockKey = keyOfBlock(name);
+        return Registry.register(BuiltInRegistries.BLOCK, blockKey, new FlowerPotBlock(flower, settings.setId(blockKey)));
     }
 
-    private static RegistryKey<Block> keyOfBlock(String name) {
-        return RegistryKey.of(RegistryKeys.BLOCK, Identifier.of(CropCritters.MOD_ID, name));
+    private static ResourceKey<Block> keyOfBlock(String name) {
+        return ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, name));
     }
 
-    private static RegistryKey<Item> keyOfItem(String name) {
-        return RegistryKey.of(RegistryKeys.ITEM, Identifier.of(CropCritters.MOD_ID, name));
+    private static ResourceKey<Item> keyOfItem(String name) {
+        return ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, name));
     }
 
     public static final Block SOUL_FARMLAND = register(
             "soul_farmland",
             SoulFarmland::new,
-            AbstractBlock.Settings.create()
-                    .mapColor(MapColor.BROWN)
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_BROWN)
                     .strength(0.5F)
-                    .sounds(BlockSoundGroup.SOUL_SOIL),
+                    .sound(SoundType.SOUL_SOIL),
             true
     );
 
     public static final Block CRAWL_THISTLE = register(
             "crawl_thistle",
             CrawlThistle::new,
-            AbstractBlock.Settings.create()
-                    .mapColor(MapColor.DARK_GREEN)
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.PLANT)
                     .noCollision()
-                    .ticksRandomly()
+                    .randomTicks()
                     .strength(0.4f)
-                    .sounds(BlockSoundGroup.SWEET_BERRY_BUSH)
-                    .offset(AbstractBlock.OffsetType.XZ)
-                    .pistonBehavior(PistonBehavior.DESTROY),
+                    .sound(SoundType.SWEET_BERRY_BUSH)
+                    .offsetType(BlockBehaviour.OffsetType.XZ)
+                    .pushReaction(PushReaction.DESTROY),
             true
     );
 
     public static final Block MAZEWOOD_SAPLING = register(
             "mazewood_sapling",
             MazewoodSaplingBlock::new,
-            AbstractBlock.Settings.create()
-                    .mapColor(MapColor.DARK_GREEN)
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.PLANT)
                     .noCollision()
-                    .ticksRandomly()
-                    .breakInstantly()
-                    .sounds(BlockSoundGroup.GRASS)
-                    .pistonBehavior(PistonBehavior.DESTROY),
-            new Item.Settings().rarity(Rarity.UNCOMMON)
+                    .randomTicks()
+                    .instabreak()
+                    .sound(SoundType.GRASS)
+                    .pushReaction(PushReaction.DESTROY),
+            new net.minecraft.world.item.Item.Properties().rarity(Rarity.UNCOMMON)
     );
     public static final Block MAZEWOOD = register(
             "mazewood",
             MazewoodBlock::new,
-            AbstractBlock.Settings.create()
-                    .mapColor(MapColor.DARK_GREEN)
-                    .solid()
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.PLANT)
+                    .forceSolidOn()
                     .strength(0.7f)
-                    .sounds(BlockSoundGroup.SWEET_BERRY_BUSH)
-                    .pistonBehavior(PistonBehavior.DESTROY),
-            new Item.Settings().rarity(Rarity.UNCOMMON)
+                    .sound(SoundType.SWEET_BERRY_BUSH)
+                    .pushReaction(PushReaction.DESTROY),
+            new net.minecraft.world.item.Item.Properties().rarity(Rarity.UNCOMMON)
     );
 
     public static final Block CRIMSON_THORNWEED = register(
             "crimson_thornweed",
             CrimsonThornweed::new,
-            AbstractBlock.Settings.create()
-                    .mapColor(MapColor.DARK_RED)
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.NETHER)
                     .noCollision()
-                    .ticksRandomly()
+                    .randomTicks()
                     .strength(0.6f)
-                    .sounds(BlockSoundGroup.SWEET_BERRY_BUSH)
-                    .offset(AbstractBlock.OffsetType.XZ)
-                    .pistonBehavior(PistonBehavior.DESTROY),
+                    .sound(SoundType.SWEET_BERRY_BUSH)
+                    .offsetType(BlockBehaviour.OffsetType.XZ)
+                    .pushReaction(PushReaction.DESTROY),
             true
     );
 
     public static final Block WITHERING_SPITEWEED = register(
             "withering_spiteweed",
             WitheringSpiteweed::new,
-            AbstractBlock.Settings.create()
-                    .mapColor(MapColor.BLACK)
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_BLACK)
                     .noCollision()
-                    .ticksRandomly()
+                    .randomTicks()
                     .strength(0.6f)
-                    .sounds(BlockSoundGroup.SWEET_BERRY_BUSH)
-                    .offset(AbstractBlock.OffsetType.XZ)
-                    .pistonBehavior(PistonBehavior.DESTROY),
+                    .sound(SoundType.SWEET_BERRY_BUSH)
+                    .offsetType(BlockBehaviour.OffsetType.XZ)
+                    .pushReaction(PushReaction.DESTROY),
             true
     );
 
     public static final Block WAFTGRASS = register(
             "waftgrass",
             Waftgrass::new,
-            AbstractBlock.Settings.create()
-                    .mapColor(MapColor.CYAN)
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_CYAN)
                     .noCollision()
-                    .ticksRandomly()
+                    .randomTicks()
                     .strength(0.6f)
-                    .sounds(BlockSoundGroup.SWEET_BERRY_BUSH)
-                    .offset(AbstractBlock.OffsetType.XZ)
-                    .pistonBehavior(PistonBehavior.DESTROY),
+                    .sound(SoundType.SWEET_BERRY_BUSH)
+                    .offsetType(BlockBehaviour.OffsetType.XZ)
+                    .pushReaction(PushReaction.DESTROY),
             true
     );
 
     public static final Block STRANGLE_FERN = register(
             "strangle_fern",
             StrangleFern::new,
-            AbstractBlock.Settings.create()
-                    .mapColor(MapColor.DARK_GREEN)
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.PLANT)
                     .noCollision()
-                    .ticksRandomly()
+                    .randomTicks()
                     .strength(0.4f)
-                    .sounds(BlockSoundGroup.SWEET_BERRY_BUSH)
-                    .pistonBehavior(PistonBehavior.DESTROY),
+                    .sound(SoundType.SWEET_BERRY_BUSH)
+                    .pushReaction(PushReaction.DESTROY),
             true
     );
 
     public static final Block POPPER_PLANT = register(
             "popper_plant",
             PopperPlantBlock::new,
-            AbstractBlock.Settings.create()
-                    .mapColor(MapColor.DARK_GREEN)
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.PLANT)
                     .noCollision()
-                    .ticksRandomly()
+                    .randomTicks()
                     .strength(0.4f)
-                    .sounds(BlockSoundGroup.SWEET_BERRY_BUSH)
-                    .offset(AbstractBlock.OffsetType.XZ)
-                    .pistonBehavior(PistonBehavior.DESTROY),
+                    .sound(SoundType.SWEET_BERRY_BUSH)
+                    .offsetType(BlockBehaviour.OffsetType.XZ)
+                    .pushReaction(PushReaction.DESTROY),
             true
     );
 
     public static final Block BONE_TRAP = register(
             "bone_trap",
             BoneTrapBlock::new,
-            AbstractBlock.Settings.create()
-                    .mapColor(MapColor.WHITE_GRAY)
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOL)
                     .noCollision()
                     .strength(0.4f)
-                    .sounds(BlockSoundGroup.BONE)
-                    .pistonBehavior(PistonBehavior.DESTROY),
+                    .sound(SoundType.BONE_BLOCK)
+                    .pushReaction(PushReaction.DESTROY),
             true
     );
 
     public static final Block PUFFBOMB_MUSHROOM = register(
             "puffbomb_mushroom",
             PuffbombPlantBlock::new,
-            AbstractBlock.Settings.create()
-                    .mapColor(MapColor.WHITE_GRAY)
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOL)
                     .noCollision()
-                    .ticksRandomly()
-                    .breakInstantly()
-                    .sounds(BlockSoundGroup.FUNGUS)
-                    .pistonBehavior(PistonBehavior.DESTROY),
-            new Item.Settings().food(FoodComponents.CARROT,
-                    ConsumableComponent.builder()
+                    .randomTicks()
+                    .instabreak()
+                    .sound(SoundType.FUNGUS)
+                    .pushReaction(PushReaction.DESTROY),
+            new net.minecraft.world.item.Item.Properties().food(Foods.CARROT,
+                    Consumable.builder()
                             .consumeSeconds(1.6F)
-                            .useAction(UseAction.EAT)
-                            .sound(SoundEvents.ENTITY_GENERIC_EAT)
-                            .consumeParticles(true)
-                            .consumeEffect(new ApplyEffectsConsumeEffect(ModEffects.EATEN_PUFFBOMB_POISONING))
+                            .animation(ItemUseAnimation.EAT)
+                            .sound(SoundEvents.GENERIC_EAT)
+                            .hasConsumeParticles(true)
+                            .onConsume(new ApplyStatusEffectsConsumeEffect(ModEffects.EATEN_PUFFBOMB_POISONING))
                             .build())
     );
 
     public static final Block PUFFBOMB_MUSHROOM_BLOCK = register(
             "puffbomb_mushroom_block",
-            MushroomBlock::new,
-            AbstractBlock.Settings.create()
-                    .mapColor(MapColor.WHITE_GRAY)
+            HugeMushroomBlock::new,
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOL)
                     .instrument(NoteBlockInstrument.BASS)
                     .strength(0.2F)
-                    .sounds(BlockSoundGroup.WOOD)
-                    .burnable(),
+                    .sound(SoundType.WOOD)
+                    .ignitedByLava(),
             true
     );
 
     public static final Block LIVERWORT = register(
             "liverwort",
             LiverwortBlock::new,
-            AbstractBlock.Settings.create()
+            BlockBehaviour.Properties.of()
                     .replaceable()
                     .noCollision()
-                    .breakInstantly()
-                    .sounds(BlockSoundGroup.GLOW_LICHEN)
-                    .burnable().pistonBehavior(PistonBehavior.DESTROY),
+                    .instabreak()
+                    .sound(SoundType.GLOW_LICHEN)
+                    .ignitedByLava().pushReaction(PushReaction.DESTROY),
             true
     );
 
     public static final Block SOUL_ROSE = register(
             "soul_rose",
             SoulRoseBlock::new,
-            AbstractBlock.Settings.create()
-                    .mapColor(MapColor.DIAMOND_BLUE)
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.DIAMOND)
                     .noCollision()
                     .strength(0.9f)
-                    .sounds(BlockSoundGroup.WEEPING_VINES_LOW_PITCH)
-                    .luminance((state) -> 3)
-                    .pistonBehavior(PistonBehavior.DESTROY),
-            new Item.Settings().rarity(Rarity.RARE)
+                    .sound(SoundType.TWISTING_VINES)
+                    .lightLevel((state) -> 3)
+                    .pushReaction(PushReaction.DESTROY),
+            new net.minecraft.world.item.Item.Properties().rarity(Rarity.RARE)
     );
 
     public static final Block TRIMMED_SOUL_ROSE = register(
             "trimmed_soul_rose",
             TrimmedSoulRoseBlock::new,
-            AbstractBlock.Settings.create()
-                    .mapColor(MapColor.DIAMOND_BLUE)
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.DIAMOND)
                     .noCollision()
-                    .breakInstantly()
-                    .sounds(BlockSoundGroup.WEEPING_VINES_LOW_PITCH)
-                    .luminance((state) -> 3)
-                    .pistonBehavior(PistonBehavior.DESTROY),
-            new Item.Settings().rarity(Rarity.RARE)
+                    .instabreak()
+                    .sound(SoundType.TWISTING_VINES)
+                    .lightLevel((state) -> 3)
+                    .pushReaction(PushReaction.DESTROY),
+            new net.minecraft.world.item.Item.Properties().rarity(Rarity.RARE)
     );
 
     public static final Block POTTED_SOUL_ROSE = registerPotted(
             "potted_soul_rose",
-            AbstractBlock.Settings.create()
-                    .breakInstantly()
-                    .luminance((state) -> 3)
-                    .nonOpaque()
-                    .pistonBehavior(PistonBehavior.DESTROY),
+            BlockBehaviour.Properties.of()
+                    .instabreak()
+                    .lightLevel((state) -> 3)
+                    .noOcclusion()
+                    .pushReaction(PushReaction.DESTROY),
             SOUL_ROSE
     );
 
     public static final Block TALL_BUSH = register(
             "tall_bush",
             TallBushBlock::new,
-            AbstractBlock.Settings.create()
-                    .mapColor(MapColor.DARK_GREEN)
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.PLANT)
                     .replaceable()
                     .noCollision()
-                    .breakInstantly()
-                    .sounds(BlockSoundGroup.GRASS)
-                    .burnable()
-                    .pistonBehavior(PistonBehavior.DESTROY),
+                    .instabreak()
+                    .sound(SoundType.GRASS)
+                    .ignitedByLava()
+                    .pushReaction(PushReaction.DESTROY),
             true
     );
 
     public static final Block ORNAMENTAL_BUSH = register(
             "ornamental_bush",
             TallBushBlock::new,
-            AbstractBlock.Settings.create()
-                    .mapColor(MapColor.DARK_GREEN)
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.PLANT)
                     .replaceable()
                     .noCollision()
-                    .breakInstantly()
-                    .sounds(BlockSoundGroup.GRASS)
-                    .burnable()
-                    .pistonBehavior(PistonBehavior.DESTROY),
+                    .instabreak()
+                    .sound(SoundType.GRASS)
+                    .ignitedByLava()
+                    .pushReaction(PushReaction.DESTROY),
             true
     );
 
     public static final Block LOST_SOUL_IN_A_JAR = register(
             "lost_soul_in_a_jar",
             LostSoulInAJarBlock::new,
-            AbstractBlock.Settings.create()
-                    .mapColor(MapColor.IRON_GRAY)
-                    .solid()
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .forceSolidOn()
                     .strength(0.3F)
-                    .sounds(BlockSoundGroup.GLASS)
-                    .luminance(state -> 12)
-                    .nonOpaque()
-                    .ticksRandomly()
-                    .pistonBehavior(PistonBehavior.DESTROY),
-            new Item.Settings().rarity(Rarity.UNCOMMON)
+                    .sound(SoundType.GLASS)
+                    .lightLevel(state -> 12)
+                    .noOcclusion()
+                    .randomTicks()
+                    .pushReaction(PushReaction.DESTROY),
+            new net.minecraft.world.item.Item.Properties().rarity(Rarity.UNCOMMON)
     );
 
     public static final Block SOUL_POT = register(
             "soul_pot",
             SoulPotBlock::new,
-            AbstractBlock.Settings.create()
+            BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_RED)
                     .strength(0.0F, 0.0F)
-                    .pistonBehavior(PistonBehavior.DESTROY)
-                    .nonOpaque(),
+                    .pushReaction(PushReaction.DESTROY)
+                    .noOcclusion(),
             true
     );
 
     public static final Block TORCHFLOWER_SPARK = register(
             "torchflower_spark",
             TorchflowerSparkBlock::new,
-            AbstractBlock.Settings.create()
-                    .luminance((state) -> 12)
+            BlockBehaviour.Properties.of()
+                    .lightLevel((state) -> 12)
                     .replaceable()
                     .noCollision()
-                    .dropsNothing()
-                    .ticksRandomly()
+                    .noLootTable()
+                    .randomTicks()
                     .air(),
             false
     );
@@ -353,54 +360,54 @@ public class ModBlocks {
         CropCritters.LOGGER.info("Initializing blocks for " + CropCritters.MOD_ID);
 
         ItemGroupEvents.modifyEntriesEvent(ModItems.CROP_CRITTERS_ITEM_GROUP_KEY).register((itemGroup) -> {
-            itemGroup.add(ModBlocks.SOUL_FARMLAND.asItem());
-            itemGroup.add(ModBlocks.MAZEWOOD_SAPLING.asItem());
-            itemGroup.add(ModBlocks.MAZEWOOD.asItem());
-            itemGroup.add(ModBlocks.CRAWL_THISTLE.asItem());
-            itemGroup.add(ModBlocks.CRIMSON_THORNWEED.asItem());
-            itemGroup.add(ModBlocks.WITHERING_SPITEWEED.asItem());
-            itemGroup.add(ModBlocks.WAFTGRASS.asItem());
-            itemGroup.add(ModBlocks.STRANGLE_FERN.asItem());
-            itemGroup.add(ModBlocks.POPPER_PLANT.asItem());
-            itemGroup.add(ModBlocks.BONE_TRAP.asItem());
-            itemGroup.add(ModBlocks.PUFFBOMB_MUSHROOM.asItem());
-            itemGroup.add(ModBlocks.PUFFBOMB_MUSHROOM_BLOCK.asItem());
-            itemGroup.add(ModBlocks.LIVERWORT.asItem());
-            itemGroup.add(ModBlocks.SOUL_ROSE.asItem());
-            itemGroup.add(ModBlocks.TRIMMED_SOUL_ROSE.asItem());
-            itemGroup.add(ModBlocks.TALL_BUSH.asItem());
-            itemGroup.add(ModBlocks.ORNAMENTAL_BUSH.asItem());
-            itemGroup.add(ModBlocks.LOST_SOUL_IN_A_JAR.asItem());
-            itemGroup.add(ModBlocks.SOUL_POT.asItem());
+            itemGroup.accept(ModBlocks.SOUL_FARMLAND.asItem());
+            itemGroup.accept(ModBlocks.MAZEWOOD_SAPLING.asItem());
+            itemGroup.accept(ModBlocks.MAZEWOOD.asItem());
+            itemGroup.accept(ModBlocks.CRAWL_THISTLE.asItem());
+            itemGroup.accept(ModBlocks.CRIMSON_THORNWEED.asItem());
+            itemGroup.accept(ModBlocks.WITHERING_SPITEWEED.asItem());
+            itemGroup.accept(ModBlocks.WAFTGRASS.asItem());
+            itemGroup.accept(ModBlocks.STRANGLE_FERN.asItem());
+            itemGroup.accept(ModBlocks.POPPER_PLANT.asItem());
+            itemGroup.accept(ModBlocks.BONE_TRAP.asItem());
+            itemGroup.accept(ModBlocks.PUFFBOMB_MUSHROOM.asItem());
+            itemGroup.accept(ModBlocks.PUFFBOMB_MUSHROOM_BLOCK.asItem());
+            itemGroup.accept(ModBlocks.LIVERWORT.asItem());
+            itemGroup.accept(ModBlocks.SOUL_ROSE.asItem());
+            itemGroup.accept(ModBlocks.TRIMMED_SOUL_ROSE.asItem());
+            itemGroup.accept(ModBlocks.TALL_BUSH.asItem());
+            itemGroup.accept(ModBlocks.ORNAMENTAL_BUSH.asItem());
+            itemGroup.accept(ModBlocks.LOST_SOUL_IN_A_JAR.asItem());
+            itemGroup.accept(ModBlocks.SOUL_POT.asItem());
         });
 
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.NATURAL).register((itemGroup) -> {
-            itemGroup.add(ModBlocks.MAZEWOOD_SAPLING.asItem());
-            itemGroup.add(ModBlocks.MAZEWOOD.asItem());
-            itemGroup.add(ModBlocks.CRAWL_THISTLE.asItem());
-            itemGroup.add(ModBlocks.CRIMSON_THORNWEED.asItem());
-            itemGroup.add(ModBlocks.WITHERING_SPITEWEED.asItem());
-            itemGroup.add(ModBlocks.WAFTGRASS.asItem());
-            itemGroup.add(ModBlocks.STRANGLE_FERN.asItem());
-            itemGroup.add(ModBlocks.BONE_TRAP.asItem());
-            itemGroup.add(ModBlocks.PUFFBOMB_MUSHROOM.asItem());
-            itemGroup.add(ModBlocks.PUFFBOMB_MUSHROOM_BLOCK.asItem());
-            itemGroup.add(ModBlocks.LIVERWORT.asItem());
-            itemGroup.add(ModBlocks.SOUL_ROSE.asItem());
-            itemGroup.add(ModBlocks.TRIMMED_SOUL_ROSE.asItem());
-            itemGroup.add(ModBlocks.TALL_BUSH.asItem());
-            itemGroup.add(ModBlocks.ORNAMENTAL_BUSH.asItem());
+        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.NATURAL_BLOCKS).register((itemGroup) -> {
+            itemGroup.accept(ModBlocks.MAZEWOOD_SAPLING.asItem());
+            itemGroup.accept(ModBlocks.MAZEWOOD.asItem());
+            itemGroup.accept(ModBlocks.CRAWL_THISTLE.asItem());
+            itemGroup.accept(ModBlocks.CRIMSON_THORNWEED.asItem());
+            itemGroup.accept(ModBlocks.WITHERING_SPITEWEED.asItem());
+            itemGroup.accept(ModBlocks.WAFTGRASS.asItem());
+            itemGroup.accept(ModBlocks.STRANGLE_FERN.asItem());
+            itemGroup.accept(ModBlocks.BONE_TRAP.asItem());
+            itemGroup.accept(ModBlocks.PUFFBOMB_MUSHROOM.asItem());
+            itemGroup.accept(ModBlocks.PUFFBOMB_MUSHROOM_BLOCK.asItem());
+            itemGroup.accept(ModBlocks.LIVERWORT.asItem());
+            itemGroup.accept(ModBlocks.SOUL_ROSE.asItem());
+            itemGroup.accept(ModBlocks.TRIMMED_SOUL_ROSE.asItem());
+            itemGroup.accept(ModBlocks.TALL_BUSH.asItem());
+            itemGroup.accept(ModBlocks.ORNAMENTAL_BUSH.asItem());
         });
 
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register((itemGroup) -> {
-            itemGroup.add(ModBlocks.SOUL_ROSE.asItem());
-            itemGroup.add(ModBlocks.LOST_SOUL_IN_A_JAR.asItem());
-            itemGroup.add(ModBlocks.SOUL_POT.asItem());
+        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.FUNCTIONAL_BLOCKS).register((itemGroup) -> {
+            itemGroup.accept(ModBlocks.SOUL_ROSE.asItem());
+            itemGroup.accept(ModBlocks.LOST_SOUL_IN_A_JAR.asItem());
+            itemGroup.accept(ModBlocks.SOUL_POT.asItem());
         });
 
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.FOOD_AND_DRINK)
+        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.FOOD_AND_DRINKS)
                 .register((itemGroup) -> {
-                    itemGroup.add(ModBlocks.PUFFBOMB_MUSHROOM.asItem());
+                    itemGroup.accept(ModBlocks.PUFFBOMB_MUSHROOM.asItem());
                 });
 
         CompostingChanceRegistry.INSTANCE.add(ModBlocks.TALL_BUSH.asItem(), 0.8f);

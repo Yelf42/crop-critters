@@ -1,52 +1,58 @@
 package yelf42.cropcritters.blocks;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.block.*;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityCollisionHandler;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.registry.tag.BlockTags;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.IntProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldView;
-import net.minecraft.world.tick.ScheduledTickView;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.BonemealableBlock;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import org.jspecify.annotations.Nullable;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.effects.ModEffects;
 import yelf42.cropcritters.events.WeedGrowNotifier;
 
-public class StrangleFern extends BlockWithEntity implements Fertilizable {
+public class StrangleFern extends BaseEntityBlock implements BonemealableBlock {
 
-    public static final MapCodec<StrangleFern> CODEC = createCodec(StrangleFern::new);
+    public static final MapCodec<StrangleFern> CODEC = simpleCodec(StrangleFern::new);
     public static final int MAX_AGE = 3;
-    public static final IntProperty AGE = Properties.AGE_3;
+    public static final IntegerProperty AGE = BlockStateProperties.AGE_3;
 
-    public StrangleFern(Settings settings) {
+    public StrangleFern(Properties settings) {
         super(settings);
-        this.setDefaultState(this.stateManager.getDefaultState().with(this.getAgeProperty(), 0));
+        this.registerDefaultState(this.stateDefinition.any().setValue(this.getAgeProperty(), 0));
     }
 
     @Override
-    public MapCodec<? extends StrangleFern> getCodec() {
+    public MapCodec<? extends StrangleFern> codec() {
         return CODEC;
     }
 
     @Override
-    protected VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return Block.createColumnShape(12, -1, 5 * Math.min(this.getAge(state), 2) + 4);
+    protected VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+        return Block.column(12, -1, 5 * Math.min(this.getAge(state), 2) + 4);
     }
 
-    protected IntProperty getAgeProperty() {
+    protected IntegerProperty getAgeProperty() {
         return AGE;
     }
 
@@ -55,7 +61,7 @@ public class StrangleFern extends BlockWithEntity implements Fertilizable {
     }
 
     public int getAge(BlockState state) {
-        return (Integer)state.get(this.getAgeProperty());
+        return (Integer)state.getValue(this.getAgeProperty());
     }
 
     public final boolean isMature(BlockState state) {
@@ -63,102 +69,102 @@ public class StrangleFern extends BlockWithEntity implements Fertilizable {
     }
 
     public static boolean canInfest(BlockState toCheck) {
-        boolean tall = toCheck.contains(Properties.DOUBLE_BLOCK_HALF);
+        boolean tall = toCheck.hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF);
         boolean crop = toCheck.getBlock() instanceof CropBlock;
-        boolean canSpread = toCheck.isIn(CropCritters.SPORES_INFECT);
-        boolean weed = toCheck.isIn(CropCritters.WEEDS);
+        boolean canSpread = toCheck.is(CropCritters.SPORES_INFECT);
+        boolean weed = toCheck.is(CropCritters.WEEDS);
         return ((!tall && !weed) && (crop || canSpread));
     }
 
     @Override
-    protected boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
-        BlockState floor = world.getBlockState(pos.down());
-        return floor.isIn(BlockTags.DIRT);
+    protected boolean canSurvive(BlockState state, LevelReader world, BlockPos pos) {
+        BlockState floor = world.getBlockState(pos.below());
+        return floor.is(BlockTags.DIRT);
     }
 
     @Override
-    protected BlockState getStateForNeighborUpdate(BlockState state, WorldView world, ScheduledTickView tickView, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, Random random) {
-        return !state.canPlaceAt(world, pos) ? Blocks.AIR.getDefaultState() : super.getStateForNeighborUpdate(state, world, tickView, pos, direction, neighborPos, neighborState, random);
+    protected BlockState updateShape(BlockState state, LevelReader world, ScheduledTickAccess tickView, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random) {
+        return !state.canSurvive(world, pos) ? Blocks.AIR.defaultBlockState() : super.updateShape(state, world, tickView, pos, direction, neighborPos, neighborState, random);
     }
 
     @Override
-    public @Nullable BlockState getPlacementState(ItemPlacementContext ctx) {
-        if (canInfest(ctx.getWorld().getBlockState(ctx.getBlockPos()))) {
-            return super.getPlacementState(ctx);
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        if (canInfest(ctx.getLevel().getBlockState(ctx.getClickedPos()))) {
+            return super.getStateForPlacement(ctx);
         }
         return null;
     }
 
     @Override
-    protected boolean hasRandomTicks(BlockState state) {
+    protected boolean isRandomlyTicking(BlockState state) {
         return !isMature(state);
     }
 
     @Override
-    protected void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
+    protected void randomTick(BlockState state, ServerLevel world, BlockPos pos, RandomSource random) {
         if (!isMature(state) && random.nextInt(2) == 0) {
             ageUp(state,world,pos);
         }
     }
 
     // Increase age, kill host if matured (maybe replace dead_bush with smth smaller)
-    private void ageUp(BlockState state, ServerWorld world, BlockPos pos) {
+    private void ageUp(BlockState state, ServerLevel world, BlockPos pos) {
         int newAge = this.getAge(state) + 1;
-        world.setBlockState(pos, state.with(AGE, newAge), 3);
+        world.setBlock(pos, state.setValue(AGE, newAge), 3);
         if (newAge == this.getMaxAge() && world.random.nextInt(3) == 0) {
             StrangleFernBlockEntity sfbe = (StrangleFernBlockEntity) world.getBlockEntity(pos);
-            if (sfbe != null) sfbe.setInfestedState(Blocks.DEAD_BUSH.getDefaultState());
+            if (sfbe != null) sfbe.setInfestedState(Blocks.DEAD_BUSH.defaultBlockState());
         }
     }
 
     @Override
-    protected void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler handler, boolean bl) {
-        if (world instanceof ServerWorld
+    protected void entityInside(BlockState state, Level world, BlockPos pos, Entity entity, InsideBlockEffectApplier handler, boolean bl) {
+        if (world instanceof ServerLevel
                 && isMature(state)
                 && entity instanceof LivingEntity livingEntity) {
-            livingEntity.addStatusEffect(ModEffects.NATURAL_SPORES);
-            world.setBlockState(pos, state.with(AGE, this.getMaxAge() - 1), 3);
+            livingEntity.addEffect(ModEffects.NATURAL_SPORES);
+            world.setBlock(pos, state.setValue(AGE, this.getMaxAge() - 1), 3);
         }
     }
 
     @Override
-    protected void onBlockAdded(BlockState state, World world, BlockPos pos, BlockState oldState, boolean notify) {
+    protected void onPlace(BlockState state, Level world, BlockPos pos, BlockState oldState, boolean notify) {
         WeedGrowNotifier.notifyEvent(world, pos);
         StrangleFernBlockEntity sfbe = (StrangleFernBlockEntity) world.getBlockEntity(pos);
-        if (sfbe != null && !oldState.isOf(this)) {
+        if (sfbe != null && !oldState.is(this)) {
             sfbe.setInfestedState(oldState);
         }
-        super.onBlockAdded(state, world, pos, oldState, notify);
+        super.onPlace(state, world, pos, oldState, notify);
     }
 
     @Override
-    protected void onStateReplaced(BlockState state, ServerWorld world, BlockPos pos, boolean moved) {
+    protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel world, BlockPos pos, boolean moved) {
         WeedGrowNotifier.notifyRemoval(world, pos);
-        super.onStateReplaced(state, world, pos, moved);
+        super.affectNeighborsAfterRemoval(state, world, pos, moved);
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(AGE);
     }
 
     @Override
-    public @Nullable BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new StrangleFernBlockEntity(pos, state);
     }
 
     @Override
-    public boolean isFertilizable(WorldView world, BlockPos pos, BlockState state) {
+    public boolean isValidBonemealTarget(LevelReader world, BlockPos pos, BlockState state) {
         return !isMature(state);
     }
 
     @Override
-    public boolean canGrow(World world, Random random, BlockPos pos, BlockState state) {
+    public boolean isBonemealSuccess(Level world, RandomSource random, BlockPos pos, BlockState state) {
         return (double)random.nextFloat() < 0.4;
     }
 
     @Override
-    public void grow(ServerWorld world, Random random, BlockPos pos, BlockState state) {
+    public void performBonemeal(ServerLevel world, RandomSource random, BlockPos pos, BlockState state) {
         ageUp(state,world,pos);
     }
 }

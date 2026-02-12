@@ -5,10 +5,10 @@ import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import net.minecraft.block.BlockState;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkSectionPos;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.config.AffectorsHelper;
 
@@ -51,7 +51,7 @@ public final class AffectorPositions {
     }
 
     private static void addAllSections(TypedBlockArea torchPosition, Long2ObjectMap<Map<BlockPos, TypedBlockArea>> sectionPositions) {
-        torchPosition.blockArea().getAllSections((ChunkSectionPos sectionPos) -> {
+        torchPosition.blockArea().getAllSections((SectionPos sectionPos) -> {
             Map<BlockPos, TypedBlockArea> positions = sectionPositions.computeIfAbsent(sectionPos.asLong(),
                     (long sectionPosX) -> new LinkedHashMap<>());
             positions.put(torchPosition.position(), torchPosition);
@@ -59,7 +59,7 @@ public final class AffectorPositions {
     }
 
     private static void removeAllSections(TypedBlockArea torchPosition, Long2ObjectMap<Map<BlockPos, TypedBlockArea>> sectionPositions) {
-        torchPosition.blockArea().getAllSections((ChunkSectionPos sectionPos) -> {
+        torchPosition.blockArea().getAllSections((SectionPos sectionPos) -> {
             Map<BlockPos, TypedBlockArea> positions = sectionPositions.get(sectionPos.asLong());
             if (positions != null) {
                 positions.remove(torchPosition.position(), torchPosition);
@@ -71,7 +71,7 @@ public final class AffectorPositions {
     }
 
     public Collection<? extends TypedBlockArea> getAffectorsInSection(BlockPos blockPos) {
-        return this.sectionPositions.getOrDefault(ChunkSectionPos.toLong(blockPos), Collections.emptyMap()).values();
+        return this.sectionPositions.getOrDefault(SectionPos.asLong(blockPos), Collections.emptyMap()).values();
     }
 
     public AffectorPositions add(BlockPos blockPos, AffectorType type) {
@@ -108,11 +108,11 @@ public final class AffectorPositions {
     }
 
 
-    public static void onBlockStateChange(ServerWorld serverWorld, BlockPos pos, BlockState oldState, BlockState newState) {
+    public static void onBlockStateChange(ServerLevel serverWorld, BlockPos pos, BlockState oldState, BlockState newState) {
         Optional<AffectorType> oldType = getAffectorType(oldState);
         Optional<AffectorType> newType = getAffectorType(newState);
         if (!Objects.equals(oldType, newType)) {
-            BlockPos blockPos = pos.toImmutable();
+            BlockPos blockPos = pos.immutable();
             oldType.ifPresent((AffectorType type) -> {
                 serverWorld.getServer().execute(() -> {
                     AffectorPositions affectorPositions = serverWorld.getAttachedOrElse(
@@ -146,7 +146,7 @@ public final class AffectorPositions {
     }
 
 
-    private static void print(ServerWorld serverWorld, boolean sections) {
+    private static void print(ServerLevel serverWorld, boolean sections) {
         AffectorPositions affectorPositions = serverWorld.getAttachedOrElse(
                 CropCritters.AFFECTOR_POSITIONS_ATTACHMENT_TYPE,
                 AffectorPositions.EMPTY
@@ -155,7 +155,7 @@ public final class AffectorPositions {
         if (sections) {
             CropCritters.LOGGER.info("=== Section Positions ===");
             affectorPositions.sectionPositions.forEach((sectionLong, posMap) -> {
-                ChunkSectionPos sectionPos = ChunkSectionPos.from(sectionLong);
+                SectionPos sectionPos = SectionPos.of(sectionLong);
                 CropCritters.LOGGER.info("Section {}: {} affectors", sectionPos, posMap.size());
                 posMap.forEach((pos, typedArea) -> {
                     CropCritters.LOGGER.info("  - {} ({})", pos, typedArea.type());

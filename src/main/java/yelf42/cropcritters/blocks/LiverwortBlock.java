@@ -1,47 +1,56 @@
 package yelf42.cropcritters.blocks;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.block.*;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.Fluids;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.registry.tag.BlockTags;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.LightType;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldView;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.BonemealableBlock;
+import net.minecraft.world.level.block.FarmBlock;
+import net.minecraft.world.level.block.MultifaceBlock;
+import net.minecraft.world.level.block.MultifaceSpreadeableBlock;
+import net.minecraft.world.level.block.MultifaceSpreader;
+import net.minecraft.world.level.block.PointedDripstoneBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.attribute.EnvironmentAttributes;
-import net.minecraft.world.tick.ScheduledTickView;
+import net.minecraft.world.level.ScheduledTickAccess;
 import yelf42.cropcritters.config.WeedHelper;
 
-public class LiverwortBlock extends MultifaceGrowthBlock implements Fertilizable {
-    public static final MapCodec<LiverwortBlock> CODEC = createCodec(LiverwortBlock::new);
-    private final MultifaceGrower grower = new MultifaceGrower(new LiverwortGrowChecker(this));
+public class LiverwortBlock extends MultifaceSpreadeableBlock implements BonemealableBlock {
+    public static final MapCodec<LiverwortBlock> CODEC = simpleCodec(LiverwortBlock::new);
+    private final MultifaceSpreader grower = new MultifaceSpreader(new LiverwortGrowChecker(this));
 
-    public static final BooleanProperty CAN_SPREAD = BooleanProperty.of("can_spread");
+    public static final BooleanProperty CAN_SPREAD = BooleanProperty.create("can_spread");
 
-    public MapCodec<LiverwortBlock> getCodec() {
+    public MapCodec<LiverwortBlock> codec() {
         return CODEC;
     }
 
-    public LiverwortBlock(AbstractBlock.Settings settings) {
+    public LiverwortBlock(BlockBehaviour.Properties settings) {
         super(settings);
     }
 
     @Override
-    protected boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
-        if (super.canPlaceAt(state, world, pos)) return true;
+    protected boolean canSurvive(BlockState state, LevelReader world, BlockPos pos) {
+        if (super.canSurvive(state, world, pos)) return true;
 
         boolean bl = false;
         for(Direction direction : DIRECTIONS) {
-            if (hasDirection(state, direction)) {
-                if (!world.getBlockState(pos.offset(direction)).isIn(BlockTags.DIRT)) {
+            if (hasFace(state, direction)) {
+                if (!world.getBlockState(pos.relative(direction)).is(BlockTags.DIRT)) {
                     return false;
                 }
                 bl = true;
@@ -51,50 +60,50 @@ public class LiverwortBlock extends MultifaceGrowthBlock implements Fertilizable
     }
 
     @Override
-    public boolean canGrowWithDirection(BlockView world, BlockState state, BlockPos pos, Direction direction) {
-        if (super.canGrowWithDirection(world, state, pos, direction)) return true;
-        if (this.canHaveDirection(direction) && (!state.isOf(this) || !hasDirection(state, direction))) {
-            BlockPos blockPos = pos.offset(direction);
-            return world.getBlockState(blockPos).isIn(BlockTags.DIRT);
+    public boolean isValidStateForPlacement(BlockGetter world, BlockState state, BlockPos pos, Direction direction) {
+        if (super.isValidStateForPlacement(world, state, pos, direction)) return true;
+        if (this.isFaceSupported(direction) && (!state.is(this) || !hasFace(state, direction))) {
+            BlockPos blockPos = pos.relative(direction);
+            return world.getBlockState(blockPos).is(BlockTags.DIRT);
         } else {
             return false;
         }
     }
 
     @Override
-    protected BlockState getStateForNeighborUpdate(BlockState state, WorldView world, ScheduledTickView tickView, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, Random random) {
-        return super.getStateForNeighborUpdate(state.with(CAN_SPREAD, state.get(CAN_SPREAD) || !neighborState.isOf(ModBlocks.LIVERWORT)), world, tickView, pos, direction, neighborPos, neighborState, random);
+    protected BlockState updateShape(BlockState state, LevelReader world, ScheduledTickAccess tickView, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random) {
+        return super.updateShape(state.setValue(CAN_SPREAD, state.getValue(CAN_SPREAD) || !neighborState.is(ModBlocks.LIVERWORT)), world, tickView, pos, direction, neighborPos, neighborState, random);
     }
 
     @Override
-    protected boolean hasRandomTicks(BlockState state) {
+    protected boolean isRandomlyTicking(BlockState state) {
         return true;
     }
 
     @Override
-    protected void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
+    protected void randomTick(BlockState state, ServerLevel world, BlockPos pos, RandomSource random) {
         // Don't grow if unsuitable temperatures
-        float temp = world.getBiome(pos).value().getTemperature();
+        float temp = world.getBiome(pos).value().getBaseTemperature();
         if (temp > 0.81 || temp < 0.79) return;
 
         // Dry out in sunlight
-        long time = world.getTimeOfDay() % 24000;
+        long time = world.getDayTime() % 24000;
         if (state.getFluidState().isEmpty()
                 && (time <= 8000 && time >= 4000)
-                && world.getLightLevel(LightType.SKY, pos) >= 15
-                && !world.hasRain(pos)) {
-            world.addSyncedBlockEvent(pos, this, 0, 0);
+                && world.getBrightness(LightLayer.SKY, pos) >= 15
+                && !world.isRainingAt(pos)) {
+            world.blockEvent(pos, this, 0, 0);
             return;
         }
 
         // Dry out in nether (any dimension where water evaporates)
-        if (world.getEnvironmentAttributes().getAttributeValue(EnvironmentAttributes.WATER_EVAPORATES_GAMEPLAY, pos)) {
-            world.addSyncedBlockEvent(pos, this, 0, 0);
+        if (world.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, pos)) {
+            world.blockEvent(pos, this, 0, 0);
             return;
         }
 
-        if (!state.get(CAN_SPREAD, false)) {
-            if (world.isRaining() && random.nextInt(6) == 1) world.setBlockState(pos, state.with(CAN_SPREAD, true));
+        if (!state.getValueOrElse(CAN_SPREAD, false)) {
+            if (world.isRaining() && random.nextInt(6) == 1) world.setBlockAndUpdate(pos, state.setValue(CAN_SPREAD, true));
             return;
         }
 
@@ -102,95 +111,95 @@ public class LiverwortBlock extends MultifaceGrowthBlock implements Fertilizable
         int neighbouringWeeds = -1;
         for (int i = -1; i <= 1; i++) {
             for (int j = -1; j <= 1; j++) {
-                BlockPos checkPos = pos.add(i, 0, j);
+                BlockPos checkPos = pos.offset(i, 0, j);
                 BlockState checkState = world.getBlockState(checkPos);
-                if (checkState.isOf(this)) neighbouringWeeds++;
+                if (checkState.is(this)) neighbouringWeeds++;
             }
         }
         if (neighbouringWeeds > 3 || random.nextInt(16) == 0) {
-            world.setBlockState(pos, state.with(CAN_SPREAD, false));
+            world.setBlockAndUpdate(pos, state.setValue(CAN_SPREAD, false));
             return;
         }
 
         // Rain growth
-        if (world.hasRain(pos) || world.hasRain(pos.offset(Direction.random(random)))) {
-            if (random.nextInt(2) == 0 && isFertilizable(world, pos, state)) this.grower.grow(state, world, pos, random);
+        if (world.isRainingAt(pos) || world.isRainingAt(pos.relative(Direction.getRandom(random)))) {
+            if (random.nextInt(2) == 0 && isValidBonemealTarget(world, pos, state)) this.grower.spreadFromRandomFaceTowardRandomDirection(state, world, pos, random);
             return;
         }
 
         // Waterlogged growth
-        if (!state.getFluidState().isEmpty() && world.getLightLevel(LightType.SKY, pos) >= 14) {
-            if (random.nextInt(4) == 0 && isFertilizable(world, pos, state)) this.grower.grow(state, world, pos, random);
+        if (!state.getFluidState().isEmpty() && world.getBrightness(LightLayer.SKY, pos) >= 14) {
+            if (random.nextInt(4) == 0 && isValidBonemealTarget(world, pos, state)) this.grower.spreadFromRandomFaceTowardRandomDirection(state, world, pos, random);
             return;
         }
 
         // Moist farmland
-        BlockState soil = world.getBlockState(pos.down());
-        if (soil.isOf(ModBlocks.SOUL_FARMLAND) || (soil.isOf(Blocks.FARMLAND) && soil.get(FarmlandBlock.MOISTURE, 0) > 5)) {
-            if (isFertilizable(world, pos, state)) this.grower.grow(state, world, pos, random);
+        BlockState soil = world.getBlockState(pos.below());
+        if (soil.is(ModBlocks.SOUL_FARMLAND) || (soil.is(Blocks.FARMLAND) && soil.getValueOrElse(FarmBlock.MOISTURE, 0) > 5)) {
+            if (isValidBonemealTarget(world, pos, state)) this.grower.spreadFromRandomFaceTowardRandomDirection(state, world, pos, random);
             return;
         }
 
         // Dripping growth / death
-        BlockPos blockPos = PointedDripstoneBlock.getDripPos(world, pos);
+        BlockPos blockPos = PointedDripstoneBlock.findStalactiteTipAboveCauldron(world, pos);
         if (blockPos != null) {
-            Fluid fluid = PointedDripstoneBlock.getDripFluid(world, blockPos);
-            if (fluid == Fluids.WATER && isFertilizable(world, pos, state)) {
-                this.grower.grow(state, world, pos, random);
+            Fluid fluid = PointedDripstoneBlock.getCauldronFillFluidType(world, blockPos);
+            if (fluid == Fluids.WATER && isValidBonemealTarget(world, pos, state)) {
+                this.grower.spreadFromRandomFaceTowardRandomDirection(state, world, pos, random);
             } else if (fluid == Fluids.LAVA) {
-                world.addSyncedBlockEvent(pos, this, 0, 0);
+                world.blockEvent(pos, this, 0, 0);
             }
         }
 
     }
 
     @Override
-    protected boolean onSyncedBlockEvent(BlockState state, World world, BlockPos pos, int type, int data) {
+    protected boolean triggerEvent(BlockState state, Level world, BlockPos pos, int type, int data) {
         int i = pos.getX();
         int j = pos.getY();
         int k = pos.getZ();
         for(int l = 0; l < 8; ++l) {
-            world.addParticleClient(ParticleTypes.WHITE_SMOKE, (double)((float)i + world.random.nextFloat()), (double)((float)j + world.random.nextFloat()), (double)((float)k + world.random.nextFloat()), (double)0.0F, (double)0.0F, (double)0.0F);
+            world.addParticle(ParticleTypes.WHITE_SMOKE, (double)((float)i + world.random.nextFloat()), (double)((float)j + world.random.nextFloat()), (double)((float)k + world.random.nextFloat()), (double)0.0F, (double)0.0F, (double)0.0F);
         }
-        world.setBlockState(pos, Blocks.AIR.getDefaultState(), 3);
+        world.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
         return true;
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(CAN_SPREAD);
-        super.appendProperties(builder);
+        super.createBlockStateDefinition(builder);
     }
 
-    public boolean isFertilizable(WorldView world, BlockPos pos, BlockState state) {
-        return Direction.stream().anyMatch((direction) -> this.grower.canGrow(state, world, pos, direction.getOpposite()));
+    public boolean isValidBonemealTarget(LevelReader world, BlockPos pos, BlockState state) {
+        return Direction.stream().anyMatch((direction) -> this.grower.canSpreadInAnyDirection(state, world, pos, direction.getOpposite()));
     }
 
-    public boolean canGrow(World world, Random random, BlockPos pos, BlockState state) {
+    public boolean isBonemealSuccess(Level world, RandomSource random, BlockPos pos, BlockState state) {
         return true;
     }
 
-    public void grow(ServerWorld world, Random random, BlockPos pos, BlockState state) {
-        this.grower.grow(state, world, pos, random);
+    public void performBonemeal(ServerLevel world, RandomSource random, BlockPos pos, BlockState state) {
+        this.grower.spreadFromRandomFaceTowardRandomDirection(state, world, pos, random);
     }
 
-    protected boolean isTransparent(BlockState state) {
+    protected boolean propagatesSkylightDown(BlockState state) {
         return state.getFluidState().isEmpty();
     }
 
-    public MultifaceGrower getGrower() {
+    public MultifaceSpreader getSpreader() {
         return this.grower;
     }
 
-    static class LiverwortGrowChecker extends MultifaceGrower.LichenGrowChecker {
+    static class LiverwortGrowChecker extends MultifaceSpreader.DefaultSpreaderConfig {
 
         public LiverwortGrowChecker(MultifaceBlock lichen) {
             super(lichen);
         }
 
         @Override
-        protected boolean canGrow(BlockView world, BlockPos pos, BlockPos growPos, Direction direction, BlockState state) {
-            return super.canGrow(world, pos, growPos, direction, state) || WeedHelper.canWeedsReplace(state);
+        protected boolean stateCanBeReplaced(BlockGetter world, BlockPos pos, BlockPos growPos, Direction direction, BlockState state) {
+            return super.stateCanBeReplaced(world, pos, growPos, direction, state) || WeedHelper.canWeedsReplace(state);
         }
     }
 

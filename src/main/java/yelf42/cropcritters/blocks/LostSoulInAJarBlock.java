@@ -1,94 +1,95 @@
 package yelf42.cropcritters.blocks;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.LanternBlock;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.Heightmap;
-import net.minecraft.world.World;
-import net.minecraft.world.tick.TickPriority;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.LanternBlock;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.ticks.TickPriority;
 import org.jetbrains.annotations.Nullable;
 import yelf42.cropcritters.events.WeedGrowNotifier;
 import yelf42.cropcritters.particle.ModParticles;
 import yelf42.cropcritters.sound.ModSounds;
 
 public class LostSoulInAJarBlock extends LanternBlock {
-    public static final BooleanProperty POWERED = Properties.POWERED;
+    public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 
-    public LostSoulInAJarBlock(Settings settings) {
+    public LostSoulInAJarBlock(Properties settings) {
         super(settings);
-        this.setDefaultState((BlockState)((BlockState)this.getDefaultState().with(POWERED, false)));
+        this.registerDefaultState((BlockState)((BlockState)this.defaultBlockState().setValue(POWERED, false)));
     }
 
     @Override
-    public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
-        world.scheduleBlockTick(pos, state.getBlock(), 15, TickPriority.EXTREMELY_LOW);
+    public void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
+        world.scheduleTick(pos, state.getBlock(), 15, TickPriority.EXTREMELY_LOW);
     }
 
     @Override
-    protected void scheduledTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
-        if ((Boolean)state.get(POWERED)) world.setBlockState(pos, (BlockState)state.with(POWERED, false), 3);
+    protected void tick(BlockState state, ServerLevel world, BlockPos pos, RandomSource random) {
+        if ((Boolean)state.getValue(POWERED)) world.setBlock(pos, (BlockState)state.setValue(POWERED, false), 3);
         if (WeedGrowNotifier.checkWeedsToRing(world, pos)) {
-            world.setBlockState(pos, (BlockState)state.with(POWERED, true), 3);
+            world.setBlock(pos, (BlockState)state.setValue(POWERED, true), 3);
             ring(world, pos, random);
         }
-        world.scheduleBlockTick(pos, state.getBlock(), 15 + world.random.nextInt(30), TickPriority.EXTREMELY_LOW);
+        world.scheduleTick(pos, state.getBlock(), 15 + world.random.nextInt(30), TickPriority.EXTREMELY_LOW);
     }
 
     @Override
-    public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
+    public void animateTick(BlockState state, Level world, BlockPos pos, RandomSource random) {
         if (random.nextDouble() <= 1.0) {
             double d = (double)pos.getX() + random.nextDouble() * (double)10.0F - (double)5.0F;
             double e = (double)pos.getY() - random.nextDouble() * (double)4.0F;
             double f = (double)pos.getZ() + random.nextDouble() * (double)10.0F - (double)5.0F;
             //world.addParticleClient(ParticleTypes.GLOW, d, world.getTopY(Heightmap.Type.WORLD_SURFACE, (int)d, (int)f), f, 0.0F, 1.0F, 0.0F);
-            world.addParticleClient(ModParticles.SOUL_GLOW, d, e, f, 0.0F, 1.0F, 0.0F);
+            world.addParticle(ModParticles.SOUL_GLOW, d, e, f, 0.0F, 1.0F, 0.0F);
         }
     }
 
-    public void ring(World world, BlockPos pos, Random random) {
-        world.playSound(null, pos, ModSounds.LOST_SOUL_JAR_CHIME, SoundCategory.BLOCKS, 2.0f, 1.0f + 0.5f * (float)random.nextInt(7));
+    public void ring(Level world, BlockPos pos, RandomSource random) {
+        world.playSound(null, pos, ModSounds.LOST_SOUL_JAR_CHIME, SoundSource.BLOCKS, 2.0f, 1.0f + 0.5f * (float)random.nextInt(7));
 
-        world.addSyncedBlockEvent(pos, this, 0, random.nextInt(360));
+        world.blockEvent(pos, this, 0, random.nextInt(360));
     }
 
     @Override
-    protected boolean onSyncedBlockEvent(BlockState state, World world, BlockPos pos, int type, int data) {
-        Vec3d cPos = pos.toCenterPos();
+    protected boolean triggerEvent(BlockState state, Level world, BlockPos pos, int type, int data) {
+        Vec3 cPos = pos.getCenter();
         double angle = Math.toRadians((double)data);
         double planeOffset = 0.8f;
         double heightOffset = ((double)data / 360F) - 1.f;
-        world.addParticleClient(ParticleTypes.NOTE, cPos.getX() + Math.cos(angle) * planeOffset, cPos.getY() + heightOffset, cPos.getZ() + Math.sin(angle) * planeOffset, 0.73f, 0.0F, 0.0F);
+        world.addParticle(ParticleTypes.NOTE, cPos.x() + Math.cos(angle) * planeOffset, cPos.y() + heightOffset, cPos.z() + Math.sin(angle) * planeOffset, 0.73f, 0.0F, 0.0F);
 
         return true;
     }
 
     @Override
-    protected boolean hasComparatorOutput(BlockState state) {
+    protected boolean hasAnalogOutputSignal(BlockState state) {
         return true;
     }
 
     @Override
-    protected int getComparatorOutput(BlockState state, World world, BlockPos pos, Direction direction) {
-        return (Boolean)world.getBlockState(pos).get(POWERED) ? 15 : 0;
+    protected int getAnalogOutputSignal(BlockState state, Level world, BlockPos pos, Direction direction) {
+        return (Boolean)world.getBlockState(pos).getValue(POWERED) ? 15 : 0;
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(POWERED);
-        super.appendProperties(builder);
+        super.createBlockStateDefinition(builder);
     }
 
 }

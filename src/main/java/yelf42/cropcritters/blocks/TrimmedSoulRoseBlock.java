@@ -1,46 +1,51 @@
 package yelf42.cropcritters.blocks;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.block.*;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.registry.tag.BlockTags;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
-import net.minecraft.world.tick.TickPriority;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SupportType;
+import net.minecraft.world.level.block.VegetationBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.ticks.TickPriority;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.area_affectors.AffectorPositions;
 import yelf42.cropcritters.area_affectors.TypedBlockArea;
 
 import java.util.Collection;
 
-public class TrimmedSoulRoseBlock extends PlantBlock {
-    public static final MapCodec<TrimmedSoulRoseBlock> CODEC = createCodec(TrimmedSoulRoseBlock::new);
-    private static final VoxelShape SHAPE = Block.createColumnShape(8.0F, 0.0F, 8.0F);
+public class TrimmedSoulRoseBlock extends VegetationBlock {
+    public static final MapCodec<TrimmedSoulRoseBlock> CODEC = simpleCodec(TrimmedSoulRoseBlock::new);
+    private static final VoxelShape SHAPE = Block.column(8.0F, 0.0F, 8.0F);
 
-    public MapCodec<? extends TrimmedSoulRoseBlock> getCodec() {
+    public MapCodec<? extends TrimmedSoulRoseBlock> codec() {
         return CODEC;
     }
 
-    public TrimmedSoulRoseBlock(AbstractBlock.Settings settings) {
+    public TrimmedSoulRoseBlock(BlockBehaviour.Properties settings) {
         super(settings);
     }
 
-    protected VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+    protected VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
         return SHAPE;
     }
 
-    protected boolean canPlantOnTop(BlockState floor, BlockView world, BlockPos pos) {
+    protected boolean mayPlaceOn(BlockState floor, BlockGetter world, BlockPos pos) {
         BlockState blockState = world.getBlockState(pos);
-        return blockState.isIn(BlockTags.DIRT) || blockState.isSideSolid(world, pos, Direction.UP, SideShapeType.CENTER);
+        return blockState.is(BlockTags.DIRT) || blockState.isFaceSturdy(world, pos, Direction.UP, SupportType.CENTER);
     }
 
     @Override
-    protected void scheduledTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
+    protected void tick(BlockState state, ServerLevel world, BlockPos pos, RandomSource random) {
         AffectorPositions affectorPositions = world.getAttachedOrElse(
                 CropCritters.AFFECTOR_POSITIONS_ATTACHMENT_TYPE,
                 AffectorPositions.EMPTY
@@ -49,7 +54,7 @@ public class TrimmedSoulRoseBlock extends PlantBlock {
         if (!affectorsInSection.isEmpty()) {
             for (TypedBlockArea typedBlockArea : affectorsInSection) {
                 if (typedBlockArea.blockArea().isPositionInside(pos)) {
-                    world.spawnParticles(ParticleTypes.SOUL_FIRE_FLAME,
+                    world.sendParticles(ParticleTypes.SOUL_FIRE_FLAME,
                             pos.getX() + 0.5,
                             pos.getY() + 0.55,
                             pos.getZ() + 0.5,
@@ -57,28 +62,28 @@ public class TrimmedSoulRoseBlock extends PlantBlock {
                             0.0, 0.0, 0.0,
                             0.0
                     );
-                    world.scheduleBlockTick(pos, ModBlocks.TRIMMED_SOUL_ROSE, 20 + random.nextInt(60), TickPriority.EXTREMELY_LOW);
+                    world.scheduleTick(pos, ModBlocks.TRIMMED_SOUL_ROSE, 20 + random.nextInt(60), TickPriority.EXTREMELY_LOW);
                 }
             }
         } else {
-            world.scheduleBlockTick(pos, ModBlocks.TRIMMED_SOUL_ROSE, 400, TickPriority.EXTREMELY_LOW);
+            world.scheduleTick(pos, ModBlocks.TRIMMED_SOUL_ROSE, 400, TickPriority.EXTREMELY_LOW);
         }
     }
 
     @Override
-    protected void onBlockAdded(BlockState state, World world, BlockPos pos, BlockState oldState, boolean notify) {
-        world.scheduleBlockTick(pos, ModBlocks.TRIMMED_SOUL_ROSE, 40, TickPriority.EXTREMELY_LOW);
-        super.onBlockAdded(state, world, pos, oldState, notify);
+    protected void onPlace(BlockState state, Level world, BlockPos pos, BlockState oldState, boolean notify) {
+        world.scheduleTick(pos, ModBlocks.TRIMMED_SOUL_ROSE, 40, TickPriority.EXTREMELY_LOW);
+        super.onPlace(state, world, pos, oldState, notify);
     }
 
     @Override
-    protected boolean hasRandomTicks(BlockState state) {
+    protected boolean isRandomlyTicking(BlockState state) {
         return true;
     }
 
     @Override
-    protected void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
-        world.scheduleBlockTick(pos, ModBlocks.TRIMMED_SOUL_ROSE, 40, TickPriority.EXTREMELY_LOW);
+    protected void randomTick(BlockState state, ServerLevel world, BlockPos pos, RandomSource random) {
+        world.scheduleTick(pos, ModBlocks.TRIMMED_SOUL_ROSE, 40, TickPriority.EXTREMELY_LOW);
     }
 
 }

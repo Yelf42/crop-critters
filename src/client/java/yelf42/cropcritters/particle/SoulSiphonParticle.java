@@ -1,36 +1,41 @@
 package yelf42.cropcritters.particle;
 
 import net.minecraft.client.particle.*;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.particle.SimpleParticleType;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.random.Random;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.client.particle.RisingParticle;
+import net.minecraft.client.particle.SingleQuadParticle;
+import net.minecraft.client.particle.SingleQuadParticle.Layer;
+import net.minecraft.client.particle.SpriteSet;
+import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import org.jetbrains.annotations.Nullable;
 
-public class SoulSiphonParticle extends AbstractSlowingParticle {
-    public SoulSiphonParticle(ClientWorld world, double x, double y, double z, double vX, double vY, double vZ, SpriteProvider spriteProvider) {
-        super(world, x, y, z, 0.0, 0.1, 0.0, spriteProvider.getFirst());
+public class SoulSiphonParticle extends RisingParticle {
+    public SoulSiphonParticle(ClientLevel world, double x, double y, double z, double vX, double vY, double vZ, SpriteSet spriteProvider) {
+        super(world, x, y, z, 0.0, 0.1, 0.0, spriteProvider.first());
     }
 
     @Override
-    public BillboardParticle.RenderType getRenderType() {
-        return RenderType.PARTICLE_ATLAS_OPAQUE;
+    public SingleQuadParticle.Layer getLayer() {
+        return Layer.OPAQUE;
     }
 
     public void move(double dx, double dy, double dz) {
-        this.setBoundingBox(this.getBoundingBox().offset(dx, dy, dz));
-        this.repositionFromBoundingBox();
+        this.setBoundingBox(this.getBoundingBox().move(dx, dy, dz));
+        this.setLocationFromBoundingbox();
     }
 
-    public float getSize(float tickProgress) {
-        float f = ((float)this.age + tickProgress) / (float)this.maxAge;
-        return this.scale * (1.0F - f * f * 0.5F);
+    public float getQuadSize(float tickProgress) {
+        float f = ((float)this.age + tickProgress) / (float)this.lifetime;
+        return this.quadSize * (1.0F - f * f * 0.5F);
     }
 
-    public int getBrightness(float tint) {
-        float f = ((float)this.age + tint) / (float)this.maxAge;
-        f = MathHelper.clamp(f, 0.0F, 1.0F);
-        int i = super.getBrightness(tint);
+    public int getLightColor(float tint) {
+        float f = ((float)this.age + tint) / (float)this.lifetime;
+        f = Mth.clamp(f, 0.0F, 1.0F);
+        int i = super.getLightColor(tint);
         int j = i & 255;
         int k = i >> 16 & 255;
         j += (int)(f * 15.0F * 16.0F);
@@ -41,15 +46,15 @@ public class SoulSiphonParticle extends AbstractSlowingParticle {
         return j | k << 16;
     }
 
-    public static class Factory implements ParticleFactory<SimpleParticleType> {
-        private final SpriteProvider spriteProvider;
+    public static class Factory implements ParticleProvider<SimpleParticleType> {
+        private final SpriteSet spriteProvider;
 
-        public Factory(SpriteProvider spriteProvider) {
+        public Factory(SpriteSet spriteProvider) {
             this.spriteProvider = spriteProvider;
         }
 
         @Override
-        public @Nullable Particle createParticle(SimpleParticleType parameters, ClientWorld world, double x, double y, double z, double velocityX, double velocityY, double velocityZ, Random random) {
+        public @Nullable Particle createParticle(SimpleParticleType parameters, ClientLevel world, double x, double y, double z, double velocityX, double velocityY, double velocityZ, RandomSource random) {
             return new SoulSiphonParticle(world, x, y, z, velocityX, velocityY, velocityZ, this.spriteProvider);
         }
     }

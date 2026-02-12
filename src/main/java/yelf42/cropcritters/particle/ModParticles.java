@@ -1,12 +1,12 @@
 package yelf42.cropcritters.particle;
 
 import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
-import net.minecraft.particle.ParticleType;
-import net.minecraft.particle.SimpleParticleType;
-import net.minecraft.particle.TintedParticleEffect;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.core.particles.ColorParticleOption;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.Identifier;
 import yelf42.cropcritters.CropCritters;
 
 public class ModParticles {
@@ -17,7 +17,7 @@ public class ModParticles {
     public static final SimpleParticleType SOUL_SIPHON =
             registerParticle("soul_siphon_particle", FabricParticleTypes.simple());
 
-    public static final ParticleType<TintedParticleEffect> SPORES = registerTintedParticle("spore_particle");
+    public static final ParticleType<ColorParticleOption> SPORES = registerTintedParticle("spore_particle");
 
     public static final SimpleParticleType SOUL_HEART =
             registerParticle("soul_heart_particle", FabricParticleTypes.simple());
@@ -32,11 +32,11 @@ public class ModParticles {
             registerParticle("soul_glint_plume_particle", FabricParticleTypes.simple());
 
     private static SimpleParticleType registerParticle(String name, SimpleParticleType particleType) {
-        return Registry.register(Registries.PARTICLE_TYPE, Identifier.of(CropCritters.MOD_ID, name), particleType);
+        return Registry.register(BuiltInRegistries.PARTICLE_TYPE, Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, name), particleType);
     }
 
-    private static ParticleType<TintedParticleEffect> registerTintedParticle(String name) {
-        return Registry.register(Registries.PARTICLE_TYPE, Identifier.of(CropCritters.MOD_ID, name), FabricParticleTypes.complex(TintedParticleEffect::createCodec, TintedParticleEffect::createPacketCodec));
+    private static ParticleType<ColorParticleOption> registerTintedParticle(String name) {
+        return Registry.register(BuiltInRegistries.PARTICLE_TYPE, Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, name), FabricParticleTypes.complex(ColorParticleOption::codec, ColorParticleOption::streamCodec));
     }
 
     public static void initialize() {

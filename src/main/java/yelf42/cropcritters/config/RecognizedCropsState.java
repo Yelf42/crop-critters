@@ -1,24 +1,23 @@
 package yelf42.cropcritters.config;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.item.Item;
-import net.minecraft.registry.Registries;
+import net.minecraft.world.item.Item;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.PersistentState;
-import net.minecraft.world.PersistentStateType;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
+import net.minecraft.world.level.Level;
 import yelf42.cropcritters.CropCritters;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
-// TODO actually test with a farming mod
-public class RecognizedCropsState extends PersistentState {
+public class RecognizedCropsState extends SavedData {
     private final Set<Item> knownCrops = new HashSet<>();
 
-    private static final Codec<RecognizedCropsState> CODEC = Codec.list(Registries.ITEM.getCodec())
+    private static final Codec<RecognizedCropsState> CODEC = Codec.list(BuiltInRegistries.ITEM.byNameCodec())
             .xmap(
                     list -> {
                         RecognizedCropsState state = new RecognizedCropsState();
@@ -28,7 +27,7 @@ public class RecognizedCropsState extends PersistentState {
                     state -> new ArrayList<>(state.knownCrops)
             );
 
-    private static final PersistentStateType<RecognizedCropsState> type = new PersistentStateType<>(
+    private static final SavedDataType<RecognizedCropsState> type = new SavedDataType<>(
             CropCritters.MOD_ID,
             RecognizedCropsState::new,
             CODEC,
@@ -41,7 +40,7 @@ public class RecognizedCropsState extends PersistentState {
 
     public void addCrop(Item item) {
         if (knownCrops.add(item)) {
-            this.markDirty(); // mark for save
+            this.setDirty(); // mark for save
         }
     }
 
@@ -50,10 +49,10 @@ public class RecognizedCropsState extends PersistentState {
     }
 
     public static RecognizedCropsState getServerState(MinecraftServer server) {
-        ServerWorld serverWorld = server.getWorld(World.OVERWORLD);
+        ServerLevel serverWorld = server.getLevel(Level.OVERWORLD);
         assert serverWorld != null;
-        RecognizedCropsState state = serverWorld.getPersistentStateManager().getOrCreate(type);
-        state.markDirty();
+        RecognizedCropsState state = serverWorld.getDataStorage().computeIfAbsent(type);
+        state.setDirty();
         return state;
     }
 

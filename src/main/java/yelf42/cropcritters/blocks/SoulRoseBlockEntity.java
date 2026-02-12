@@ -1,20 +1,20 @@
 package yelf42.cropcritters.blocks;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.enums.DoubleBlockHalf;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.registry.tag.EntityTypeTags;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3i;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.BiomeKeys;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.tags.EntityTypeTags;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.Vec3i;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biomes;
 import yelf42.cropcritters.area_affectors.AffectorType;
 import yelf42.cropcritters.effects.ModEffects;
 import yelf42.cropcritters.particle.ModParticles;
@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 public class SoulRoseBlockEntity extends BlockEntity {
-    private static final Predicate<BlockState> CORE_MATERIALS = (blockState -> blockState.isOf(Blocks.RAW_COPPER_BLOCK) || blockState.isOf(Blocks.RAW_IRON_BLOCK) || blockState.isOf(Blocks.RAW_GOLD_BLOCK));
+    private static final Predicate<BlockState> CORE_MATERIALS = (blockState -> blockState.is(Blocks.RAW_COPPER_BLOCK) || blockState.is(Blocks.RAW_IRON_BLOCK) || blockState.is(Blocks.RAW_GOLD_BLOCK));
 
     // Central core
     public static final Vec3i[] STAGE_1A = new Vec3i[]{
@@ -75,18 +75,18 @@ public class SoulRoseBlockEntity extends BlockEntity {
     }
 
     // Particles
-    public static void clientTick(World world, BlockPos pos, BlockState state, SoulRoseBlockEntity blockEntity) {
-        int level = state.get(SoulRoseBlock.LEVEL, 0);
-        SoulRoseType type = state.get(SoulRoseBlock.TYPE, SoulRoseType.NONE);
+    public static void clientTick(Level world, BlockPos pos, BlockState state, SoulRoseBlockEntity blockEntity) {
+        int level = state.getValueOrElse(SoulRoseBlock.LEVEL, 0);
+        SoulRoseType type = state.getValueOrElse(SoulRoseBlock.TYPE, SoulRoseType.NONE);
         if (level == 0 || type == SoulRoseType.NONE) return;
 
         // Particles for being active
-        if (world.getTime() % 20 == 0L) {
-            if (world.isDay()) return;
-            if (world.getDimension().hasFixedTime() && !world.getBiome(pos).matchesKey(BiomeKeys.SOUL_SAND_VALLEY)) return;
+        if (world.getGameTime() % 20 == 0L) {
+            if (world.isBrightOutside()) return;
+            if (world.dimensionType().hasFixedTime() && !world.getBiome(pos).is(Biomes.SOUL_SAND_VALLEY)) return;
 
-            BlockPos.Mutable mutable = new BlockPos.Mutable();
-            Random random = world.random;
+            BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
+            RandomSource random = world.random;
             int i = pos.getX();
             int j = pos.getY();
             int k = pos.getZ();
@@ -95,78 +95,78 @@ public class SoulRoseBlockEntity extends BlockEntity {
                 double angle = random.nextDouble() * Math.PI * 2.0F;
                 double radius = random.nextDouble() * levelToRadius(level) - 1.0F;
                 mutable.set(i + radius * Math.sin(angle), j - random.nextInt(2), k + radius * Math.cos(angle));
-                world.addParticleClient(ModParticles.SOUL_SIPHON, (double)mutable.getX() + random.nextDouble(), mutable.getY(), (double)mutable.getZ() + random.nextDouble(), (double)0.0F, (double)0.0F, (double)0.0F);
+                world.addParticle(ModParticles.SOUL_SIPHON, (double)mutable.getX() + random.nextDouble(), mutable.getY(), (double)mutable.getZ() + random.nextDouble(), (double)0.0F, (double)0.0F, (double)0.0F);
             }
         }
 
     }
 
     // Update Level + Copper Attack
-    public static void serverTick(World world, BlockPos pos, BlockState state, SoulRoseBlockEntity blockEntity) {
+    public static void serverTick(Level world, BlockPos pos, BlockState state, SoulRoseBlockEntity blockEntity) {
         // Update block level and type
-        if (world.getTime() % 100L == 0L) {
+        if (world.getGameTime() % 100L == 0L) {
             int lvl = updateLevel(world, pos);
-            if (lvl != state.get(SoulRoseBlock.LEVEL, 0)) {
-                BlockState core = world.getBlockState(pos.add(0, -2, 0));
-                world.setBlockState(pos, state.with(SoulRoseBlock.LEVEL, lvl).with(SoulRoseBlock.TYPE, SoulRoseType.getType(core, lvl)));
+            if (lvl != state.getValueOrElse(SoulRoseBlock.LEVEL, 0)) {
+                BlockState core = world.getBlockState(pos.offset(0, -2, 0));
+                world.setBlockAndUpdate(pos, state.setValue(SoulRoseBlock.LEVEL, lvl).setValue(SoulRoseBlock.TYPE, SoulRoseType.getType(core, lvl)));
                 if (SoulRoseBlock.isDoubleTallAtLevel(lvl)) {
-                    world.setBlockState(pos.up(), state.with(SoulRoseBlock.LEVEL, lvl).with(SoulRoseBlock.TYPE, SoulRoseType.getType(core, lvl)).with(SoulRoseBlock.HALF, DoubleBlockHalf.UPPER));
+                    world.setBlockAndUpdate(pos.above(), state.setValue(SoulRoseBlock.LEVEL, lvl).setValue(SoulRoseBlock.TYPE, SoulRoseType.getType(core, lvl)).setValue(SoulRoseBlock.HALF, DoubleBlockHalf.UPPER));
                 } else {
-                    if (world.getBlockState(pos.up()).isOf(ModBlocks.SOUL_ROSE)) world.setBlockState(pos.up(), Blocks.AIR.getDefaultState());
+                    if (world.getBlockState(pos.above()).is(ModBlocks.SOUL_ROSE)) world.setBlockAndUpdate(pos.above(), Blocks.AIR.defaultBlockState());
                 }
             }
         }
 
-        int level = state.get(SoulRoseBlock.LEVEL, 0);
-        SoulRoseType type = state.get(SoulRoseBlock.TYPE, SoulRoseType.NONE);
+        int level = state.getValueOrElse(SoulRoseBlock.LEVEL, 0);
+        SoulRoseType type = state.getValueOrElse(SoulRoseBlock.TYPE, SoulRoseType.NONE);
         if (level == 0 || type == SoulRoseType.NONE) return;
 
         // Copper undead attack
-        if (world.getTime() % 30 == 0L) {
+        if (world.getGameTime() % 30 == 0L) {
             if (type == SoulRoseType.GOLD) {
-                tryAttack((ServerWorld) world, pos, state, blockEntity);
+                tryAttack((ServerLevel) world, pos, state, blockEntity);
             }
         }
     }
 
-    private static void tryAttack(ServerWorld world, BlockPos pos, BlockState state, SoulRoseBlockEntity blockEntity) {
-        int level = state.get(SoulRoseBlock.LEVEL, 0);
+    private static void tryAttack(ServerLevel world, BlockPos pos, BlockState state, SoulRoseBlockEntity blockEntity) {
+        int level = state.getValueOrElse(SoulRoseBlock.LEVEL, 0);
 
-        List<LivingEntity> list = world.getEntitiesByClass(LivingEntity.class, getAttackZone(pos, level), (entity) -> entity.getType().isIn(EntityTypeTags.UNDEAD) && !entity.hasCustomName());
+        List<LivingEntity> list = world.getEntitiesOfClass(LivingEntity.class, getAttackZone(pos, level), (entity) -> entity.getType().is(EntityTypeTags.UNDEAD) && !entity.hasCustomName());
         for (LivingEntity livingEntity : list) {
             if (livingEntity == null) continue;
-            if (livingEntity.hasStatusEffect(ModEffects.SOUL_SIPHON)) continue;
-            if (livingEntity.isAlive() && pos.isWithinDistance(livingEntity.getBlockPos(), levelToRadius(level))) {
-                livingEntity.addStatusEffect(new StatusEffectInstance(ModEffects.SOUL_SIPHON, 320, level, false, true, false));
+            if (livingEntity.hasEffect(ModEffects.SOUL_SIPHON)) continue;
+            if (livingEntity.isAlive() && pos.closerThan(livingEntity.blockPosition(), levelToRadius(level))) {
+                livingEntity.addEffect(new MobEffectInstance(ModEffects.SOUL_SIPHON, 320, level, false, true, false));
             }
         }
 
     }
 
-    private static Box getAttackZone(BlockPos pos, int level) {
+    private static AABB getAttackZone(BlockPos pos, int level) {
         double xz = levelToRadius(level);
-        return (new Box(pos)).expand(xz, 3, xz);
+        return (new AABB(pos)).inflate(xz, 3, xz);
     }
 
     private static double levelToRadius(int level) {
         return (level == 3) ? AffectorType.SOUL_ROSE_COPPER_3.width : (level == 2) ? AffectorType.SOUL_ROSE_COPPER_2.width : AffectorType.SOUL_ROSE_COPPER_1.width;
     }
 
-    private static int updateLevel(World world, BlockPos pos) {
-        if (!world.getBlockState(pos.up()).isOf(Blocks.AIR) && !world.getBlockState(pos.up()).isOf(ModBlocks.SOUL_ROSE)) return 0;
+    private static int updateLevel(Level world, BlockPos pos) {
+        if (!world.getBlockState(pos.above()).is(Blocks.AIR) && !world.getBlockState(pos.above()).is(ModBlocks.SOUL_ROSE)) return 0;
 
-        BlockState core = world.getBlockState(pos.add(0, -2, 0));
+        BlockState core = world.getBlockState(pos.offset(0, -2, 0));
         Block coreBlock = core.getBlock();
         if (!CORE_MATERIALS.test(core)) return 0;
         int level = 0;
 
         // Stage 1
         for (Vec3i offset : STAGE_1A) {
-            if (!world.getBlockState(pos.add(offset)).isOf(coreBlock)) return level;
+            if (!world.getBlockState(pos.offset(offset)).is(coreBlock)) return level;
         }
         for (int i = 0; i < 4; i++) {
             for (Vec3i offset : STAGE_1B) {
-                if (!world.getBlockState(pos.add(rotate(offset, i))).isOf(coreBlock)) return level;
+                if (!world.getBlockState(pos.offset(rotate(offset, i))).is(coreBlock)) return level;
             }
         }
         level += 1;
@@ -174,7 +174,7 @@ public class SoulRoseBlockEntity extends BlockEntity {
         // Stage 2
         for (int i = 0; i < 4; i++) {
             for (Vec3i offset : STAGE_2) {
-                if (!world.getBlockState(pos.add(rotate(offset, i))).isOf(coreBlock)) return level;
+                if (!world.getBlockState(pos.offset(rotate(offset, i))).is(coreBlock)) return level;
             }
         }
         level += 1;
@@ -182,7 +182,7 @@ public class SoulRoseBlockEntity extends BlockEntity {
         // Stage 3
         for (int i = 0; i < 4; i++) {
             for (Vec3i offset : STAGE_3) {
-                if (!world.getBlockState(pos.add(rotate(offset, i))).isOf(coreBlock)) return level;
+                if (!world.getBlockState(pos.offset(rotate(offset, i))).is(coreBlock)) return level;
             }
         }
 

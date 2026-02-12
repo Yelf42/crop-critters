@@ -8,31 +8,32 @@ import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.DispenserBlock;
-import net.minecraft.block.dispenser.FallibleItemDispenserBehavior;
-import net.minecraft.entity.EntityType;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.particle.ParticleEffect;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.BiomeTags;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPointer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.BiomeKeys;
-import net.minecraft.world.gen.GenerationStep;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.core.dispenser.OptionalDispenseItemBehavior;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.BiomeTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.resources.Identifier;
+import net.minecraft.core.dispenser.BlockSource;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biomes;
+import net.minecraft.world.level.levelgen.GenerationStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import yelf42.cropcritters.area_affectors.AffectorPositions;
@@ -48,7 +49,6 @@ import yelf42.cropcritters.items.StrangeFertilizerItem;
 import yelf42.cropcritters.particle.ModParticles;
 import yelf42.cropcritters.sound.ModSounds;
 
-// TODO update fabric.mod.json
 public class CropCritters implements ModInitializer {
 	public static final String MOD_ID = "cropcritters";
 
@@ -56,31 +56,31 @@ public class CropCritters implements ModInitializer {
 
     public static final String[] INT_TO_ROMAN = {" ", " I", " II", " III", " IV", " V", " VI", " VII", " VIII", " IX", " X"};
 
-	public static final TagKey<EntityType<?>> WEED_IMMUNE = TagKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(MOD_ID, "weed_immune"));
-	public static final TagKey<EntityType<?>> CROP_CRITTERS = TagKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(MOD_ID, "crop_critters"));
-	public static final TagKey<EntityType<?>> SCARE_CRITTERS = TagKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(MOD_ID, "scare_critters"));
-	public static final TagKey<EntityType<?>> HAS_LOST_SOUL = TagKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(MOD_ID, "has_lost_soul"));
+	public static final TagKey<EntityType<?>> WEED_IMMUNE = TagKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(MOD_ID, "weed_immune"));
+	public static final TagKey<EntityType<?>> CROP_CRITTERS = TagKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(MOD_ID, "crop_critters"));
+	public static final TagKey<EntityType<?>> SCARE_CRITTERS = TagKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(MOD_ID, "scare_critters"));
+	public static final TagKey<EntityType<?>> HAS_LOST_SOUL = TagKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(MOD_ID, "has_lost_soul"));
 
-    public static final TagKey<Block> UNDERWATER_STRANGE_FERTILIZERS = TagKey.of(RegistryKeys.BLOCK, Identifier.of(MOD_ID, "underwater_strange_fertilizers"));
-	public static final TagKey<Block> ON_LAND_COMMON_STRANGE_FERTILIZERS = TagKey.of(RegistryKeys.BLOCK, Identifier.of(MOD_ID, "on_land_common_strange_fertilizers"));
-	public static final TagKey<Block> ON_LAND_RARE_STRANGE_FERTILIZERS = TagKey.of(RegistryKeys.BLOCK, Identifier.of(MOD_ID, "on_land_rare_strange_fertilizers"));
-	public static final TagKey<Block> ON_NYLIUM_STRANGE_FERTILIZERS = TagKey.of(RegistryKeys.BLOCK, Identifier.of(MOD_ID, "on_nylium_strange_fertilizers"));
-    public static final TagKey<Block> ON_MYCELIUM_STRANGE_FERTILIZERS = TagKey.of(RegistryKeys.BLOCK, Identifier.of(MOD_ID, "on_mycelium_strange_fertilizers"));
-	public static final TagKey<Block> IGNORE_STRANGE_FERTILIZERS = TagKey.of(RegistryKeys.BLOCK, Identifier.of(MOD_ID, "ignore_strange_fertilizers"));
-	public static final TagKey<Block> WEEDS = TagKey.of(RegistryKeys.BLOCK, Identifier.of(MOD_ID, "weeds"));
-    public static final TagKey<Block> PATH_PENALTY_WEEDS = TagKey.of(RegistryKeys.BLOCK, Identifier.of(MOD_ID, "path_penalty_weeds"));
-    public static final TagKey<Block> SPORES_INFECT = TagKey.of(RegistryKeys.BLOCK, Identifier.of(MOD_ID, "spores_infectable"));
-    public static final TagKey<Block> IMMUNE_PLANTS = TagKey.of(RegistryKeys.BLOCK, Identifier.of(MOD_ID, "immune_plants"));
-    public static final TagKey<Block> SNOW_FALL_KILLS = TagKey.of(RegistryKeys.BLOCK, Identifier.of(MOD_ID, "snow_fall_kills"));
+    public static final TagKey<Block> UNDERWATER_STRANGE_FERTILIZERS = TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID, "underwater_strange_fertilizers"));
+	public static final TagKey<Block> ON_LAND_COMMON_STRANGE_FERTILIZERS = TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID, "on_land_common_strange_fertilizers"));
+	public static final TagKey<Block> ON_LAND_RARE_STRANGE_FERTILIZERS = TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID, "on_land_rare_strange_fertilizers"));
+	public static final TagKey<Block> ON_NYLIUM_STRANGE_FERTILIZERS = TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID, "on_nylium_strange_fertilizers"));
+    public static final TagKey<Block> ON_MYCELIUM_STRANGE_FERTILIZERS = TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID, "on_mycelium_strange_fertilizers"));
+	public static final TagKey<Block> IGNORE_STRANGE_FERTILIZERS = TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID, "ignore_strange_fertilizers"));
+	public static final TagKey<Block> WEEDS = TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID, "weeds"));
+    public static final TagKey<Block> PATH_PENALTY_WEEDS = TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID, "path_penalty_weeds"));
+    public static final TagKey<Block> SPORES_INFECT = TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID, "spores_infectable"));
+    public static final TagKey<Block> IMMUNE_PLANTS = TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID, "immune_plants"));
+    public static final TagKey<Block> SNOW_FALL_KILLS = TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID, "snow_fall_kills"));
 
 
-    public static final TagKey<Item> SEED_BALL_CROPS = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID, "seed_ball_crops"));
+    public static final TagKey<Item> SEED_BALL_CROPS = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID, "seed_ball_crops"));
 
 
     public static final AttachmentType<AffectorPositions> AFFECTOR_POSITIONS_ATTACHMENT_TYPE =
             AttachmentRegistry.<AffectorPositions>builder()
                     .persistent(AffectorPositions.CODEC)
-                    .buildAndRegister(Identifier.of(MOD_ID, "affector_positions"));
+                    .buildAndRegister(Identifier.fromNamespaceAndPath(MOD_ID, "affector_positions"));
 
 	@Override
 	public void onInitialize() {
@@ -102,20 +102,20 @@ public class CropCritters implements ModInitializer {
 
 		// Strange fertilizer dispenser behaviour
 		LOGGER.info("Registering dispenser behaviours for " + CropCritters.MOD_ID);
-		DispenserBlock.registerBehavior(ModItems.STRANGE_FERTILIZER, new FallibleItemDispenserBehavior() {
-			protected ItemStack dispenseSilently(BlockPointer pointer, ItemStack stack) {
+		DispenserBlock.registerBehavior(ModItems.STRANGE_FERTILIZER, new OptionalDispenseItemBehavior() {
+			protected ItemStack execute(BlockSource pointer, ItemStack stack) {
 				this.setSuccess(true);
-				World world = pointer.world();
-				Direction facing = pointer.state().get(DispenserBlock.FACING);
-				BlockPos blockPos = pointer.pos().offset(facing);
+				Level world = pointer.level();
+				Direction facing = pointer.state().getValue(DispenserBlock.FACING);
+				BlockPos blockPos = pointer.pos().relative(facing);
 				BlockState state = world.getBlockState(blockPos);
 				if (!StrangeFertilizerItem.tryReviveCoral(stack, world, blockPos, state)
 						&& !StrangeFertilizerItem.useOnBush(stack, world, blockPos)
-						&& !StrangeFertilizerItem.useOnFertilizable(stack, world, blockPos)
+						&& !StrangeFertilizerItem.growCrop(stack, world, blockPos)
 						&& !StrangeFertilizerItem.useOnGround(stack, world, blockPos, blockPos, facing)) {
 					this.setSuccess(false);
-				} else if (!world.isClient()) {
-					world.syncWorldEvent(1505, blockPos, 15);
+				} else if (!world.isClientSide()) {
+					world.levelEvent(1505, blockPos, 15);
 				}
 				return stack;
 			}
@@ -126,57 +126,57 @@ public class CropCritters implements ModInitializer {
 		if (ConfigManager.CONFIG.deadCoralGeneration) {
 			BiomeModifications.addFeature(
 					BiomeSelectors.tag(BiomeTags.IS_BEACH),
-					GenerationStep.Feature.UNDERGROUND_ORES,
-					RegistryKey.of(RegistryKeys.PLACED_FEATURE, Identifier.of(CropCritters.MOD_ID, "dead_coral_shelf"))
+					GenerationStep.Decoration.UNDERGROUND_ORES,
+					ResourceKey.create(Registries.PLACED_FEATURE, Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, "dead_coral_shelf"))
 			);
 		}
 		if (ConfigManager.CONFIG.thornweedGeneration) {
 			BiomeModifications.addFeature(
-					BiomeSelectors.includeByKey(BiomeKeys.CRIMSON_FOREST),
-					GenerationStep.Feature.VEGETAL_DECORATION,
-					RegistryKey.of(RegistryKeys.PLACED_FEATURE, Identifier.of(CropCritters.MOD_ID, "crimson_thornweed"))
+					BiomeSelectors.includeByKey(Biomes.CRIMSON_FOREST),
+					GenerationStep.Decoration.VEGETAL_DECORATION,
+					ResourceKey.create(Registries.PLACED_FEATURE, Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, "crimson_thornweed"))
 			);
 		}
 		if (ConfigManager.CONFIG.waftgrassGeneration) {
 			BiomeModifications.addFeature(
-					BiomeSelectors.includeByKey(BiomeKeys.WARPED_FOREST),
-					GenerationStep.Feature.VEGETAL_DECORATION,
-					RegistryKey.of(RegistryKeys.PLACED_FEATURE, Identifier.of(CropCritters.MOD_ID, "waftgrass"))
+					BiomeSelectors.includeByKey(Biomes.WARPED_FOREST),
+					GenerationStep.Decoration.VEGETAL_DECORATION,
+					ResourceKey.create(Registries.PLACED_FEATURE, Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, "waftgrass"))
 			);
 		}
 		if (ConfigManager.CONFIG.spiteweedGeneration) {
 			BiomeModifications.addFeature(
-					BiomeSelectors.includeByKey(BiomeKeys.SOUL_SAND_VALLEY),
-					GenerationStep.Feature.SURFACE_STRUCTURES,
-					RegistryKey.of(RegistryKeys.PLACED_FEATURE, Identifier.of(CropCritters.MOD_ID, "withering_spiteweed"))
+					BiomeSelectors.includeByKey(Biomes.SOUL_SAND_VALLEY),
+					GenerationStep.Decoration.SURFACE_STRUCTURES,
+					ResourceKey.create(Registries.PLACED_FEATURE, Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, "withering_spiteweed"))
 			);
 		}
         if (ConfigManager.CONFIG.strangleFernGeneration) {
             BiomeModifications.addFeature(
-                    BiomeSelectors.includeByKey(BiomeKeys.SWAMP),
-                    GenerationStep.Feature.VEGETAL_DECORATION,
-                    RegistryKey.of(RegistryKeys.PLACED_FEATURE, Identifier.of(CropCritters.MOD_ID, "strangle_fern"))
+                    BiomeSelectors.includeByKey(Biomes.SWAMP),
+                    GenerationStep.Decoration.VEGETAL_DECORATION,
+                    ResourceKey.create(Registries.PLACED_FEATURE, Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, "strangle_fern"))
             );
         }
         if (ConfigManager.CONFIG.liverwortGeneration) {
             BiomeModifications.addFeature(
-                    BiomeSelectors.includeByKey(BiomeKeys.SWAMP),
-                    GenerationStep.Feature.VEGETAL_DECORATION,
-                    RegistryKey.of(RegistryKeys.PLACED_FEATURE, Identifier.of(CropCritters.MOD_ID, "liverwort"))
+                    BiomeSelectors.includeByKey(Biomes.SWAMP),
+                    GenerationStep.Decoration.VEGETAL_DECORATION,
+                    ResourceKey.create(Registries.PLACED_FEATURE, Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, "liverwort"))
             );
         }
         if (ConfigManager.CONFIG.puffbombGeneration) {
             BiomeModifications.addFeature(
-                    BiomeSelectors.includeByKey(BiomeKeys.PLAINS),
-                    GenerationStep.Feature.VEGETAL_DECORATION,
-                    RegistryKey.of(RegistryKeys.PLACED_FEATURE, Identifier.of(CropCritters.MOD_ID, "plains_puffbomb_blob"))
+                    BiomeSelectors.includeByKey(Biomes.PLAINS),
+                    GenerationStep.Decoration.VEGETAL_DECORATION,
+                    ResourceKey.create(Registries.PLACED_FEATURE, Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, "plains_puffbomb_blob"))
             );
         }
         if (ConfigManager.CONFIG.soulRoseHintGeneration) {
             BiomeModifications.addFeature(
-                    BiomeSelectors.includeByKey(BiomeKeys.SOUL_SAND_VALLEY),
-                    GenerationStep.Feature.VEGETAL_DECORATION,
-                    RegistryKey.of(RegistryKeys.PLACED_FEATURE, Identifier.of(CropCritters.MOD_ID, "soul_rose_hint"))
+                    BiomeSelectors.includeByKey(Biomes.SOUL_SAND_VALLEY),
+                    GenerationStep.Decoration.VEGETAL_DECORATION,
+                    ResourceKey.create(Registries.PLACED_FEATURE, Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, "soul_rose_hint"))
             );
         }
 
@@ -188,34 +188,34 @@ public class CropCritters implements ModInitializer {
 	}
 
 	// Custom packet payloads
-	public record WaterSprayS2CPayload(Vec3d pos, Vec3d dir) implements CustomPayload {
-		public static final Identifier WATER_SPRAY_PAYLOAD_ID = Identifier.of(CropCritters.MOD_ID, "water_spray_packet");
-		public static final CustomPayload.Id<WaterSprayS2CPayload> ID = new CustomPayload.Id<>(WATER_SPRAY_PAYLOAD_ID);
-		public static final PacketCodec<RegistryByteBuf, WaterSprayS2CPayload> CODEC = PacketCodec.tuple(
-                Vec3d.PACKET_CODEC, WaterSprayS2CPayload::pos,
-                Vec3d.PACKET_CODEC, WaterSprayS2CPayload::dir,
+	public record WaterSprayS2CPayload(Vec3 pos, Vec3 dir) implements CustomPacketPayload {
+		public static final Identifier WATER_SPRAY_PAYLOAD_ID = Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, "water_spray_packet");
+		public static final CustomPacketPayload.Type<WaterSprayS2CPayload> ID = new CustomPacketPayload.Type<>(WATER_SPRAY_PAYLOAD_ID);
+		public static final StreamCodec<RegistryFriendlyByteBuf, WaterSprayS2CPayload> CODEC = StreamCodec.composite(
+                Vec3.STREAM_CODEC, WaterSprayS2CPayload::pos,
+                Vec3.STREAM_CODEC, WaterSprayS2CPayload::dir,
                 WaterSprayS2CPayload::new
         );
 
 		@Override
-		public Id<? extends CustomPayload> getId() {
+		public Type<? extends CustomPacketPayload> type() {
 			return ID;
 		}
 	}
 
-    public record ParticleRingS2CPayload(Vec3d pos, float radius, int count, ParticleEffect effect) implements CustomPayload {
-        public static final Identifier PARTICLE_RING_PAYLOAD_ID = Identifier.of(CropCritters.MOD_ID, "particle_ring_packet");
-        public static final CustomPayload.Id<ParticleRingS2CPayload> ID = new CustomPayload.Id<>(PARTICLE_RING_PAYLOAD_ID);
-        public static final PacketCodec<RegistryByteBuf, ParticleRingS2CPayload> CODEC = PacketCodec.tuple(
-                Vec3d.PACKET_CODEC, ParticleRingS2CPayload::pos,
-                PacketCodecs.FLOAT, ParticleRingS2CPayload::radius,
-                PacketCodecs.INTEGER, ParticleRingS2CPayload::count,
-                ParticleTypes.PACKET_CODEC, ParticleRingS2CPayload::effect,
+    public record ParticleRingS2CPayload(Vec3 pos, float radius, int count, ParticleOptions effect) implements CustomPacketPayload {
+        public static final Identifier PARTICLE_RING_PAYLOAD_ID = Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, "particle_ring_packet");
+        public static final CustomPacketPayload.Type<ParticleRingS2CPayload> ID = new CustomPacketPayload.Type<>(PARTICLE_RING_PAYLOAD_ID);
+        public static final StreamCodec<RegistryFriendlyByteBuf, ParticleRingS2CPayload> CODEC = StreamCodec.composite(
+                Vec3.STREAM_CODEC, ParticleRingS2CPayload::pos,
+                ByteBufCodecs.FLOAT, ParticleRingS2CPayload::radius,
+                ByteBufCodecs.INT, ParticleRingS2CPayload::count,
+                ParticleTypes.STREAM_CODEC, ParticleRingS2CPayload::effect,
                 ParticleRingS2CPayload::new
         );
 
         @Override
-        public Id<? extends CustomPayload> getId() {
+        public Type<? extends CustomPacketPayload> type() {
             return ID;
         }
     }

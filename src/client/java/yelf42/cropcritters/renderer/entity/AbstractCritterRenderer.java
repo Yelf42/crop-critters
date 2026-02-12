@@ -1,8 +1,8 @@
 package yelf42.cropcritters.renderer.entity;
 
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.render.entity.state.LivingEntityRenderState;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.resources.Identifier;
 import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.constant.dataticket.DataTicket;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
@@ -18,10 +18,10 @@ public class AbstractCritterRenderer<R extends LivingEntityRenderState & GeoRend
     private final Identifier texture;
     private final Identifier trustingTexture;
 
-    public AbstractCritterRenderer(EntityRendererFactory.Context context, Identifier id, boolean basicAnimation) {
+    public AbstractCritterRenderer(EntityRendererProvider.Context context, Identifier id, boolean basicAnimation) {
         super(context, new AbstractCritterModel(id, basicAnimation));
-        this.texture = Identifier.of(CropCritters.MOD_ID,"textures/entity/critters/" + id.getPath() + ".png");
-        this.trustingTexture = Identifier.of(CropCritters.MOD_ID,"textures/entity/critters/" + id.getPath() + "_trusting.png");
+        this.texture = Identifier.fromNamespaceAndPath(CropCritters.MOD_ID,"textures/entity/critters/" + id.getPath() + ".png");
+        this.trustingTexture = Identifier.fromNamespaceAndPath(CropCritters.MOD_ID,"textures/entity/critters/" + id.getPath() + "_trusting.png");
         if (id.getPath().equals("cocoa_critter")) {
             //addRenderLayer(new ItemInHandGeoLayer<>(this));
             withRenderLayer(new ItemInHandGeoLayer<>(this));
@@ -34,8 +34,8 @@ public class AbstractCritterRenderer<R extends LivingEntityRenderState & GeoRend
     }
 
     @Override
-    public void updateRenderState(AbstractCropCritterEntity entity, R entityRenderState, float partialTick) {
-        super.updateRenderState(entity, entityRenderState, partialTick);
+    public void extractRenderState(AbstractCropCritterEntity entity, R entityRenderState, float partialTick) {
+        super.extractRenderState(entity, entityRenderState, partialTick);
         entityRenderState.addGeckolibData(TEXTURE_PATH, entity.isTrusting() ? trustingTexture : texture);
         entityRenderState.addGeckolibData(DataTickets.IS_SHAKING, entity.isShaking());
     }

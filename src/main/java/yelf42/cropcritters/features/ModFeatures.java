@@ -1,14 +1,14 @@
 package yelf42.cropcritters.features;
 
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.gen.CountConfig;
-import net.minecraft.world.gen.feature.ConfiguredFeature;
-import net.minecraft.world.gen.feature.DefaultFeatureConfig;
-import net.minecraft.world.gen.feature.Feature;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.levelgen.feature.configurations.CountConfiguration;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import yelf42.cropcritters.CropCritters;
 
 public class ModFeatures {
@@ -16,39 +16,39 @@ public class ModFeatures {
         CropCritters.LOGGER.info("Initializing features for " + CropCritters.MOD_ID);
     }
 
-    public static final Feature<DefaultFeatureConfig> PUFFBOMB_BLOB_FEATURE =
+    public static final Feature<NoneFeatureConfiguration> PUFFBOMB_BLOB_FEATURE =
             Registry.register(
-                    Registries.FEATURE,
-                    Identifier.of(CropCritters.MOD_ID, "puffbomb_blob"),
-                    new PuffbombBlobFeature(DefaultFeatureConfig.CODEC)
+                    BuiltInRegistries.FEATURE,
+                    Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, "puffbomb_blob"),
+                    new PuffbombBlobFeature(NoneFeatureConfiguration.CODEC)
             );
-    public static final RegistryKey<ConfiguredFeature<?, ?>> PUFFBOMB_BLOB_CONFIGURED_FEATURE =
-            RegistryKey.of(
-                    RegistryKeys.CONFIGURED_FEATURE,
-                    Identifier.of(CropCritters.MOD_ID, "puffbomb_blob")
+    public static final ResourceKey<ConfiguredFeature<?, ?>> PUFFBOMB_BLOB_CONFIGURED_FEATURE =
+            ResourceKey.create(
+                    Registries.CONFIGURED_FEATURE,
+                    Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, "puffbomb_blob")
             );
 
-    public static final Feature<CountConfig> LIVERWORT_FEATURE =
+    public static final Feature<CountConfiguration> LIVERWORT_FEATURE =
             Registry.register(
-                    Registries.FEATURE,
-                    Identifier.of(CropCritters.MOD_ID, "liverwort_patch"),
-                    new LiverwortFeature(CountConfig.CODEC)
+                    BuiltInRegistries.FEATURE,
+                    Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, "liverwort_patch"),
+                    new LiverwortFeature(CountConfiguration.CODEC)
             );
-    public static final RegistryKey<ConfiguredFeature<?, ?>> LIVERWORT_CONFIGURED_FEATURE =
-            RegistryKey.of(
-                    RegistryKeys.CONFIGURED_FEATURE,
-                    Identifier.of(CropCritters.MOD_ID, "liverwort_patch")
+    public static final ResourceKey<ConfiguredFeature<?, ?>> LIVERWORT_CONFIGURED_FEATURE =
+            ResourceKey.create(
+                    Registries.CONFIGURED_FEATURE,
+                    Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, "liverwort_patch")
             );
 
-    public static final Feature<DefaultFeatureConfig> SOUL_ROSE_HINT_FEATURE =
+    public static final Feature<NoneFeatureConfiguration> SOUL_ROSE_HINT_FEATURE =
             Registry.register(
-                    Registries.FEATURE,
-                    Identifier.of(CropCritters.MOD_ID, "soul_rose_hint"),
-                    new SoulRoseHintFeature(DefaultFeatureConfig.CODEC)
+                    BuiltInRegistries.FEATURE,
+                    Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, "soul_rose_hint"),
+                    new SoulRoseHintFeature(NoneFeatureConfiguration.CODEC)
             );
-    public static final RegistryKey<ConfiguredFeature<?, ?>> SOUL_ROSE_HINT_CONFIGURED_FEATURE =
-            RegistryKey.of(
-                    RegistryKeys.CONFIGURED_FEATURE,
-                    Identifier.of(CropCritters.MOD_ID, "soul_rose_hint")
+    public static final ResourceKey<ConfiguredFeature<?, ?>> SOUL_ROSE_HINT_CONFIGURED_FEATURE =
+            ResourceKey.create(
+                    Registries.CONFIGURED_FEATURE,
+                    Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, "soul_rose_hint")
             );
 }

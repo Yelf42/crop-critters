@@ -2,15 +2,15 @@ package yelf42.cropcritters.entity;
 
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityDimensions;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.SpawnGroup;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Identifier;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import yelf42.cropcritters.CropCritters;
 
 public class ModEntities {
@@ -51,28 +51,28 @@ public class ModEntities {
     public static final EntityType<TorchflowerCritterEntity> TORCHFLOWER_CRITTER = registerCritter("torchflower_critter", TorchflowerCritterEntity::new,0.5f, 0.6f, 0.25f);
 
     public static <T extends Entity> EntityType<T> registerCritter(String name, EntityType.EntityFactory<T> factory, float width, float height, float eyeHeight) {
-        Identifier id = Identifier.of(CropCritters.MOD_ID, name);
+        Identifier id = Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, name);
         return Registry.register(
-                Registries.ENTITY_TYPE,
+                BuiltInRegistries.ENTITY_TYPE,
                 id,
-                EntityType.Builder.create(factory, SpawnGroup.MISC)
-                        .dimensions(width, height)
+                EntityType.Builder.of(factory, MobCategory.MISC)
+                        .sized(width, height)
                         .eyeHeight(eyeHeight)
-                        .maxTrackingRange(10)
-                        .build(RegistryKey.of(RegistryKeys.ENTITY_TYPE, id))
+                        .clientTrackingRange(10)
+                        .build(ResourceKey.create(Registries.ENTITY_TYPE, id))
         );
     }
 
     public static <T extends Entity> EntityType<T> registerProjectile(String name, EntityType.EntityFactory<T> factory) {
-        Identifier id = Identifier.of(CropCritters.MOD_ID, name);
+        Identifier id = Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, name);
         return Registry.register(
-                Registries.ENTITY_TYPE,
+                BuiltInRegistries.ENTITY_TYPE,
                 id,
-                FabricEntityTypeBuilder.<T>create(SpawnGroup.MISC, factory)
+                FabricEntityTypeBuilder.<T>create(MobCategory.MISC, factory)
                         .dimensions(EntityDimensions.fixed(0.25f, 0.25f))
                         .trackRangeBlocks(4)
                         .trackedUpdateRate(10)
-                        .build(RegistryKey.of(RegistryKeys.ENTITY_TYPE, id))
+                        .build(ResourceKey.create(Registries.ENTITY_TYPE, id))
         );
     }
 

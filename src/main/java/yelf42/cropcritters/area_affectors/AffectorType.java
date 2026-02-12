@@ -1,11 +1,11 @@
 package yelf42.cropcritters.area_affectors;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.util.StringIdentifiable;
+import net.minecraft.util.StringRepresentable;
 
 import java.util.Locale;
 
-public enum AffectorType implements StringIdentifiable {
+public enum AffectorType implements StringRepresentable {
     DEFAULT(ShapeType.CUBOID, 0, 0),
 
     // Applies soul siphon affect, which kills undead and bone-meals crops / spawns critters
@@ -32,10 +32,10 @@ public enum AffectorType implements StringIdentifiable {
         this.height = height;
     }
 
-    public static final Codec<AffectorType> CODEC = StringIdentifiable.createCodec(AffectorType::values);
+    public static final Codec<AffectorType> CODEC = StringRepresentable.fromEnum(AffectorType::values);
 
     @Override
-    public String asString() {
+    public String getSerializedName() {
         return name().toLowerCase(Locale.ROOT);
     }
 

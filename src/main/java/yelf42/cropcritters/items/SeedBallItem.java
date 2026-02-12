@@ -1,39 +1,39 @@
 package yelf42.cropcritters.items;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ProjectileItem;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Position;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ProjectileItem;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Position;
+import net.minecraft.world.level.Level;
 import yelf42.cropcritters.entity.SeedBallProjectileEntity;
 import yelf42.cropcritters.sound.ModSounds;
 
 public class SeedBallItem extends Item implements ProjectileItem {
-    public SeedBallItem(Item.Settings settings) {
+    public SeedBallItem(Item.Properties settings) {
         super(settings);
     }
 
     @Override
-    public ProjectileEntity createEntity(World world, Position pos, ItemStack stack, Direction direction) {
-        return new SeedBallProjectileEntity(pos.getX(), pos.getY(), pos.getZ(), world, stack);
+    public Projectile asProjectile(Level world, Position pos, ItemStack stack, Direction direction) {
+        return new SeedBallProjectileEntity(pos.x(), pos.y(), pos.z(), world, stack);
     }
 
     @Override
-    public ActionResult use(World world, PlayerEntity user, Hand hand) {
-        ItemStack itemStack = user.getStackInHand(hand);
-        world.playSound(null, user.getX(), user.getY(), user.getZ(), ModSounds.THROW_SEED_BALL, SoundCategory.NEUTRAL, 0.5F, 0.4F / (world.getRandom().nextFloat() * 0.4F + 0.8F));
-        if (world instanceof ServerWorld serverWorld) {
-            ProjectileEntity.spawnWithVelocity(SeedBallProjectileEntity::new, serverWorld, itemStack, user, 0.0F, 1.5F, 1.0F);
+    public InteractionResult use(Level world, Player user, InteractionHand hand) {
+        ItemStack itemStack = user.getItemInHand(hand);
+        world.playSound(null, user.getX(), user.getY(), user.getZ(), ModSounds.THROW_SEED_BALL, SoundSource.NEUTRAL, 0.5F, 0.4F / (world.getRandom().nextFloat() * 0.4F + 0.8F));
+        if (world instanceof ServerLevel serverWorld) {
+            Projectile.spawnProjectileFromRotation(SeedBallProjectileEntity::new, serverWorld, itemStack, user, 0.0F, 1.5F, 1.0F);
         }
 
-        itemStack.decrementUnlessCreative(1, user);
-        return ActionResult.SUCCESS;
+        itemStack.consume(1, user);
+        return InteractionResult.SUCCESS;
     }
 }

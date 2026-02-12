@@ -2,17 +2,24 @@ package yelf42.cropcritters.items;
 
 import net.fabricmc.fabric.api.itemgroup.v1.*;
 import net.fabricmc.fabric.api.registry.*;
-import net.minecraft.block.DispenserBlock;
-import net.minecraft.component.type.FoodComponent;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.item.*;
-import net.minecraft.recipe.RecipeSerializer;
-import net.minecraft.recipe.SpecialCraftingRecipe;
-import net.minecraft.registry.*;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Rarity;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.CustomRecipe;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.Rarity;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.entity.ModEntities;
 
@@ -23,57 +30,57 @@ public class ModItems {
         CropCritters.LOGGER.info("Initializing items for " + CropCritters.MOD_ID);
 
         // Register items here
-        Registry.register(Registries.ITEM_GROUP, CROP_CRITTERS_ITEM_GROUP_KEY, CROP_CRITTERS_ITEM_GROUP);
+        Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, CROP_CRITTERS_ITEM_GROUP_KEY, CROP_CRITTERS_ITEM_GROUP);
         ItemGroupEvents.modifyEntriesEvent(CROP_CRITTERS_ITEM_GROUP_KEY)
                 .register((itemGroup) -> {
-                    itemGroup.add(ModItems.STRANGE_FERTILIZER);
-                    itemGroup.add(ModItems.LOST_SOUL);
-                    itemGroup.add(ModItems.SEED_BALL);
-                    itemGroup.add(ModItems.WHEAT_CRITTER_SPAWN_EGG);
-                    itemGroup.add(ModItems.MELON_CRITTER_SPAWN_EGG);
-                    itemGroup.add(ModItems.PUMPKIN_CRITTER_SPAWN_EGG);
-                    itemGroup.add(ModItems.CARROT_CRITTER_SPAWN_EGG);
-                    itemGroup.add(ModItems.POTATO_CRITTER_SPAWN_EGG);
-                    itemGroup.add(ModItems.BEETROOT_CRITTER_SPAWN_EGG);
-                    itemGroup.add(ModItems.NETHER_WART_CRITTER_SPAWN_EGG);
-                    itemGroup.add(ModItems.POISONOUS_POTATO_CRITTER_SPAWN_EGG);
-                    itemGroup.add(ModItems.TORCHFLOWER_CRITTER_SPAWN_EGG);
-                    itemGroup.add(ModItems.PITCHER_CRITTER_SPAWN_EGG);
-                    itemGroup.add(ModItems.COCOA_CRITTER_SPAWN_EGG);
-                    itemGroup.add(ModItems.PUFFBOMB_SLICE);
-                    itemGroup.add(ModItems.COOKED_PUFFBOMB_STEAK);
-                    itemGroup.add(ModItems.SEED_BAR);
-                    itemGroup.add(ModItems.POPPER_POD);
-                    itemGroup.add(ModItems.HERBICIDE);
+                    itemGroup.accept(ModItems.STRANGE_FERTILIZER);
+                    itemGroup.accept(ModItems.LOST_SOUL);
+                    itemGroup.accept(ModItems.SEED_BALL);
+                    itemGroup.accept(ModItems.WHEAT_CRITTER_SPAWN_EGG);
+                    itemGroup.accept(ModItems.MELON_CRITTER_SPAWN_EGG);
+                    itemGroup.accept(ModItems.PUMPKIN_CRITTER_SPAWN_EGG);
+                    itemGroup.accept(ModItems.CARROT_CRITTER_SPAWN_EGG);
+                    itemGroup.accept(ModItems.POTATO_CRITTER_SPAWN_EGG);
+                    itemGroup.accept(ModItems.BEETROOT_CRITTER_SPAWN_EGG);
+                    itemGroup.accept(ModItems.NETHER_WART_CRITTER_SPAWN_EGG);
+                    itemGroup.accept(ModItems.POISONOUS_POTATO_CRITTER_SPAWN_EGG);
+                    itemGroup.accept(ModItems.TORCHFLOWER_CRITTER_SPAWN_EGG);
+                    itemGroup.accept(ModItems.PITCHER_CRITTER_SPAWN_EGG);
+                    itemGroup.accept(ModItems.COCOA_CRITTER_SPAWN_EGG);
+                    itemGroup.accept(ModItems.PUFFBOMB_SLICE);
+                    itemGroup.accept(ModItems.COOKED_PUFFBOMB_STEAK);
+                    itemGroup.accept(ModItems.SEED_BAR);
+                    itemGroup.accept(ModItems.POPPER_POD);
+                    itemGroup.accept(ModItems.HERBICIDE);
                 });
 
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.FOOD_AND_DRINK)
+        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.FOOD_AND_DRINKS)
                         .register((itemGroup) -> {
-                            itemGroup.add(ModItems.PUFFBOMB_SLICE);
-                            itemGroup.add(ModItems.COOKED_PUFFBOMB_STEAK);
-                            itemGroup.add(ModItems.SEED_BAR);
+                            itemGroup.accept(ModItems.PUFFBOMB_SLICE);
+                            itemGroup.accept(ModItems.COOKED_PUFFBOMB_STEAK);
+                            itemGroup.accept(ModItems.SEED_BAR);
                         });
 
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.INGREDIENTS)
+        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.INGREDIENTS)
                 .register((itemGroup) -> {
-                    itemGroup.add(ModItems.STRANGE_FERTILIZER);
-                    itemGroup.add(ModItems.LOST_SOUL);
-                    itemGroup.add(ModItems.PUFFBOMB_SLICE);
+                    itemGroup.accept(ModItems.STRANGE_FERTILIZER);
+                    itemGroup.accept(ModItems.LOST_SOUL);
+                    itemGroup.accept(ModItems.PUFFBOMB_SLICE);
                 });
 
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.SPAWN_EGGS)
+        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.SPAWN_EGGS)
                 .register((itemGroup) -> {
-                    itemGroup.add(ModItems.WHEAT_CRITTER_SPAWN_EGG);
-                    itemGroup.add(ModItems.MELON_CRITTER_SPAWN_EGG);
-                    itemGroup.add(ModItems.PUMPKIN_CRITTER_SPAWN_EGG);
-                    itemGroup.add(ModItems.CARROT_CRITTER_SPAWN_EGG);
-                    itemGroup.add(ModItems.POTATO_CRITTER_SPAWN_EGG);
-                    itemGroup.add(ModItems.BEETROOT_CRITTER_SPAWN_EGG);
-                    itemGroup.add(ModItems.NETHER_WART_CRITTER_SPAWN_EGG);
-                    itemGroup.add(ModItems.POISONOUS_POTATO_CRITTER_SPAWN_EGG);
-                    itemGroup.add(ModItems.TORCHFLOWER_CRITTER_SPAWN_EGG);
-                    itemGroup.add(ModItems.PITCHER_CRITTER_SPAWN_EGG);
-                    itemGroup.add(ModItems.COCOA_CRITTER_SPAWN_EGG);
+                    itemGroup.accept(ModItems.WHEAT_CRITTER_SPAWN_EGG);
+                    itemGroup.accept(ModItems.MELON_CRITTER_SPAWN_EGG);
+                    itemGroup.accept(ModItems.PUMPKIN_CRITTER_SPAWN_EGG);
+                    itemGroup.accept(ModItems.CARROT_CRITTER_SPAWN_EGG);
+                    itemGroup.accept(ModItems.POTATO_CRITTER_SPAWN_EGG);
+                    itemGroup.accept(ModItems.BEETROOT_CRITTER_SPAWN_EGG);
+                    itemGroup.accept(ModItems.NETHER_WART_CRITTER_SPAWN_EGG);
+                    itemGroup.accept(ModItems.POISONOUS_POTATO_CRITTER_SPAWN_EGG);
+                    itemGroup.accept(ModItems.TORCHFLOWER_CRITTER_SPAWN_EGG);
+                    itemGroup.accept(ModItems.PITCHER_CRITTER_SPAWN_EGG);
+                    itemGroup.accept(ModItems.COCOA_CRITTER_SPAWN_EGG);
                 });
 
 
@@ -92,22 +99,22 @@ public class ModItems {
         DispenserBlock.registerProjectileBehavior(ModItems.SEED_BALL);
 
     }
-    public static Item register(String name, Function<Item.Settings, Item> itemFactory, Item.Settings settings) {
+    public static Item register(String name, Function<Item.Properties, Item> itemFactory, Item.Properties settings) {
         // Create the item key.
-        RegistryKey<Item> itemKey = RegistryKey.of(RegistryKeys.ITEM, Identifier.of(CropCritters.MOD_ID, name));
+        ResourceKey<Item> itemKey = ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, name));
 
         // Create the item instance.
-        Item item = itemFactory.apply(settings.registryKey(itemKey));
+        Item item = itemFactory.apply(settings.setId(itemKey));
 
         // Register the item.
-        Registry.register(Registries.ITEM, itemKey, item);
+        Registry.register(BuiltInRegistries.ITEM, itemKey, item);
 
         return item;
     }
-    public static final RegistryKey<ItemGroup> CROP_CRITTERS_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.getKey(), Identifier.of(CropCritters.MOD_ID, "item_group"));
-    public static final ItemGroup CROP_CRITTERS_ITEM_GROUP = FabricItemGroup.builder()
+    public static final ResourceKey<CreativeModeTab> CROP_CRITTERS_ITEM_GROUP_KEY = ResourceKey.create(BuiltInRegistries.CREATIVE_MODE_TAB.key(), Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, "item_group"));
+    public static final CreativeModeTab CROP_CRITTERS_ITEM_GROUP = FabricItemGroup.builder()
             .icon(() -> new ItemStack(ModItems.LOST_SOUL))
-            .displayName(Text.translatable("itemGroup.cropcritters"))
+            .title(Component.translatable("itemGroup.cropcritters"))
             .build();
 
     // Steps to making new item:
@@ -116,29 +123,29 @@ public class ModItems {
     // 2. Add textures.item item.png
     // 3. Add items item.json
     // 4. Add models.items item.json
-    public static final Item STRANGE_FERTILIZER = register("strange_fertilizer", StrangeFertilizerItem::new, new Item.Settings().rarity(Rarity.UNCOMMON));
-    public static final Item LOST_SOUL = register("lost_soul", LostSoulItem::new, new Item.Settings().rarity(Rarity.UNCOMMON));
+    public static final Item STRANGE_FERTILIZER = register("strange_fertilizer", StrangeFertilizerItem::new, new Item.Properties().rarity(Rarity.UNCOMMON));
+    public static final Item LOST_SOUL = register("lost_soul", LostSoulItem::new, new Item.Properties().rarity(Rarity.UNCOMMON));
 
-    public static final Item SEED_BALL = register("seed_ball", SeedBallItem::new, new Item.Settings().maxCount(16).component(ModComponents.POISONOUS_SEED_BALL, new ModComponents.PoisonousComponent(0)));
-    public static final Item POPPER_POD = register("popper_pod", PopperPodItem::new, new Item.Settings());
-    public static final Item HERBICIDE = register("herbicide", HerbicideItem::new, new Item.Settings().maxCount(16));
+    public static final Item SEED_BALL = register("seed_ball", SeedBallItem::new, new Item.Properties().stacksTo(16).component(ModComponents.POISONOUS_SEED_BALL, new ModComponents.PoisonousComponent(0)));
+    public static final Item POPPER_POD = register("popper_pod", PopperPodItem::new, new Item.Properties());
+    public static final Item HERBICIDE = register("herbicide", HerbicideItem::new, new Item.Properties().stacksTo(16));
 
     // Foods
-    public static final Item PUFFBOMB_SLICE = register("puffbomb_slice", Item::new, new Item.Settings().food((new FoodComponent.Builder()).nutrition(2).saturationModifier(0.4F).build()));
-    public static final Item COOKED_PUFFBOMB_STEAK = register("cooked_puffbomb_steak", Item::new, new Item.Settings().food((new FoodComponent.Builder()).nutrition(7).saturationModifier(0.9F).build()));
+    public static final Item PUFFBOMB_SLICE = register("puffbomb_slice", Item::new, new Item.Properties().food((new FoodProperties.Builder()).nutrition(2).saturationModifier(0.4F).build()));
+    public static final Item COOKED_PUFFBOMB_STEAK = register("cooked_puffbomb_steak", Item::new, new Item.Properties().food((new FoodProperties.Builder()).nutrition(7).saturationModifier(0.9F).build()));
 
-    public static final Item SEED_BAR = register("seed_bar", Item::new, new Item.Settings().food((new FoodComponent.Builder()).nutrition(5).saturationModifier(0.7F).build()));
+    public static final Item SEED_BAR = register("seed_bar", Item::new, new Item.Properties().food((new FoodProperties.Builder()).nutrition(5).saturationModifier(0.7F).build()));
 
 
     // Spawn eggs
-    public static Item registerSpawnEgg(String name, EntityType<? extends MobEntity> entityType) {
+    public static Item registerSpawnEgg(String name, EntityType<? extends Mob> entityType) {
         // Create the item key.
-        RegistryKey<Item> itemKey = RegistryKey.of(RegistryKeys.ITEM, Identifier.of(CropCritters.MOD_ID, name));
+        ResourceKey<Item> itemKey = ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, name));
 
         // Register the item.
-        return Registry.register(Registries.ITEM,
+        return Registry.register(BuiltInRegistries.ITEM,
                 itemKey,
-                new SpawnEggItem(new Item.Settings().registryKey(itemKey).spawnEgg(entityType)));
+                new SpawnEggItem(new Item.Properties().setId(itemKey).spawnEgg(entityType)));
     }
     public static final Item WHEAT_CRITTER_SPAWN_EGG = registerSpawnEgg("wheat_critter_spawn_egg", ModEntities.WHEAT_CRITTER);
     public static final Item MELON_CRITTER_SPAWN_EGG = registerSpawnEgg("melon_critter_spawn_egg", ModEntities.MELON_CRITTER);
@@ -153,7 +160,7 @@ public class ModItems {
     public static final Item COCOA_CRITTER_SPAWN_EGG = registerSpawnEgg("cocoa_critter_spawn_egg", ModEntities.COCOA_CRITTER);
 
     // Custom recipe types
-    public static final RecipeSerializer<SeedBallRecipe> SEED_BALL_RECIPE = Registry.register(Registries.RECIPE_SERIALIZER, Identifier.of(CropCritters.MOD_ID, "crafting_special_seed_ball"), new SpecialCraftingRecipe.SpecialRecipeSerializer<>(SeedBallRecipe::new));
-    public static final RecipeSerializer<SeedBarRecipe> SEED_BAR_RECIPE = Registry.register(Registries.RECIPE_SERIALIZER, Identifier.of(CropCritters.MOD_ID, "crafting_special_seed_bar"), new SpecialCraftingRecipe.SpecialRecipeSerializer<>(SeedBarRecipe::new));
+    public static final RecipeSerializer<SeedBallRecipe> SEED_BALL_RECIPE = Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, "crafting_special_seed_ball"), new CustomRecipe.Serializer<>(SeedBallRecipe::new));
+    public static final RecipeSerializer<SeedBarRecipe> SEED_BAR_RECIPE = Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, "crafting_special_seed_bar"), new CustomRecipe.Serializer<>(SeedBarRecipe::new));
 
 }

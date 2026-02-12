@@ -1,75 +1,78 @@
 package yelf42.cropcritters.items;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.item.*;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.stat.Stats;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPointer;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Position;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.stats.Stats;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.dispenser.BlockSource;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Position;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ProjectileItem;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 import yelf42.cropcritters.entity.PopperPodEntity;
 
 public class PopperPodItem extends Item implements ProjectileItem {
 
-    public PopperPodItem(Item.Settings settings) {
+    public PopperPodItem(Item.Properties settings) {
         super(settings);
     }
 
-    public ActionResult useOnBlock(ItemUsageContext context) {
-        World world = context.getWorld();
-        PlayerEntity playerEntity = context.getPlayer();
-        if (playerEntity != null && playerEntity.isGliding()) {
-            return ActionResult.PASS;
+    public InteractionResult useOn(UseOnContext context) {
+        Level world = context.getLevel();
+        Player playerEntity = context.getPlayer();
+        if (playerEntity != null && playerEntity.isFallFlying()) {
+            return InteractionResult.PASS;
         } else {
-            if (world instanceof ServerWorld serverWorld) {
-                ItemStack itemStack = context.getStack();
-                Vec3d vec3d = context.getHitPos();
-                Direction direction = context.getSide();
-                ProjectileEntity.spawn(new PopperPodEntity(world, context.getPlayer(), vec3d.x + (double)direction.getOffsetX() * 0.15, vec3d.y + (double)direction.getOffsetY() * 0.15, vec3d.z + (double)direction.getOffsetZ() * 0.15, itemStack), serverWorld, itemStack);
-                itemStack.decrement(1);
+            if (world instanceof ServerLevel serverWorld) {
+                ItemStack itemStack = context.getItemInHand();
+                Vec3 vec3d = context.getClickLocation();
+                Direction direction = context.getClickedFace();
+                Projectile.spawnProjectile(new PopperPodEntity(world, context.getPlayer(), vec3d.x + (double)direction.getStepX() * 0.15, vec3d.y + (double)direction.getStepY() * 0.15, vec3d.z + (double)direction.getStepZ() * 0.15, itemStack), serverWorld, itemStack);
+                itemStack.shrink(1);
             }
 
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
     }
 
-    public ActionResult use(World world, PlayerEntity user, Hand hand) {
-        if (user.isGliding()) {
-            ItemStack itemStack = user.getStackInHand(hand);
-            if (world instanceof ServerWorld) {
-                ServerWorld serverWorld = (ServerWorld)world;
-                if (user.detachAllHeldLeashes((PlayerEntity)null)) {
-                    world.playSoundFromEntity((Entity)null, user, SoundEvents.ITEM_LEAD_BREAK, SoundCategory.NEUTRAL, 1.0F, 1.0F);
+    public InteractionResult use(Level world, Player user, InteractionHand hand) {
+        if (user.isFallFlying()) {
+            ItemStack itemStack = user.getItemInHand(hand);
+            if (world instanceof ServerLevel) {
+                ServerLevel serverWorld = (ServerLevel)world;
+                if (user.dropAllLeashConnections((Player)null)) {
+                    world.playSound((Entity)null, user, SoundEvents.LEAD_BREAK, SoundSource.NEUTRAL, 1.0F, 1.0F);
                 }
 
-                ProjectileEntity.spawn(new PopperPodEntity(world, itemStack, user), serverWorld, itemStack);
-                itemStack.decrementUnlessCreative(1, user);
-                user.incrementStat(Stats.USED.getOrCreateStat(this));
+                Projectile.spawnProjectile(new PopperPodEntity(world, itemStack, user), serverWorld, itemStack);
+                itemStack.consume(1, user);
+                user.awardStat(Stats.ITEM_USED.get(this));
             }
 
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         } else {
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
         }
     }
 
-    public ProjectileEntity createEntity(World world, Position pos, ItemStack stack, Direction direction) {
-        return new PopperPodEntity(world, stack.copyWithCount(1), pos.getX(), pos.getY(), pos.getZ(), true);
+    public Projectile asProjectile(Level world, Position pos, ItemStack stack, Direction direction) {
+        return new PopperPodEntity(world, stack.copyWithCount(1), pos.x(), pos.y(), pos.z(), true);
     }
 
-    public ProjectileItem.Settings getProjectileSettings() {
-        return ProjectileItem.Settings.builder().positionFunction(PopperPodItem::position).uncertainty(1.0F).power(0.5F).overrideDispenseEvent(1004).build();
+    public ProjectileItem.DispenseConfig createDispenseConfig() {
+        return ProjectileItem.DispenseConfig.builder().positionFunction(PopperPodItem::position).uncertainty(1.0F).power(0.5F).overrideDispenseEvent(1004).build();
     }
 
-    private static Vec3d position(BlockPointer pointer, Direction facing) {
-        return pointer.centerPos().add((double)facing.getOffsetX() * 0.5f, (double)facing.getOffsetY() * 0.5f, (double)facing.getOffsetZ() * 0.5f);
+    private static Vec3 position(BlockSource pointer, Direction facing) {
+        return pointer.center().add((double)facing.getStepX() * 0.5f, (double)facing.getStepY() * 0.5f, (double)facing.getStepZ() * 0.5f);
     }
 }

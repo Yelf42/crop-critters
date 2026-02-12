@@ -1,14 +1,20 @@
 package yelf42.cropcritters.effects;
 
-import net.minecraft.block.*;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectCategory;
-import net.minecraft.registry.tag.EntityTypeTags;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.tags.EntityTypeTags;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.BonemealableBlock;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.NetherWartBlock;
+import net.minecraft.world.level.block.PitcherCropBlock;
+import net.minecraft.world.level.block.VegetationBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.area_affectors.AffectorPositions;
 import yelf42.cropcritters.area_affectors.AffectorType;
@@ -18,15 +24,15 @@ import yelf42.cropcritters.particle.ModParticles;
 
 import java.util.Collection;
 
-public class SoulSiphonEffect extends StatusEffect {
+public class SoulSiphonEffect extends MobEffect {
 
-    protected SoulSiphonEffect(StatusEffectCategory statusEffectCategory, int i) {
+    protected SoulSiphonEffect(MobEffectCategory statusEffectCategory, int i) {
         super(statusEffectCategory, i, ModParticles.SOUL_SIPHON);
     }
 
-    public void onEntityRemoval(ServerWorld world, LivingEntity entity, int amplifier, Entity.RemovalReason reason) {
-        if (reason == Entity.RemovalReason.KILLED && entity.getType().isIn(EntityTypeTags.UNDEAD)) {
-            Vec3d entityPos = entity.getEntityPos();
+    public void onMobRemoved(ServerLevel world, LivingEntity entity, int amplifier, Entity.RemovalReason reason) {
+        if (reason == Entity.RemovalReason.KILLED && entity.getType().is(EntityTypeTags.UNDEAD)) {
+            Vec3 entityPos = entity.position();
             BlockPos pos = new BlockPos((int)entityPos.x, (int) Math.floor(entityPos.y + 0.5F), (int)entityPos.z);
             AffectorPositions affectorPositions = world.getAttachedOrElse(
                     CropCritters.AFFECTOR_POSITIONS_ATTACHMENT_TYPE,
@@ -47,19 +53,19 @@ public class SoulSiphonEffect extends StatusEffect {
         }
     }
 
-    private void growCropsAndCritters(ServerWorld world, BlockPos pos, int amplifier) {
-        Iterable<BlockPos> iterable = BlockPos.iterateOutwards(pos, amplifier, 1, amplifier);
+    private void growCropsAndCritters(ServerLevel world, BlockPos pos, int amplifier) {
+        Iterable<BlockPos> iterable = BlockPos.withinManhattan(pos, amplifier, 1, amplifier);
         for(BlockPos blockPos : iterable) {
             if (world.random.nextInt(2) == 0) continue;
 
             BlockState blockState = world.getBlockState(blockPos);
-            if (!(blockState.getBlock() instanceof PlantBlock)) continue;
+            if (!(blockState.getBlock() instanceof VegetationBlock)) continue;
 
-            if (blockState.getBlock() instanceof Fertilizable fertilizable) {
-                if (fertilizable.isFertilizable(world, blockPos, blockState)) {
-                    if (world instanceof ServerWorld) {
-                        if (fertilizable.canGrow(world, world.random, blockPos, blockState)) {
-                            fertilizable.grow(world, world.random, blockPos, blockState);
+            if (blockState.getBlock() instanceof BonemealableBlock fertilizable) {
+                if (fertilizable.isValidBonemealTarget(world, blockPos, blockState)) {
+                    if (world instanceof ServerLevel) {
+                        if (fertilizable.isBonemealSuccess(world, world.random, blockPos, blockState)) {
+                            fertilizable.performBonemeal(world, world.random, blockPos, blockState);
                         }
                     }
                 } else {
@@ -68,19 +74,19 @@ public class SoulSiphonEffect extends StatusEffect {
                     }
                 }
             } else {
-                if (blockState.isOf(Blocks.NETHER_WART) && blockState.get(NetherWartBlock.AGE, 0) == NetherWartBlock.MAX_AGE) {
+                if (blockState.is(Blocks.NETHER_WART) && blockState.getValueOrElse(NetherWartBlock.AGE, 0) == NetherWartBlock.MAX_AGE) {
                     CritterHelper.spawnCritter(world, blockState, world.random, blockPos);
                 }
             }
         }
     }
 
-    public boolean applyUpdateEffect(ServerWorld world, LivingEntity entity, int amplifier) {
-        entity.damage(world, entity.getDamageSources().magic(), 3.0F);
+    public boolean applyEffectTick(ServerLevel world, LivingEntity entity, int amplifier) {
+        entity.hurtServer(world, entity.damageSources().magic(), 3.0F);
         return true;
     }
 
-    public boolean canApplyUpdateEffect(int duration, int amplifier) {
+    public boolean shouldApplyEffectTickThisTick(int duration, int amplifier) {
         int i = 42 / amplifier;
         if (i > 0) {
             return duration % i == 0;

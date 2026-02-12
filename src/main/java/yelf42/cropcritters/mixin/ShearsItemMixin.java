@@ -1,13 +1,13 @@
 package yelf42.cropcritters.mixin;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.item.ShearsItem;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.item.ShearsItem;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -17,19 +17,19 @@ import yelf42.cropcritters.events.ModEventHandlers;
 @Mixin(ShearsItem.class)
 public abstract class ShearsItemMixin {
 
-    @Inject(method = "useOnBlock", at = @At("HEAD"), cancellable = true)
-    private void onShearsUseOnBlock(ItemUsageContext context, CallbackInfoReturnable<ActionResult> cir) {
-        World world = context.getWorld();
+    @Inject(method = "useOn", at = @At("HEAD"), cancellable = true)
+    private void onShearsUseOnBlock(UseOnContext context, CallbackInfoReturnable<InteractionResult> cir) {
+        Level world = context.getLevel();
 
-        PlayerEntity player = context.getPlayer();
+        Player player = context.getPlayer();
         if (player == null) return;
 
-        ItemStack stack = player.getStackInHand(context.getHand());
-        BlockPos pos = context.getBlockPos();
+        ItemStack stack = player.getItemInHand(context.getHand());
+        BlockPos pos = context.getClickedPos();
         BlockState state = world.getBlockState(pos);
 
         if (ModEventHandlers.handleShearsUse(player, world, stack, pos, state)) {
-            cir.setReturnValue(ActionResult.SUCCESS);
+            cir.setReturnValue(InteractionResult.SUCCESS);
         }
     }
 

@@ -1,75 +1,77 @@
 package yelf42.cropcritters.features;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.block.*;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.StructureWorldAccess;
-import net.minecraft.world.WorldAccess;
-import net.minecraft.world.gen.chunk.ChunkGenerator;
-import net.minecraft.world.gen.feature.DefaultFeatureConfig;
-import net.minecraft.world.gen.feature.Feature;
-import net.minecraft.world.gen.feature.util.FeatureContext;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.VegetationBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.levelgen.feature.Feature;
+import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import yelf42.cropcritters.blocks.ModBlocks;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PuffbombBlobFeature extends Feature<DefaultFeatureConfig> {
-    private record Sphere(Vec3d pos, double radius) {
+public class PuffbombBlobFeature extends Feature<NoneFeatureConfiguration> {
+    private record Sphere(Vec3 pos, double radius) {
         private boolean isWithinDistance(BlockPos blockPos) {
-            return blockPos.getSquaredDistance(pos) <= radius * radius;
+            return blockPos.distToCenterSqr(pos) <= radius * radius;
         }
     }
 
 
-    public PuffbombBlobFeature(Codec<DefaultFeatureConfig> configCodec) {
+    public PuffbombBlobFeature(Codec<NoneFeatureConfiguration> configCodec) {
         super(configCodec);
     }
 
     @Override
-    public boolean generate(FeatureContext<DefaultFeatureConfig> context) {
-        StructureWorldAccess world = context.getWorld();
-        BlockPos centerPos = context.getOrigin();
-        Random random = context.getRandom();
-        ChunkGenerator chunkGenerator = context.getGenerator();
+    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> context) {
+        WorldGenLevel world = context.level();
+        BlockPos centerPos = context.origin();
+        RandomSource random = context.random();
+        ChunkGenerator chunkGenerator = context.chunkGenerator();
 
         // Seed center block
-        BlockState toPlace = ModBlocks.PUFFBOMB_MUSHROOM_BLOCK.getDefaultState();
-        this.setBlockState(world, centerPos, toPlace);
+        BlockState toPlace = ModBlocks.PUFFBOMB_MUSHROOM_BLOCK.defaultBlockState();
+        this.setBlock(world, centerPos, toPlace);
 
         // Generate spheres
-        Vec3d trueCenter = centerPos.toBottomCenterPos();
+        Vec3 trueCenter = centerPos.getBottomCenter();
         List<Sphere> spheres = new ArrayList<>();
         spheres.add(new Sphere(trueCenter, 2.0));
         for (int i = 0; i <= random.nextInt(3); i++) {
             double a = random.nextDouble() * 2.0 * Math.PI;
             double rad = 1.5 + random.nextDouble() * 2.0;
             double dist = random.nextDouble() * (3.0 / rad);
-            Vec3d newCenter = new Vec3d(Math.cos(a), 0.0 - (random.nextDouble() * (rad / 2.0)), Math.sin(a)).multiply(dist).add(trueCenter);
+            Vec3 newCenter = new Vec3(Math.cos(a), 0.0 - (random.nextDouble() * (rad / 2.0)), Math.sin(a)).scale(dist).add(trueCenter);
             spheres.add(new Sphere(newCenter, rad));
         }
 
         // Try placing blocks and such
-        Iterable<BlockPos> iterable = BlockPos.iterateOutwards(centerPos, 4,4,4);
+        Iterable<BlockPos> iterable = BlockPos.withinManhattan(centerPos, 4,4,4);
         for(BlockPos blockPos : iterable) {
             if (blockPos.getY() < centerPos.getY()
                     || !hasNeighbours(world, blockPos)
                     || !inSphere(blockPos, spheres)
                     || !isReplaceable(world, blockPos)) continue;
-            this.setBlockState(world, blockPos, toPlace);
+            this.setBlock(world, blockPos, toPlace);
         }
         return true;
     }
 
-    private boolean hasNeighbours(WorldAccess world, BlockPos pos) {
-        if (world.getBlockState(pos.north()).isOf(ModBlocks.PUFFBOMB_MUSHROOM_BLOCK)) return true;
-        if (world.getBlockState(pos.east()).isOf(ModBlocks.PUFFBOMB_MUSHROOM_BLOCK)) return true;
-        if (world.getBlockState(pos.south()).isOf(ModBlocks.PUFFBOMB_MUSHROOM_BLOCK)) return true;
-        if (world.getBlockState(pos.west()).isOf(ModBlocks.PUFFBOMB_MUSHROOM_BLOCK)) return true;
-        if (world.getBlockState(pos.up()).isOf(ModBlocks.PUFFBOMB_MUSHROOM_BLOCK)) return true;
-        return (world.getBlockState(pos.down()).isOf(ModBlocks.PUFFBOMB_MUSHROOM_BLOCK));
+    private boolean hasNeighbours(LevelAccessor world, BlockPos pos) {
+        if (world.getBlockState(pos.north()).is(ModBlocks.PUFFBOMB_MUSHROOM_BLOCK)) return true;
+        if (world.getBlockState(pos.east()).is(ModBlocks.PUFFBOMB_MUSHROOM_BLOCK)) return true;
+        if (world.getBlockState(pos.south()).is(ModBlocks.PUFFBOMB_MUSHROOM_BLOCK)) return true;
+        if (world.getBlockState(pos.west()).is(ModBlocks.PUFFBOMB_MUSHROOM_BLOCK)) return true;
+        if (world.getBlockState(pos.above()).is(ModBlocks.PUFFBOMB_MUSHROOM_BLOCK)) return true;
+        return (world.getBlockState(pos.below()).is(ModBlocks.PUFFBOMB_MUSHROOM_BLOCK));
     }
 
     private boolean inSphere(BlockPos pos, List<Sphere> spheres) {
@@ -79,8 +81,8 @@ public class PuffbombBlobFeature extends Feature<DefaultFeatureConfig> {
         return false;
     }
 
-    private static boolean isReplaceable(StructureWorldAccess world, BlockPos pos) {
-        if (world.testBlockState(pos, AbstractBlock.AbstractBlockState::isReplaceable)) return true;
-        return (world.getBlockState(pos).getBlock() instanceof PlantBlock);
+    private static boolean isReplaceable(WorldGenLevel world, BlockPos pos) {
+        if (world.isStateAtPosition(pos, BlockBehaviour.BlockStateBase::canBeReplaced)) return true;
+        return (world.getBlockState(pos).getBlock() instanceof VegetationBlock);
     }
 }

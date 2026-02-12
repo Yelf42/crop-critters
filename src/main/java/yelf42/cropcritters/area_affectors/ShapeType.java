@@ -1,11 +1,11 @@
 package yelf42.cropcritters.area_affectors;
 
-import net.minecraft.util.StringIdentifiable;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.StringRepresentable;
+import net.minecraft.core.BlockPos;
 
 import java.util.Locale;
 
-public enum ShapeType implements StringIdentifiable {
+public enum ShapeType implements StringRepresentable {
     ELLIPSOID {
         @Override
         public boolean isPositionInside(int posX, int posY, int posZ, int width, int height) {
@@ -26,7 +26,7 @@ public enum ShapeType implements StringIdentifiable {
         }
     };
 
-    public static final StringIdentifiable.EnumCodec<ShapeType> CODEC = StringIdentifiable.createCodec(ShapeType::values);
+    public static final StringRepresentable.EnumCodec<ShapeType> CODEC = StringRepresentable.fromEnum(ShapeType::values);
 
     public boolean isPositionInside(BlockPos centerPosition, BlockPos sectionPosition, int width, int height) {
         return this.isPositionInside(centerPosition.getX(),
@@ -50,7 +50,7 @@ public enum ShapeType implements StringIdentifiable {
     public abstract boolean isPositionInside(int posX, int posY, int posZ, int width, int height);
 
     @Override
-    public String asString() {
+    public String getSerializedName() {
         return this.name().toLowerCase(Locale.ROOT);
     }
 

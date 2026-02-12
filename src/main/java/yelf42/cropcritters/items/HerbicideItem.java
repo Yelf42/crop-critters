@@ -1,42 +1,42 @@
 package yelf42.cropcritters.items;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ProjectileItem;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.stat.Stats;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Position;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ProjectileItem;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.stats.Stats;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Position;
+import net.minecraft.world.level.Level;
 import yelf42.cropcritters.entity.HerbicideEntity;
 
 public class HerbicideItem extends Item implements ProjectileItem {
-    public HerbicideItem(Item.Settings settings) {
+    public HerbicideItem(Item.Properties settings) {
         super(settings);
     }
 
-    public ActionResult use(World world, PlayerEntity user, Hand hand) {
-        ItemStack itemStack = user.getStackInHand(hand);
-        if (world instanceof ServerWorld serverWorld) {
-            ProjectileEntity.spawnWithVelocity(HerbicideEntity::new, serverWorld, itemStack, user, -20.0F, 0.5F, 1.0F);
+    public InteractionResult use(Level world, Player user, InteractionHand hand) {
+        ItemStack itemStack = user.getItemInHand(hand);
+        if (world instanceof ServerLevel serverWorld) {
+            Projectile.spawnProjectileFromRotation(HerbicideEntity::new, serverWorld, itemStack, user, -20.0F, 0.5F, 1.0F);
         }
 
-        user.incrementStat(Stats.USED.getOrCreateStat(this));
-        itemStack.decrementUnlessCreative(1, user);
-        return ActionResult.SUCCESS;
+        user.awardStat(Stats.ITEM_USED.get(this));
+        itemStack.consume(1, user);
+        return InteractionResult.SUCCESS;
     }
 
     @Override
-    public ProjectileEntity createEntity(World world, Position pos, ItemStack stack, Direction direction) {
-        return new HerbicideEntity(pos.getX(), pos.getY(), pos.getZ(), world, stack);
+    public Projectile asProjectile(Level world, Position pos, ItemStack stack, Direction direction) {
+        return new HerbicideEntity(pos.x(), pos.y(), pos.z(), world, stack);
     }
 
     @Override
-    public ProjectileItem.Settings getProjectileSettings() {
-        return ProjectileItem.Settings.builder().uncertainty(ProjectileItem.Settings.DEFAULT.uncertainty() * 0.5F).power(ProjectileItem.Settings.DEFAULT.power() * 1.25F).build();
+    public ProjectileItem.DispenseConfig createDispenseConfig() {
+        return ProjectileItem.DispenseConfig.builder().uncertainty(ProjectileItem.DispenseConfig.DEFAULT.uncertainty() * 0.5F).power(ProjectileItem.DispenseConfig.DEFAULT.power() * 1.25F).build();
     }
 }

@@ -1,28 +1,32 @@
 package yelf42.cropcritters.config;
 
-import net.minecraft.block.*;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.biome.BiomeKeys;
-import net.minecraft.world.event.GameEvent;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.MultifaceBlock;
+import net.minecraft.world.level.block.VegetationBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.util.Tuple;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.biome.Biomes;
+import net.minecraft.world.level.gameevent.GameEvent;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.blocks.ModBlocks;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static net.minecraft.block.Block.pushEntitiesUpBeforeBlockChange;
+import static net.minecraft.world.level.block.Block.pushEntitiesUp;
 
 public class WeedHelper {
 
     public static boolean canWeedsReplace(BlockState state) {
-        if (state.contains(Properties.DOUBLE_BLOCK_HALF)) return false;
-        return state.isOf(Blocks.AIR)
-                || (state.getBlock() instanceof PlantBlock && !state.isIn(CropCritters.WEEDS) && !state.isIn(CropCritters.IMMUNE_PLANTS));
+        if (state.hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF)) return false;
+        return state.is(Blocks.AIR)
+                || (state.getBlock() instanceof VegetationBlock && !state.is(CropCritters.WEEDS) && !state.is(CropCritters.IMMUNE_PLANTS));
     }
 
     // List of weeds not in the weighted lists:
@@ -30,31 +34,31 @@ public class WeedHelper {
     // Liverwort (only generates when raining)
     // Mazewood sapling (generates from lightning, not this)
 
-    private static final List<Pair<BlockState, Double>> WEIGHTED_NETHER_WEEDS = new ArrayList<>(List.of(
-            new Pair<>(ModBlocks.WITHERING_SPITEWEED.getDefaultState(), 0.2),
-            new Pair<>(ModBlocks.WAFTGRASS.getDefaultState(), 0.25),
-            new Pair<>(ModBlocks.BONE_TRAP.getDefaultState(), 0.25),
-            new Pair<>(ModBlocks.CRIMSON_THORNWEED.getDefaultState(), 0.3)
+    private static final List<Tuple<BlockState, Double>> WEIGHTED_NETHER_WEEDS = new ArrayList<>(List.of(
+            new Tuple<>(ModBlocks.WITHERING_SPITEWEED.defaultBlockState(), 0.2),
+            new Tuple<>(ModBlocks.WAFTGRASS.defaultBlockState(), 0.25),
+            new Tuple<>(ModBlocks.BONE_TRAP.defaultBlockState(), 0.25),
+            new Tuple<>(ModBlocks.CRIMSON_THORNWEED.defaultBlockState(), 0.3)
     ));
 
-    private static final List<Pair<BlockState, Double>> WEIGHTED_OVERWORLD_WEEDS = new ArrayList<>(List.of(
-            new Pair<>(ModBlocks.POPPER_PLANT.getDefaultState(), 0.15),
-            new Pair<>(ModBlocks.PUFFBOMB_MUSHROOM.getDefaultState(), 0.15),
-            new Pair<>(ModBlocks.STRANGLE_FERN.getDefaultState(), 0.3),
-            new Pair<>(ModBlocks.CRAWL_THISTLE.getDefaultState(), 0.4)
+    private static final List<Tuple<BlockState, Double>> WEIGHTED_OVERWORLD_WEEDS = new ArrayList<>(List.of(
+            new Tuple<>(ModBlocks.POPPER_PLANT.defaultBlockState(), 0.15),
+            new Tuple<>(ModBlocks.PUFFBOMB_MUSHROOM.defaultBlockState(), 0.15),
+            new Tuple<>(ModBlocks.STRANGLE_FERN.defaultBlockState(), 0.3),
+            new Tuple<>(ModBlocks.CRAWL_THISTLE.defaultBlockState(), 0.4)
     ));
 
     // Assumes weights add up to 1
-    public static <A> A getFromWeightedList(List<Pair<A, Double>> list) {
+    public static <A> A getFromWeightedList(List<Tuple<A, Double>> list) {
         double r = Math.random();
-        for (Pair<A, Double> pair : list) {
-            r -= pair.getRight();
-            if (r <= 0) return pair.getLeft();
+        for (Tuple<A, Double> pair : list) {
+            r -= pair.getB();
+            if (r <= 0) return pair.getA();
         }
-        return list.getLast().getLeft();
+        return list.getLast().getA();
     }
 
-    public static void generateWeed(BlockState state, ServerWorld world, BlockPos pos, Random random, boolean nether) {
+    public static void generateWeed(BlockState state, ServerLevel world, BlockPos pos, RandomSource random, boolean nether) {
         // Cancel if in range of a gold Soul Rose
         if (AffectorsHelper.copperSoulRoseCheck(world, pos)) return;
 
@@ -65,8 +69,8 @@ public class WeedHelper {
             for (int i = -1; i <= 1; i++) {
                 for (int j = -1; j <= 1; j++) {
                     if (i == j && j == 0) continue;
-                    BlockState cropToCheck = world.getBlockState(pos.add(i,0, j));
-                    monoCount += cropToCheck.isOf(state.getBlock()) ? 1F : 0F;
+                    BlockState cropToCheck = world.getBlockState(pos.offset(i,0, j));
+                    monoCount += cropToCheck.is(state.getBlock()) ? 1F : 0F;
                 }
             }
             // Quadratic penalty increase for monocultural practices
@@ -80,8 +84,8 @@ public class WeedHelper {
 
         if (nether && growNetherWeed) {
             // Special case checks
-            if (world.getBiome(pos).matchesKey(BiomeKeys.SOUL_SAND_VALLEY)) {
-                placeUniqueWeed(ModBlocks.WITHERING_SPITEWEED.getDefaultState(), world, pos, Blocks.BLACKSTONE.getDefaultState());
+            if (world.getBiome(pos).is(Biomes.SOUL_SAND_VALLEY)) {
+                placeUniqueWeed(ModBlocks.WITHERING_SPITEWEED.defaultBlockState(), world, pos, Blocks.BLACKSTONE.defaultBlockState());
                 return;
             }
 
@@ -89,39 +93,39 @@ public class WeedHelper {
             placeNetherWeed(getFromWeightedList(WEIGHTED_NETHER_WEEDS), world, pos, random);
         } else if (!nether && growOverworldWeed) {
             // Special case checks
-            if (world.hasRain(pos)) {
-                placeOverworldWeed(ModBlocks.LIVERWORT.getDefaultState().with(MultifaceBlock.getProperty(Direction.DOWN), true), world, pos, random);
+            if (world.isRainingAt(pos)) {
+                placeOverworldWeed(ModBlocks.LIVERWORT.defaultBlockState().setValue(MultifaceBlock.getFaceProperty(Direction.DOWN), true), world, pos, random);
                 return;
             }
 
             BlockState toPlace = getFromWeightedList(WEIGHTED_OVERWORLD_WEEDS);
 
-            float temp = world.getBiome(pos).value().getTemperature();
-            if (toPlace.isOf(ModBlocks.POPPER_PLANT) && (temp >= 1.0 || temp < 0.5)) toPlace = ModBlocks.CRAWL_THISTLE.getDefaultState();
+            float temp = world.getBiome(pos).value().getBaseTemperature();
+            if (toPlace.is(ModBlocks.POPPER_PLANT) && (temp >= 1.0 || temp < 0.5)) toPlace = ModBlocks.CRAWL_THISTLE.defaultBlockState();
 
             // Default
             placeOverworldWeed(toPlace, world, pos, random);
         }
     }
 
-    private static void placeNetherWeed(BlockState weedState, ServerWorld world, BlockPos pos, Random random) {
-        pushEntitiesUpBeforeBlockChange(ModBlocks.SOUL_FARMLAND.getDefaultState(), Blocks.SOUL_SOIL.getDefaultState(), world, pos.down());
-        world.setBlockState(pos.down(), (random.nextInt(2) == 0) ? Blocks.SOUL_SOIL.getDefaultState() : Blocks.SOUL_SAND.getDefaultState(), Block.NOTIFY_LISTENERS);
-        world.setBlockState(pos, weedState);
-        world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
+    private static void placeNetherWeed(BlockState weedState, ServerLevel world, BlockPos pos, RandomSource random) {
+        pushEntitiesUp(ModBlocks.SOUL_FARMLAND.defaultBlockState(), Blocks.SOUL_SOIL.defaultBlockState(), world, pos.below());
+        world.setBlock(pos.below(), (random.nextInt(2) == 0) ? Blocks.SOUL_SOIL.defaultBlockState() : Blocks.SOUL_SAND.defaultBlockState(), Block.UPDATE_CLIENTS);
+        world.setBlockAndUpdate(pos, weedState);
+        world.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(null, weedState));
     }
 
-    private static void placeOverworldWeed(BlockState weedState, ServerWorld world, BlockPos pos, Random random) {
-        pushEntitiesUpBeforeBlockChange(Blocks.FARMLAND.getDefaultState(), Blocks.COARSE_DIRT.getDefaultState(), world, pos.down());
-        world.setBlockState(pos.down(), (random.nextInt(2) == 0) ? Blocks.COARSE_DIRT.getDefaultState() : Blocks.ROOTED_DIRT.getDefaultState(), Block.NOTIFY_LISTENERS);
-        world.setBlockState(pos, weedState);
-        world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
+    private static void placeOverworldWeed(BlockState weedState, ServerLevel world, BlockPos pos, RandomSource random) {
+        pushEntitiesUp(Blocks.FARMLAND.defaultBlockState(), Blocks.COARSE_DIRT.defaultBlockState(), world, pos.below());
+        world.setBlock(pos.below(), (random.nextInt(2) == 0) ? Blocks.COARSE_DIRT.defaultBlockState() : Blocks.ROOTED_DIRT.defaultBlockState(), Block.UPDATE_CLIENTS);
+        world.setBlockAndUpdate(pos, weedState);
+        world.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(null, weedState));
     }
 
-    private static void placeUniqueWeed(BlockState weedState, ServerWorld world, BlockPos pos, BlockState below) {
-        pushEntitiesUpBeforeBlockChange(ModBlocks.SOUL_FARMLAND.getDefaultState(), below, world, pos.down());
-        world.setBlockState(pos.down(), below, Block.NOTIFY_LISTENERS);
-        world.setBlockState(pos, weedState);
-        world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, weedState));
+    private static void placeUniqueWeed(BlockState weedState, ServerLevel world, BlockPos pos, BlockState below) {
+        pushEntitiesUp(ModBlocks.SOUL_FARMLAND.defaultBlockState(), below, world, pos.below());
+        world.setBlock(pos.below(), below, Block.UPDATE_CLIENTS);
+        world.setBlockAndUpdate(pos, weedState);
+        world.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(null, weedState));
     }
 }

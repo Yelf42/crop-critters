@@ -1,84 +1,95 @@
 package yelf42.cropcritters.blocks;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.block.*;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.ai.pathing.NavigationType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.fluid.Fluids;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.registry.tag.EnchantmentTags;
-import net.minecraft.registry.tag.ItemTags;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.BlockSoundGroup;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.stat.Stats;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.state.property.EnumProperty;
-import net.minecraft.state.property.Properties;
+import net.minecraft.world.Containers;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.SimpleWaterloggedBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.pathfinder.PathComputationType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.tags.EnchantmentTags;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.stats.Stats;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.util.*;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldView;
-import net.minecraft.world.event.GameEvent;
-import net.minecraft.world.tick.ScheduledTickView;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.ScheduledTickAccess;
 import org.jspecify.annotations.Nullable;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.items.ModItems;
 import yelf42.cropcritters.particle.ModParticles;
 import yelf42.cropcritters.sound.ModSounds;
 
-public class SoulPotBlock extends BlockWithEntity implements Waterloggable {
-    public static final MapCodec<SoulPotBlock> CODEC = createCodec(SoulPotBlock::new);
+public class SoulPotBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
+    public static final MapCodec<SoulPotBlock> CODEC = simpleCodec(SoulPotBlock::new);
     public static final EnumProperty<Direction> FACING;
     public static final BooleanProperty CRACKED;
     public static final BooleanProperty WATERLOGGED;
     private static final VoxelShape SHAPE;
 
-    public MapCodec<SoulPotBlock> getCodec() {
+    public MapCodec<SoulPotBlock> codec() {
         return CODEC;
     }
 
-    public SoulPotBlock(AbstractBlock.Settings settings) {
+    public SoulPotBlock(BlockBehaviour.Properties settings) {
         super(settings);
-        this.setDefaultState((((this.stateManager.getDefaultState()).with(FACING, Direction.NORTH)).with(WATERLOGGED, false)).with(CRACKED, false));
+        this.registerDefaultState((((this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(WATERLOGGED, false)).setValue(CRACKED, false));
     }
 
-    protected BlockState getStateForNeighborUpdate(BlockState state, WorldView world, ScheduledTickView tickView, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, Random random) {
-        if (state.get(WATERLOGGED)) {
-            tickView.scheduleFluidTick(pos, Fluids.WATER, Fluids.WATER.getTickRate(world));
+    protected BlockState updateShape(BlockState state, LevelReader world, ScheduledTickAccess tickView, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random) {
+        if (state.getValue(WATERLOGGED)) {
+            tickView.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(world));
         }
 
-        return super.getStateForNeighborUpdate(state, world, tickView, pos, direction, neighborPos, neighborState, random);
+        return super.updateShape(state, world, tickView, pos, direction, neighborPos, neighborState, random);
     }
 
-    public BlockState getPlacementState(ItemPlacementContext ctx) {
-        FluidState fluidState = ctx.getWorld().getFluidState(ctx.getBlockPos());
-        return ((this.getDefaultState().with(FACING, ctx.getHorizontalPlayerFacing())).with(WATERLOGGED, fluidState.getFluid() == Fluids.WATER)).with(CRACKED, false);
+    public BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        FluidState fluidState = ctx.getLevel().getFluidState(ctx.getClickedPos());
+        return ((this.defaultBlockState().setValue(FACING, ctx.getHorizontalDirection())).setValue(WATERLOGGED, fluidState.getType() == Fluids.WATER)).setValue(CRACKED, false);
     }
 
     @Override
-    public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
-        if (world.getTime() % 3L == 0L && world.getBlockState(pos.up()).isOf(Blocks.POTTED_WITHER_ROSE)) {
+    public void animateTick(BlockState state, Level world, BlockPos pos, RandomSource random) {
+        if (world.getGameTime() % 3L == 0L && world.getBlockState(pos.above()).is(Blocks.POTTED_WITHER_ROSE)) {
             BlockEntity blockEntity = world.getBlockEntity(pos);
-            if (blockEntity instanceof SoulPotBlockEntity soulPotBlockEntity && soulPotBlockEntity.getStack().getCount() > 0) {
-                world.addParticleClient(ParticleTypes.SOUL_FIRE_FLAME,
+            if (blockEntity instanceof SoulPotBlockEntity soulPotBlockEntity && soulPotBlockEntity.getTheItem().getCount() > 0) {
+                world.addParticle(ParticleTypes.SOUL_FIRE_FLAME,
                         pos.getX() + 0.5,
                         pos.getY() + 1.4,
                         pos.getZ() + 0.5,
@@ -88,31 +99,31 @@ public class SoulPotBlock extends BlockWithEntity implements Waterloggable {
     }
 
     @Override
-    protected boolean hasRandomTicks(BlockState state) {
+    protected boolean isRandomlyTicking(BlockState state) {
         return true;
     }
 
     @Override
-    protected void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
-        BlockState above = world.getBlockState(pos.up());
-        if (above.isOf(Blocks.POTTED_WITHER_ROSE)) {
+    protected void randomTick(BlockState state, ServerLevel world, BlockPos pos, RandomSource random) {
+        BlockState above = world.getBlockState(pos.above());
+        if (above.is(Blocks.POTTED_WITHER_ROSE)) {
             BlockEntity blockEntity = world.getBlockEntity(pos);
             if (blockEntity instanceof SoulPotBlockEntity soulPotBlockEntity) {
-                ItemStack inv = soulPotBlockEntity.getStack();
-                if (inv != null && inv.isOf(ModItems.LOST_SOUL) && inv.getCount() >= 24) {
-                    soulPotBlockEntity.setStack(inv.copyWithCount(inv.getCount() - 24));
-                    world.setBlockState(pos.up(), ModBlocks.POTTED_SOUL_ROSE.getDefaultState());
+                ItemStack inv = soulPotBlockEntity.getTheItem();
+                if (inv != null && inv.is(ModItems.LOST_SOUL) && inv.getCount() >= 24) {
+                    soulPotBlockEntity.setTheItem(inv.copyWithCount(inv.getCount() - 24));
+                    world.setBlockAndUpdate(pos.above(), ModBlocks.POTTED_SOUL_ROSE.defaultBlockState());
 
-                    world.playSound(null, pos.up(), ModSounds.WITHER_ROSE_CONVERT, SoundCategory.BLOCKS);
-                    world.playSound(null, pos.up(), ModSounds.WITHER_ROSE_CONVERT_EXTRA, SoundCategory.BLOCKS);
+                    world.playSound(null, pos.above(), ModSounds.WITHER_ROSE_CONVERT, SoundSource.BLOCKS);
+                    world.playSound(null, pos.above(), ModSounds.WITHER_ROSE_CONVERT_EXTRA, SoundSource.BLOCKS);
 
-                    Vec3d center = pos.up().toCenterPos();
+                    Vec3 center = pos.above().getCenter();
                     CropCritters.ParticleRingS2CPayload payload = new CropCritters.ParticleRingS2CPayload(center, 0.5F, 10, ModParticles.SOUL_GLOW);
-                    CustomPayloadS2CPacket packet = new CustomPayloadS2CPacket(payload);
+                    ClientboundCustomPayloadPacket packet = new ClientboundCustomPayloadPacket(payload);
 
-                    for (ServerPlayerEntity player : world.getPlayers()) {
-                        if (center.isInRange(player.getEntityPos(), 64)) {
-                            player.networkHandler.sendPacket(packet);
+                    for (ServerPlayer player : world.players()) {
+                        if (center.closerThan(player.position(), 64)) {
+                            player.connection.send(packet);
                         }
                     }
                 }
@@ -122,125 +133,125 @@ public class SoulPotBlock extends BlockWithEntity implements Waterloggable {
 
 
 
-    protected ActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         BlockEntity blockEntity = world.getBlockEntity(pos);
         if (blockEntity instanceof SoulPotBlockEntity soulPotBlockEntity) {
-            if (world.isClient() || !stack.isOf(ModItems.LOST_SOUL)) {
-                return ActionResult.SUCCESS;
+            if (world.isClientSide() || !stack.is(ModItems.LOST_SOUL)) {
+                return InteractionResult.SUCCESS;
             } else {
-                ItemStack itemStack = soulPotBlockEntity.getStack();
-                if (!stack.isEmpty() && (itemStack.isEmpty() || ItemStack.areItemsAndComponentsEqual(itemStack, stack) && itemStack.getCount() < itemStack.getMaxCount())) {
+                ItemStack itemStack = soulPotBlockEntity.getTheItem();
+                if (!stack.isEmpty() && (itemStack.isEmpty() || ItemStack.isSameItemSameComponents(itemStack, stack) && itemStack.getCount() < itemStack.getMaxStackSize())) {
                     soulPotBlockEntity.wobble(SoulPotBlockEntity.WobbleType.POSITIVE);
-                    player.incrementStat(Stats.USED.getOrCreateStat(stack.getItem()));
-                    ItemStack itemStack2 = stack.splitUnlessCreative(1, player);
+                    player.awardStat(Stats.ITEM_USED.get(stack.getItem()));
+                    ItemStack itemStack2 = stack.consumeAndReturn(1, player);
                     float f;
                     if (soulPotBlockEntity.isEmpty()) {
-                        soulPotBlockEntity.setStack(itemStack2);
-                        f = (float)itemStack2.getCount() / (float)itemStack2.getMaxCount();
+                        soulPotBlockEntity.setTheItem(itemStack2);
+                        f = (float)itemStack2.getCount() / (float)itemStack2.getMaxStackSize();
                     } else {
                         soulPotBlockEntity.increaseStack();
-                        f = (float)itemStack.getCount() / (float)itemStack.getMaxCount();
+                        f = (float)itemStack.getCount() / (float)itemStack.getMaxStackSize();
                     }
 
-                    world.playSound(null, pos, SoundEvents.BLOCK_DECORATED_POT_INSERT, SoundCategory.BLOCKS, 1.0F, 0.7F + 0.5F * f);
-                    if (world instanceof ServerWorld serverWorld) {
-                        serverWorld.spawnParticles(ModParticles.SOUL_GLINT_PLUME, (double)pos.getX() + (double)0.5F, (double)pos.getY() + 1.2, (double)pos.getZ() + (double)0.5F, 5, 0.0F, 0.0F, 0.0F, 0.0F);
+                    world.playSound(null, pos, SoundEvents.DECORATED_POT_INSERT, SoundSource.BLOCKS, 1.0F, 0.7F + 0.5F * f);
+                    if (world instanceof ServerLevel serverWorld) {
+                        serverWorld.sendParticles(ModParticles.SOUL_GLINT_PLUME, (double)pos.getX() + (double)0.5F, (double)pos.getY() + 1.2, (double)pos.getZ() + (double)0.5F, 5, 0.0F, 0.0F, 0.0F, 0.0F);
                     }
 
-                    soulPotBlockEntity.markDirty();
-                    world.emitGameEvent(player, GameEvent.BLOCK_CHANGE, pos);
-                    return ActionResult.SUCCESS;
+                    soulPotBlockEntity.setChanged();
+                    world.gameEvent(player, GameEvent.BLOCK_CHANGE, pos);
+                    return InteractionResult.SUCCESS;
                 } else {
-                    return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
+                    return InteractionResult.TRY_WITH_EMPTY_HAND;
                 }
             }
         } else {
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
         }
     }
 
-    protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
+    protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
         BlockEntity var7 = world.getBlockEntity(pos);
         if (var7 instanceof SoulPotBlockEntity soulPotBlockEntity) {
-            world.playSound(null, pos, SoundEvents.BLOCK_DECORATED_POT_INSERT_FAIL, SoundCategory.BLOCKS, 1.0F, 1.0F);
+            world.playSound(null, pos, SoundEvents.DECORATED_POT_INSERT_FAIL, SoundSource.BLOCKS, 1.0F, 1.0F);
             soulPotBlockEntity.wobble(SoulPotBlockEntity.WobbleType.NEGATIVE);
-            world.emitGameEvent(player, GameEvent.BLOCK_CHANGE, pos);
-            return ActionResult.SUCCESS;
+            world.gameEvent(player, GameEvent.BLOCK_CHANGE, pos);
+            return InteractionResult.SUCCESS;
         } else {
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
         }
     }
 
-    protected boolean canPathfindThrough(BlockState state, NavigationType type) {
+    protected boolean isPathfindable(BlockState state, PathComputationType type) {
         return false;
     }
 
-    protected VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+    protected VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
         return SHAPE;
     }
 
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING, WATERLOGGED, CRACKED);
     }
 
-    public @Nullable BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new SoulPotBlockEntity(pos, state);
     }
 
-    protected void onStateReplaced(BlockState state, ServerWorld world, BlockPos pos, boolean moved) {
-        ItemScatterer.onStateReplaced(state, world, pos);
+    protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel world, BlockPos pos, boolean moved) {
+        Containers.updateNeighboursAfterDestroy(state, world, pos);
     }
 
-    public BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
-        ItemStack itemStack = player.getMainHandStack();
+    public BlockState playerWillDestroy(Level world, BlockPos pos, BlockState state, Player player) {
+        ItemStack itemStack = player.getMainHandItem();
         BlockState blockState = state;
-        if (itemStack.isIn(ItemTags.BREAKS_DECORATED_POTS) && !EnchantmentHelper.hasAnyEnchantmentsIn(itemStack, EnchantmentTags.PREVENTS_DECORATED_POT_SHATTERING)) {
-            blockState = state.with(CRACKED, true);
-            world.setBlockState(pos, blockState, 260);
+        if (itemStack.is(ItemTags.BREAKS_DECORATED_POTS) && !EnchantmentHelper.hasTag(itemStack, EnchantmentTags.PREVENTS_DECORATED_POT_SHATTERING)) {
+            blockState = state.setValue(CRACKED, true);
+            world.setBlock(pos, blockState, 260);
         }
 
-        return super.onBreak(world, pos, blockState, player);
+        return super.playerWillDestroy(world, pos, blockState, player);
     }
 
     protected FluidState getFluidState(BlockState state) {
-        return state.get(WATERLOGGED) ? Fluids.WATER.getStill(false) : super.getFluidState(state);
+        return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
     }
 
-    protected BlockSoundGroup getSoundGroup(BlockState state) {
-        return state.get(CRACKED) ? BlockSoundGroup.DECORATED_POT_SHATTER : BlockSoundGroup.DECORATED_POT;
+    protected SoundType getSoundType(BlockState state) {
+        return state.getValue(CRACKED) ? SoundType.DECORATED_POT_CRACKED : SoundType.DECORATED_POT;
     }
 
-    protected void onProjectileHit(World world, BlockState state, BlockHitResult hit, ProjectileEntity projectile) {
+    protected void onProjectileHit(Level world, BlockState state, BlockHitResult hit, Projectile projectile) {
         BlockPos blockPos = hit.getBlockPos();
-        if (world instanceof ServerWorld serverWorld) {
-            if (projectile.canModifyAt(serverWorld, blockPos) && projectile.canBreakBlocks(serverWorld)) {
-                world.setBlockState(blockPos, state.with(CRACKED, true), 260);
-                world.breakBlock(blockPos, true, projectile);
+        if (world instanceof ServerLevel serverWorld) {
+            if (projectile.mayInteract(serverWorld, blockPos) && projectile.mayBreak(serverWorld)) {
+                world.setBlock(blockPos, state.setValue(CRACKED, true), 260);
+                world.destroyBlock(blockPos, true, projectile);
             }
         }
 
     }
 
-    protected boolean hasComparatorOutput(BlockState state) {
+    protected boolean hasAnalogOutputSignal(BlockState state) {
         return true;
     }
 
-    protected int getComparatorOutput(BlockState state, World world, BlockPos pos, Direction direction) {
-        return ScreenHandler.calculateComparatorOutput(world.getBlockEntity(pos));
+    protected int getAnalogOutputSignal(BlockState state, Level world, BlockPos pos, Direction direction) {
+        return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(world.getBlockEntity(pos));
     }
 
-    protected BlockState rotate(BlockState state, BlockRotation rotation) {
-        return state.with(FACING, rotation.rotate(state.get(FACING)));
+    protected BlockState rotate(BlockState state, Rotation rotation) {
+        return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
     }
 
-    protected BlockState mirror(BlockState state, BlockMirror mirror) {
-        return state.rotate(mirror.getRotation(state.get(FACING)));
+    protected BlockState mirror(BlockState state, Mirror mirror) {
+        return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 
     static {
-        FACING = Properties.HORIZONTAL_FACING;
-        CRACKED = Properties.CRACKED;
-        WATERLOGGED = Properties.WATERLOGGED;
-        SHAPE = Block.createColumnShape(14.0F, 0.0F, 16.0F);
+        FACING = BlockStateProperties.HORIZONTAL_FACING;
+        CRACKED = BlockStateProperties.CRACKED;
+        WATERLOGGED = BlockStateProperties.WATERLOGGED;
+        SHAPE = Block.column(14.0F, 0.0F, 16.0F);
     }
 }

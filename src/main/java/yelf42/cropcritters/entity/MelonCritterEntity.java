@@ -1,32 +1,38 @@
 package yelf42.cropcritters.entity;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.CropBlock;
-import net.minecraft.block.Fertilizable;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.RangedAttackMob;
-import net.minecraft.entity.ai.TargetPredicate;
-import net.minecraft.entity.ai.goal.*;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.passive.TameableEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.RangedAttackGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.BonemealableBlock;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.RangedAttackMob;
+import net.minecraft.world.entity.ai.targeting.TargetingConditions;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Tuple;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.items.ModItems;
 import yelf42.cropcritters.sound.ModSounds;
@@ -38,32 +44,32 @@ public class MelonCritterEntity extends AbstractCropCritterEntity implements Ran
 
     int wateringDuration = -1;
 
-    public MelonCritterEntity(EntityType<? extends TameableEntity> entityType, World world) {
+    public MelonCritterEntity(EntityType<? extends TamableAnimal> entityType, Level world) {
         super(entityType, world);
     }
 
     @Override
-    protected void initGoals() {
-        net.minecraft.entity.ai.goal.TemptGoal temptGoal = new TemptGoal(this, 0.6, (stack) -> stack.isOf(ModItems.LOST_SOUL), false);
-        this.goalSelector.add(0, new SwimGoal(this));
-        this.goalSelector.add(2, temptGoal);
+    protected void registerGoals() {
+        net.minecraft.world.entity.ai.goal.TemptGoal temptGoal = new TemptGoal(this, 0.6, (stack) -> stack.is(ModItems.LOST_SOUL), false);
+        this.goalSelector.addGoal(0, new FloatGoal(this));
+        this.goalSelector.addGoal(2, temptGoal);
         this.targetWorkGoal = new TargetWorkGoal();
-        this.goalSelector.add(3, this.targetWorkGoal);
-        this.goalSelector.add(4, new WateringGoal());
-        this.targetSelector.add(7, new MelonActiveTargetGoal());
-        this.goalSelector.add(7, new ProjectileAttackGoal(this, 1.25F, 20, 10.0F));
-        this.goalSelector.add(12, new WanderAroundGoal(this, 0.8));
-        this.goalSelector.add(20, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
-        this.goalSelector.add(20, new LookAroundGoal(this));
+        this.goalSelector.addGoal(3, this.targetWorkGoal);
+        this.goalSelector.addGoal(4, new WateringGoal());
+        this.targetSelector.addGoal(7, new MelonActiveTargetGoal());
+        this.goalSelector.addGoal(7, new RangedAttackGoal(this, 1.25F, 20, 10.0F));
+        this.goalSelector.addGoal(12, new RandomStrollGoal(this, 0.8));
+        this.goalSelector.addGoal(20, new LookAtPlayerGoal(this, Player.class, 8.0F));
+        this.goalSelector.addGoal(20, new RandomLookAroundGoal(this));
     }
 
-    public static DefaultAttributeContainer.Builder createAttributes() {
-        return MobEntity.createMobAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 16)
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.2)
-                .add(EntityAttributes.ATTACK_DAMAGE, 1)
-                .add(EntityAttributes.FOLLOW_RANGE, 10)
-                .add(EntityAttributes.TEMPT_RANGE, 10);
+    public static AttributeSupplier.Builder createAttributes() {
+        return Mob.createMobAttributes()
+                .add(Attributes.MAX_HEALTH, 16)
+                .add(Attributes.MOVEMENT_SPEED, 0.2)
+                .add(Attributes.ATTACK_DAMAGE, 1)
+                .add(Attributes.FOLLOW_RANGE, 10)
+                .add(Attributes.TEMPT_RANGE, 10);
     }
 
     @Override
@@ -80,13 +86,13 @@ public class MelonCritterEntity extends AbstractCropCritterEntity implements Ran
     }
 
     @Override
-    public boolean damage(ServerWorld world, DamageSource source, float amount) {
+    public boolean hurtServer(ServerLevel world, DamageSource source, float amount) {
         if (this.isInvulnerableTo(world, source)) {
             return false;
         } else {
             this.targetWorkGoal.cancel();
             this.wateringDuration = -1;
-            return super.damage(world, source, amount);
+            return super.hurtServer(world, source, amount);
         }
     }
 
@@ -98,18 +104,18 @@ public class MelonCritterEntity extends AbstractCropCritterEntity implements Ran
     }
 
     @Override
-    protected Pair<Item, Integer> getLoot() {
-        return new Pair<>(Items.MELON_SLICE, 8);
+    protected Tuple<Item, Integer> getLoot() {
+        return new Tuple<>(Items.MELON_SLICE, 8);
     }
 
     @Override
     protected boolean isHealingItem(ItemStack itemStack) {
-        return itemStack.isOf(Items.MELON_SLICE) || itemStack.isOf(Items.MELON) || itemStack.isOf(Items.MELON_SEEDS);
+        return itemStack.is(Items.MELON_SLICE) || itemStack.is(Items.MELON) || itemStack.is(Items.MELON_SEEDS);
     }
 
     @Override
     protected int resetTicksUntilCanWork() {
-        return resetTicksUntilCanWork(MathHelper.nextInt(this.random, 300, 500));
+        return resetTicksUntilCanWork(Mth.nextInt(this.random, 300, 500));
     }
 
     @Override
@@ -118,15 +124,15 @@ public class MelonCritterEntity extends AbstractCropCritterEntity implements Ran
     }
 
     @Override
-    public void shootAt(LivingEntity target, float pullProgress) {
+    public void performRangedAttack(LivingEntity target, float pullProgress) {
         double d = target.getX() - this.getX();
         double e = target.getEyeY() - 0.4F;
         double f = target.getZ() - this.getZ();
         double g = Math.sqrt(d * d + f * f) * (double)0.2F;
-        World var12 = this.getEntityWorld();
-        if (var12 instanceof ServerWorld serverWorld) {
+        Level var12 = this.level();
+        if (var12 instanceof ServerLevel serverWorld) {
             ItemStack itemStack = new ItemStack(Items.MELON_SEEDS);
-            ProjectileEntity.spawn(new SpitSeedProjectileEntity(serverWorld, this, itemStack), serverWorld, itemStack, (entity) -> entity.setVelocity(d, e + g - entity.getY(), f, 1.2F, 3.0F));
+            Projectile.spawnProjectile(new SpitSeedProjectileEntity(serverWorld, this, itemStack), serverWorld, itemStack, (entity) -> entity.shoot(d, e + g - entity.getY(), f, 1.2F, 3.0F));
         }
         this.playSound(ModSounds.ENTITY_CRITTER_SPIT, 2.0F, 0.4F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
     }
@@ -135,11 +141,11 @@ public class MelonCritterEntity extends AbstractCropCritterEntity implements Ran
         List<BlockPos> wateringTargets;
 
         WateringGoal() {
-            this.setControls(EnumSet.of(Control.LOOK));
+            this.setFlags(EnumSet.of(Flag.LOOK));
         }
 
         @Override
-        public boolean canStart() {
+        public boolean canUse() {
             if (MelonCritterEntity.this.wateringDuration <= 0) return false;
             wateringTargets = new ArrayList<>(3);
             findWateringTargets();
@@ -156,7 +162,7 @@ public class MelonCritterEntity extends AbstractCropCritterEntity implements Ran
         }
 
         @Override
-        public boolean shouldContinue() {
+        public boolean canContinueToUse() {
             return MelonCritterEntity.this.wateringDuration > 0;
         }
 
@@ -164,28 +170,28 @@ public class MelonCritterEntity extends AbstractCropCritterEntity implements Ran
         public void tick() {
             MelonCritterEntity.this.wateringDuration--;
             MelonCritterEntity.this.navigation.stop();
-            World world = MelonCritterEntity.this.getEntityWorld();
-            if (world instanceof ServerWorld serverWorld) {
+            Level world = MelonCritterEntity.this.level();
+            if (world instanceof ServerLevel serverWorld) {
                 if (MelonCritterEntity.this.random.nextInt(10) == 0) {
                     BlockPos toWater = wateringTargets.get(MelonCritterEntity.this.random.nextInt(wateringTargets.size()));
                     BlockState toWaterState = serverWorld.getBlockState(toWater);
-                    if (toWaterState.getBlock() instanceof Fertilizable fertilizable) {
-                        if (fertilizable.isFertilizable(serverWorld, toWater, toWaterState)) {
-                            if (fertilizable.canGrow(serverWorld, serverWorld.random, toWater, toWaterState)) {
-                                fertilizable.grow(serverWorld, serverWorld.random, toWater, toWaterState);
+                    if (toWaterState.getBlock() instanceof BonemealableBlock fertilizable) {
+                        if (fertilizable.isValidBonemealTarget(serverWorld, toWater, toWaterState)) {
+                            if (fertilizable.isBonemealSuccess(serverWorld, serverWorld.random, toWater, toWaterState)) {
+                                fertilizable.performBonemeal(serverWorld, serverWorld.random, toWater, toWaterState);
                             }
                         }
                     }
                 }
-                Vec3d facing = MelonCritterEntity.this.getRotationVector().normalize().multiply(3);
-                Vec3d start = MelonCritterEntity.this.getEntityPos().add(0F, 0.1F, 0F);
+                Vec3 facing = MelonCritterEntity.this.getLookAngle().normalize().scale(3);
+                Vec3 start = MelonCritterEntity.this.position().add(0F, 0.1F, 0F);
 
                 CropCritters.WaterSprayS2CPayload payload = new CropCritters.WaterSprayS2CPayload(start, facing);
-                CustomPayloadS2CPacket packet = new CustomPayloadS2CPacket(payload);
+                ClientboundCustomPayloadPacket packet = new ClientboundCustomPayloadPacket(payload);
 
-                for (ServerPlayerEntity player : serverWorld.getPlayers()) {
-                    if (start.isInRange(player.getEntityPos(), 64)) {
-                        player.networkHandler.sendPacket(packet);
+                for (ServerPlayer player : serverWorld.players()) {
+                    if (start.closerThan(player.position(), 64)) {
+                        player.connection.send(packet);
                     }
                 }
 
@@ -196,42 +202,42 @@ public class MelonCritterEntity extends AbstractCropCritterEntity implements Ran
         }
 
         private void findWateringTargets() {
-            Vec3d facing = MelonCritterEntity.this.getFacing().getDoubleVector().normalize();
-            BlockPos start = MelonCritterEntity.this.getBlockPos();
+            Vec3 facing = MelonCritterEntity.this.getNearestViewDirection().getUnitVec3().normalize();
+            BlockPos start = MelonCritterEntity.this.blockPosition();
             float stepSize = 0.3F;
             for (int i = 0; i < 10; i++) {
-                Vec3d offset = facing.multiply(i * stepSize);
-                BlockPos check = start.add(Math.round((float)offset.x), 0 , Math.round((float)offset.z));
-                if (!MelonCritterEntity.this.getEntityWorld().getBlockState(check).getCollisionShape(MelonCritterEntity.this.getEntityWorld(), check).isEmpty()) return;
+                Vec3 offset = facing.scale(i * stepSize);
+                BlockPos check = start.offset(Math.round((float)offset.x), 0 , Math.round((float)offset.z));
+                if (!MelonCritterEntity.this.level().getBlockState(check).getCollisionShape(MelonCritterEntity.this.level(), check).isEmpty()) return;
                 if (!wateringTargets.contains(check)) wateringTargets.add(check);
             }
         }
     }
 
-    class MelonActiveTargetGoal extends ActiveTargetGoal<LivingEntity> {
+    class MelonActiveTargetGoal extends NearestAttackableTargetGoal<LivingEntity> {
 
         public MelonActiveTargetGoal() {
-            super(MelonCritterEntity.this, LivingEntity.class, 10, true, false, (entity, serverWorld) -> (!(entity.getType().isIn(CropCritters.CROP_CRITTERS))));
+            super(MelonCritterEntity.this, LivingEntity.class, 10, true, false, (entity, serverWorld) -> (!(entity.getType().is(CropCritters.CROP_CRITTERS))));
         }
 
         @Override
-        protected void findClosestTarget() {
-            ServerWorld serverWorld = getServerWorld(this.mob);
-            this.targetEntity = serverWorld.getClosestEntity(this.mob.getEntityWorld().getEntitiesByClass(this.targetClass, this.getSearchBox(this.getFollowRange()), (livingEntity) -> true), this.getAndUpdateTargetPredicate(), this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
+        protected void findTarget() {
+            ServerLevel serverWorld = getServerLevel(this.mob);
+            this.target = serverWorld.getNearestEntity(this.mob.level().getEntitiesOfClass(this.targetType, this.getTargetSearchArea(this.getFollowDistance()), (livingEntity) -> true), this.getAndUpdateTargetPredicate(), this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
         }
 
-        private TargetPredicate getAndUpdateTargetPredicate() {
-            return this.targetPredicate.setBaseMaxDistance(this.getFollowRange());
-        }
-
-        @Override
-        public boolean canStart() {
-            return super.canStart() && (!MelonCritterEntity.this.isTrusting() || this.targetEntity instanceof HostileEntity);
+        private TargetingConditions getAndUpdateTargetPredicate() {
+            return this.targetConditions.range(this.getFollowDistance());
         }
 
         @Override
-        public boolean shouldContinue() {
-            return super.shouldContinue() && (!MelonCritterEntity.this.isTrusting() || this.targetEntity instanceof HostileEntity);
+        public boolean canUse() {
+            return super.canUse() && (!MelonCritterEntity.this.isTrusting() || this.target instanceof Monster);
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            return super.canContinueToUse() && (!MelonCritterEntity.this.isTrusting() || this.target instanceof Monster);
         }
     }
 }

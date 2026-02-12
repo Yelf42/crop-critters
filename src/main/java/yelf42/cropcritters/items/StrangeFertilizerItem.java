@@ -1,23 +1,28 @@
 package yelf42.cropcritters.items;
 
-import net.minecraft.advancement.criterion.Criteria;
-import net.minecraft.block.*;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.BoneMealItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.tag.BlockTags;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.World;
-import net.minecraft.world.event.GameEvent;
+import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BoneMealItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.level.block.BaseCoralWallFanBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.BonemealableBlock;
+import net.minecraft.world.level.block.DoublePlantBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gameevent.GameEvent;
 import com.google.common.collect.ImmutableMap.Builder;
 import org.jetbrains.annotations.Nullable;
 import yelf42.cropcritters.CropCritters;
@@ -54,84 +59,84 @@ public class StrangeFertilizerItem extends BoneMealItem {
             .build();
 
 
-    public StrangeFertilizerItem(Settings settings) {
+    public StrangeFertilizerItem(Properties settings) {
         super(settings);
     }
 
     @Override
-    public ActionResult useOnBlock(ItemUsageContext context) {
-        World world = context.getWorld();
-        BlockPos blockPos = context.getBlockPos();
-        BlockPos blockPos2 = blockPos.offset(context.getSide());
+    public InteractionResult useOn(UseOnContext context) {
+        Level world = context.getLevel();
+        BlockPos blockPos = context.getClickedPos();
+        BlockPos blockPos2 = blockPos.relative(context.getClickedFace());
         BlockState blockState = world.getBlockState(blockPos);
-        PlayerEntity playerEntity = context.getPlayer();
-        ItemStack itemStack = context.getStack();
+        Player playerEntity = context.getPlayer();
+        ItemStack itemStack = context.getItemInHand();
 
         // Use on the ground
-        boolean bl = blockState.isSideSolidFullSquare(world, blockPos, context.getSide());
-        if (bl && useOnGround(context.getStack(), world, blockPos, blockPos2, context.getSide())) {
-            if (!world.isClient()) {
-                if (playerEntity != null) playerEntity.emitGameEvent(GameEvent.ITEM_INTERACT_FINISH);
-                world.syncWorldEvent(1505, blockPos2, 15);
+        boolean bl = blockState.isFaceSturdy(world, blockPos, context.getClickedFace());
+        if (bl && useOnGround(context.getItemInHand(), world, blockPos, blockPos2, context.getClickedFace())) {
+            if (!world.isClientSide()) {
+                if (playerEntity != null) playerEntity.gameEvent(GameEvent.ITEM_INTERACT_FINISH);
+                world.levelEvent(1505, blockPos2, 15);
             }
 
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
 
         // Grow bush into tall bush
-        if (useOnBush(context.getStack(), world, blockPos)) {
-            return ActionResult.SUCCESS;
+        if (useOnBush(context.getItemInHand(), world, blockPos)) {
+            return InteractionResult.SUCCESS;
         }
 
         // Use on fertilizable things
-        if (useOnFertilizable(context.getStack(), world, blockPos)) {
-            if (!world.isClient()) {
-                if (playerEntity != null) playerEntity.emitGameEvent(GameEvent.ITEM_INTERACT_FINISH);
-                world.syncWorldEvent(1505, blockPos, 15);
+        if (growCrop(context.getItemInHand(), world, blockPos)) {
+            if (!world.isClientSide()) {
+                if (playerEntity != null) playerEntity.gameEvent(GameEvent.ITEM_INTERACT_FINISH);
+                world.levelEvent(1505, blockPos, 15);
             }
 
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
 
         // Revive Coral
-        if (tryReviveCoral(context.getStack(), world, blockPos, world.getBlockState(blockPos))) {
-            if (playerEntity instanceof ServerPlayerEntity) {
-                Criteria.ITEM_USED_ON_BLOCK.trigger((ServerPlayerEntity) playerEntity, blockPos, itemStack);
+        if (tryReviveCoral(context.getItemInHand(), world, blockPos, world.getBlockState(blockPos))) {
+            if (playerEntity instanceof ServerPlayer) {
+                CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger((ServerPlayer) playerEntity, blockPos, itemStack);
             }
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
 
         // Trimmed Soul Rose
-        if (blockState.isOf(ModBlocks.SOUL_ROSE) && blockState.get(SoulRoseBlock.LEVEL, 0) > 1) {
-            if (!world.isClient()) {
-                if (playerEntity != null) playerEntity.emitGameEvent(GameEvent.ITEM_INTERACT_FINISH);
-                world.syncWorldEvent(1505, blockPos, 15);
-                context.getStack().decrement(1);
-                Block.dropStack(world, blockPos, new ItemStack(ModBlocks.TRIMMED_SOUL_ROSE));
+        if (blockState.is(ModBlocks.SOUL_ROSE) && blockState.getValueOrElse(SoulRoseBlock.LEVEL, 0) > 1) {
+            if (!world.isClientSide()) {
+                if (playerEntity != null) playerEntity.gameEvent(GameEvent.ITEM_INTERACT_FINISH);
+                world.levelEvent(1505, blockPos, 15);
+                context.getItemInHand().shrink(1);
+                Block.popResource(world, blockPos, new ItemStack(ModBlocks.TRIMMED_SOUL_ROSE));
             }
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
 
-        return ActionResult.PASS;
+        return InteractionResult.PASS;
     }
 
-    public static boolean useOnBush(ItemStack stack, World world, BlockPos blockPos) {
+    public static boolean useOnBush(ItemStack stack, Level world, BlockPos blockPos) {
         BlockState state = world.getBlockState(blockPos);
-        if (state.isOf(Blocks.BUSH) && world.getBlockState(blockPos.up()).isAir()) {
-            TallBushBlock.placeAt(world, ModBlocks.TALL_BUSH.getDefaultState(), blockPos, 2);
-            stack.decrement(1);
+        if (state.is(Blocks.BUSH) && world.getBlockState(blockPos.above()).isAir()) {
+            TallBushBlock.placeAt(world, ModBlocks.TALL_BUSH.defaultBlockState(), blockPos, 2);
+            stack.shrink(1);
             return true;
         }
         return false;
     }
 
-    public static boolean useOnGround(ItemStack stack, World world, BlockPos blockPos, BlockPos underwaterPos, @Nullable Direction facing) {
+    public static boolean useOnGround(ItemStack stack, Level world, BlockPos blockPos, BlockPos underwaterPos, @Nullable Direction facing) {
         BlockState state = world.getBlockState(blockPos);
         BlockState underwaterState = world.getBlockState(underwaterPos);
-        if (underwaterState.isOf(Blocks.WATER) && world.getFluidState(underwaterPos).getLevel() == 8) {
+        if (underwaterState.is(Blocks.WATER) && world.getFluidState(underwaterPos).getAmount() == 8) {
             useUnderwater(stack, world, underwaterPos, facing);
             return true;
-        } else if (state.isIn(BlockTags.DIRT) || state.getBlock() instanceof Fertilizable fertilizable && fertilizable.isFertilizable(world, blockPos, state)) {
+        } else if (state.is(BlockTags.DIRT) || state.getBlock() instanceof BonemealableBlock fertilizable && fertilizable.isValidBonemealTarget(world, blockPos, state)) {
             useOnLand(stack, world, blockPos);
             return true;
         } else {
@@ -139,117 +144,117 @@ public class StrangeFertilizerItem extends BoneMealItem {
         }
     }
 
-    private static void useUnderwater(ItemStack stack, World world, BlockPos blockPos, @Nullable Direction facing) {
-        if (!(world instanceof ServerWorld)) return;
+    private static void useUnderwater(ItemStack stack, Level world, BlockPos blockPos, @Nullable Direction facing) {
+        if (!(world instanceof ServerLevel)) return;
 
-        blockPos = blockPos.offset(facing);
-        Random random = world.getRandom();
+        blockPos = blockPos.relative(facing);
+        RandomSource random = world.getRandom();
 
         label80:
         for (int i = 0; i < 128; i++) {
             BlockPos blockPos2 = blockPos;
-            BlockState blockState = Blocks.SEAGRASS.getDefaultState();
+            BlockState blockState = Blocks.SEAGRASS.defaultBlockState();
 
             for (int j = 0; j < i / 16; j++) {
-                blockPos2 = blockPos2.add(random.nextInt(3) - 1, (random.nextInt(3) - 1) * random.nextInt(3) / 2, random.nextInt(3) - 1);
-                if (world.getBlockState(blockPos2).isFullCube(world, blockPos2)) {
+                blockPos2 = blockPos2.offset(random.nextInt(3) - 1, (random.nextInt(3) - 1) * random.nextInt(3) / 2, random.nextInt(3) - 1);
+                if (world.getBlockState(blockPos2).isCollisionShapeFullBlock(world, blockPos2)) {
                     continue label80;
                 }
             }
 
             if (i == 0 && facing != null && facing.getAxis().isHorizontal()) {
-                blockState = (BlockState) Registries.BLOCK
-                        .getRandomEntry(BlockTags.WALL_CORALS, world.random)
-                        .map(blockEntry -> ((Block)blockEntry.value()).getDefaultState())
+                blockState = (BlockState) BuiltInRegistries.BLOCK
+                        .getRandomElementOf(BlockTags.WALL_CORALS, world.random)
+                        .map(blockEntry -> ((Block)blockEntry.value()).defaultBlockState())
                         .orElse(blockState);
-                if (blockState.contains(DeadCoralWallFanBlock.FACING)) {
-                    blockState = blockState.with(DeadCoralWallFanBlock.FACING, facing);
+                if (blockState.hasProperty(BaseCoralWallFanBlock.FACING)) {
+                    blockState = blockState.setValue(BaseCoralWallFanBlock.FACING, facing);
                 }
             } else if (random.nextInt(2) == 0) {
-                blockState = (BlockState)Registries.BLOCK
-                        .getRandomEntry(CropCritters.UNDERWATER_STRANGE_FERTILIZERS, world.random)
-                        .map(blockEntry -> ((Block)blockEntry.value()).getDefaultState())
+                blockState = (BlockState) BuiltInRegistries.BLOCK
+                        .getRandomElementOf(CropCritters.UNDERWATER_STRANGE_FERTILIZERS, world.random)
+                        .map(blockEntry -> ((Block)blockEntry.value()).defaultBlockState())
                         .orElse(blockState);
             }
 
-            if (blockState.isIn(BlockTags.WALL_CORALS, state -> state.contains(DeadCoralWallFanBlock.FACING))) {
-                for (int k = 0; !blockState.canPlaceAt(world, blockPos2) && k < 4; k++) {
-                    blockState = blockState.with(DeadCoralWallFanBlock.FACING, Direction.Type.HORIZONTAL.random(random));
+            if (blockState.is(BlockTags.WALL_CORALS, state -> state.hasProperty(BaseCoralWallFanBlock.FACING))) {
+                for (int k = 0; !blockState.canSurvive(world, blockPos2) && k < 4; k++) {
+                    blockState = blockState.setValue(BaseCoralWallFanBlock.FACING, Direction.Plane.HORIZONTAL.getRandomDirection(random));
                 }
             }
 
-            if (!blockState.isIn(CropCritters.IGNORE_STRANGE_FERTILIZERS) && blockState.canPlaceAt(world, blockPos2)) {
+            if (!blockState.is(CropCritters.IGNORE_STRANGE_FERTILIZERS) && blockState.canSurvive(world, blockPos2)) {
                 BlockState blockState2 = world.getBlockState(blockPos2);
-                if (blockState2.isOf(Blocks.WATER) && world.getFluidState(blockPos2).getLevel() == 8) {
-                    world.setBlockState(blockPos2, blockState, Block.NOTIFY_ALL);
-                } else if (random.nextInt(2) == 0 && !blockState2.isIn(BlockTags.SAPLINGS)) {
-                    useOnFertilizable(stack, world, blockPos2);
+                if (blockState2.is(Blocks.WATER) && world.getFluidState(blockPos2).getAmount() == 8) {
+                    world.setBlock(blockPos2, blockState, Block.UPDATE_ALL);
+                } else if (random.nextInt(2) == 0 && !blockState2.is(BlockTags.SAPLINGS)) {
+                    growCrop(stack, world, blockPos2);
                 }
             }
         }
 
-        stack.decrement(1);
+        stack.shrink(1);
     }
 
-    private static void useOnLand(ItemStack stack, World world, BlockPos blockPos) {
-        if (!(world instanceof ServerWorld)) return;
+    private static void useOnLand(ItemStack stack, Level world, BlockPos blockPos) {
+        if (!(world instanceof ServerLevel)) return;
 
-        Random random = world.getRandom();
+        RandomSource random = world.getRandom();
 
         outerLoop:
         for (int i = 0; i < 128; i++) {
             BlockPos blockPos2 = blockPos;
 
             for (int j = 0; j < i / 16; j++) {
-                blockPos2 = blockPos2.add(random.nextInt(3) - 1, (random.nextInt(3) - 1) * random.nextInt(3) / 2, random.nextInt(3) - 1);
-                if (world.getBlockState(blockPos2).isFullCube(world, blockPos2)) {
+                blockPos2 = blockPos2.offset(random.nextInt(3) - 1, (random.nextInt(3) - 1) * random.nextInt(3) / 2, random.nextInt(3) - 1);
+                if (world.getBlockState(blockPos2).isCollisionShapeFullBlock(world, blockPos2)) {
                     continue outerLoop;
                 }
             }
 
             BlockState blockState2 = world.getBlockState(blockPos2);
-            if (blockState2.isOf(Blocks.AIR)) {
+            if (blockState2.is(Blocks.AIR)) {
                 BlockState toPlace;
-                BlockState floor = world.getBlockState(blockPos2.down());
-                if (floor.isOf(Blocks.CRIMSON_NYLIUM) || floor.isOf(Blocks.WARPED_NYLIUM)) {
-                    toPlace = Registries.BLOCK
-                            .getRandomEntry(CropCritters.ON_NYLIUM_STRANGE_FERTILIZERS, world.random)
-                            .map(blockEntry -> ((Block)blockEntry.value()).getDefaultState())
-                            .orElse(Blocks.NETHER_SPROUTS.getDefaultState());
-                } else if (floor.isOf(Blocks.MYCELIUM)) {
-                    toPlace = Registries.BLOCK
-                            .getRandomEntry(CropCritters.ON_MYCELIUM_STRANGE_FERTILIZERS, world.random)
-                            .map(blockEntry -> ((Block)blockEntry.value()).getDefaultState())
-                            .orElse(Blocks.BROWN_MUSHROOM.getDefaultState());
+                BlockState floor = world.getBlockState(blockPos2.below());
+                if (floor.is(Blocks.CRIMSON_NYLIUM) || floor.is(Blocks.WARPED_NYLIUM)) {
+                    toPlace = BuiltInRegistries.BLOCK
+                            .getRandomElementOf(CropCritters.ON_NYLIUM_STRANGE_FERTILIZERS, world.random)
+                            .map(blockEntry -> ((Block)blockEntry.value()).defaultBlockState())
+                            .orElse(Blocks.NETHER_SPROUTS.defaultBlockState());
+                } else if (floor.is(Blocks.MYCELIUM)) {
+                    toPlace = BuiltInRegistries.BLOCK
+                            .getRandomElementOf(CropCritters.ON_MYCELIUM_STRANGE_FERTILIZERS, world.random)
+                            .map(blockEntry -> ((Block)blockEntry.value()).defaultBlockState())
+                            .orElse(Blocks.BROWN_MUSHROOM.defaultBlockState());
                 } else {
-                    toPlace = Registries.BLOCK
-                            .getRandomEntry((random.nextInt(4) == 0) ? CropCritters.ON_LAND_RARE_STRANGE_FERTILIZERS : CropCritters.ON_LAND_COMMON_STRANGE_FERTILIZERS, world.random)
-                            .map(blockEntry -> ((Block)blockEntry.value()).getDefaultState())
-                            .orElse(Blocks.SHORT_GRASS.getDefaultState());
+                    toPlace = BuiltInRegistries.BLOCK
+                            .getRandomElementOf((random.nextInt(4) == 0) ? CropCritters.ON_LAND_RARE_STRANGE_FERTILIZERS : CropCritters.ON_LAND_COMMON_STRANGE_FERTILIZERS, world.random)
+                            .map(blockEntry -> ((Block)blockEntry.value()).defaultBlockState())
+                            .orElse(Blocks.SHORT_GRASS.defaultBlockState());
                 }
 
-                if (!toPlace.isIn(CropCritters.IGNORE_STRANGE_FERTILIZERS) && toPlace.canPlaceAt(world, blockPos2)) {
-                    if (toPlace.getBlock() instanceof TallPlantBlock) {
-                        if (world.getBlockState(blockPos2.up()).isOf(Blocks.AIR)) {
-                            TallPlantBlock.placeAt(world, toPlace, blockPos2, 3);
+                if (!toPlace.is(CropCritters.IGNORE_STRANGE_FERTILIZERS) && toPlace.canSurvive(world, blockPos2)) {
+                    if (toPlace.getBlock() instanceof DoublePlantBlock) {
+                        if (world.getBlockState(blockPos2.above()).is(Blocks.AIR)) {
+                            DoublePlantBlock.placeAt(world, toPlace, blockPos2, 3);
                         }
                     } else {
-                        world.setBlockState(blockPos2, toPlace, Block.NOTIFY_ALL);
+                        world.setBlock(blockPos2, toPlace, Block.UPDATE_ALL);
                     }
                 }
             }
         }
 
-        stack.decrement(1);
+        stack.shrink(1);
     }
 
-    public static boolean tryReviveCoral(ItemStack stack, World world, BlockPos pos, BlockState state) {
+    public static boolean tryReviveCoral(ItemStack stack, Level world, BlockPos pos, BlockState state) {
         Optional<BlockState> optional = getRevivedState(state);
         if (optional.isPresent()) {
-            world.setBlockState(pos, (BlockState) optional.get(), Block.NOTIFY_ALL_AND_REDRAW);
-            world.emitGameEvent(null, GameEvent.BLOCK_CHANGE, pos);
-            world.playSound(null, pos, ModSounds.REVIVE_CORAL, SoundCategory.BLOCKS, 1.0F, 1.0F);
-            stack.decrement(1);
+            world.setBlock(pos, (BlockState) optional.get(), Block.UPDATE_ALL_IMMEDIATE);
+            world.gameEvent(null, GameEvent.BLOCK_CHANGE, pos);
+            world.playSound(null, pos, ModSounds.REVIVE_CORAL, SoundSource.BLOCKS, 1.0F, 1.0F);
+            stack.shrink(1);
             return true;
         }
         return false;
@@ -258,14 +263,14 @@ public class StrangeFertilizerItem extends BoneMealItem {
     private static Optional<BlockState> getRevivedState(BlockState state) {
         return Optional.ofNullable((Block)REVIVE_CORAL.get(state.getBlock()))
                 .map(block -> {
-                    BlockState revivedState = block.getDefaultState();
+                    BlockState revivedState = block.defaultBlockState();
                     //block.getDefaultState().with(Properties.WATERLOGGED, state.get(Properties.WATERLOGGED))
-                    if (state.contains(Properties.HORIZONTAL_FACING)) {
-                        revivedState = revivedState.with(Properties.HORIZONTAL_FACING, state.get(Properties.HORIZONTAL_FACING));
+                    if (state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+                        revivedState = revivedState.setValue(BlockStateProperties.HORIZONTAL_FACING, state.getValue(BlockStateProperties.HORIZONTAL_FACING));
                     }
 
-                    if (state.contains(Properties.WATERLOGGED)) {
-                        revivedState = revivedState.with(Properties.WATERLOGGED, state.get(Properties.WATERLOGGED));
+                    if (state.hasProperty(BlockStateProperties.WATERLOGGED)) {
+                        revivedState = revivedState.setValue(BlockStateProperties.WATERLOGGED, state.getValue(BlockStateProperties.WATERLOGGED));
                     }
 
                     return revivedState;

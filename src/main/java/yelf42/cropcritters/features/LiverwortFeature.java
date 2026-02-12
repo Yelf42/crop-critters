@@ -1,40 +1,40 @@
 package yelf42.cropcritters.features;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.MultifaceBlock;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.Heightmap;
-import net.minecraft.world.StructureWorldAccess;
-import net.minecraft.world.gen.CountConfig;
-import net.minecraft.world.gen.feature.Feature;
-import net.minecraft.world.gen.feature.util.FeatureContext;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.MultifaceBlock;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.levelgen.feature.configurations.CountConfiguration;
+import net.minecraft.world.level.levelgen.feature.Feature;
+import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import yelf42.cropcritters.blocks.LiverwortBlock;
 import yelf42.cropcritters.blocks.ModBlocks;
 
-public class LiverwortFeature extends Feature<CountConfig> {
-    public LiverwortFeature(Codec<CountConfig> codec) {
+public class LiverwortFeature extends Feature<CountConfiguration> {
+    public LiverwortFeature(Codec<CountConfiguration> codec) {
         super(codec);
     }
 
-    public boolean generate(FeatureContext<CountConfig> context) {
+    public boolean place(FeaturePlaceContext<CountConfiguration> context) {
         int i = 0;
-        Random random = context.getRandom();
-        StructureWorldAccess structureWorldAccess = context.getWorld();
-        BlockPos blockPos = context.getOrigin();
-        int j = ((CountConfig)context.getConfig()).getCount().get(random);
+        RandomSource random = context.random();
+        WorldGenLevel structureWorldAccess = context.level();
+        BlockPos blockPos = context.origin();
+        int j = ((CountConfiguration)context.config()).count().sample(random);
 
         for(int k = 0; k < j; ++k) {
             int l = random.nextInt(8) - random.nextInt(8);
             int m = random.nextInt(8) - random.nextInt(8);
-            int n = structureWorldAccess.getTopY(Heightmap.Type.OCEAN_FLOOR, blockPos.getX() + l, blockPos.getZ() + m);
+            int n = structureWorldAccess.getHeight(Heightmap.Types.OCEAN_FLOOR, blockPos.getX() + l, blockPos.getZ() + m);
             BlockPos blockPos2 = new BlockPos(blockPos.getX() + l, n, blockPos.getZ() + m);
-            BlockState blockState = (BlockState) ModBlocks.LIVERWORT.getDefaultState().with(MultifaceBlock.getProperty(Direction.DOWN), true).with(LiverwortBlock.WATERLOGGED, true);
-            if (structureWorldAccess.getBlockState(blockPos2).isOf(Blocks.WATER) && blockState.canPlaceAt(structureWorldAccess, blockPos2)) {
-                structureWorldAccess.setBlockState(blockPos2, blockState, 2);
+            BlockState blockState = (BlockState) ModBlocks.LIVERWORT.defaultBlockState().setValue(MultifaceBlock.getFaceProperty(Direction.DOWN), true).setValue(LiverwortBlock.WATERLOGGED, true);
+            if (structureWorldAccess.getBlockState(blockPos2).is(Blocks.WATER) && blockState.canSurvive(structureWorldAccess, blockPos2)) {
+                structureWorldAccess.setBlock(blockPos2, blockState, 2);
                 ++i;
             }
         }

@@ -1,8 +1,8 @@
 package yelf42.cropcritters.blocks;
 
-import net.minecraft.util.StringIdentifiable;
+import net.minecraft.util.StringRepresentable;
 
-public enum MazewoodShape implements StringIdentifiable {
+public enum MazewoodShape implements StringRepresentable {
     NONE("none"),
     TALL("tall");
 
@@ -13,10 +13,10 @@ public enum MazewoodShape implements StringIdentifiable {
     }
 
     public String toString() {
-        return this.asString();
+        return this.getSerializedName();
     }
 
-    public String asString() {
+    public String getSerializedName() {
         return this.name;
     }
 }

@@ -1,18 +1,18 @@
 package yelf42.cropcritters.blocks;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.PlantBlock;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.registry.tag.BlockTags;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.event.GameEvent;
-import net.minecraft.world.tick.TickPriority;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.VegetationBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.ticks.TickPriority;
 import yelf42.cropcritters.sound.ModSounds;
 
 import java.util.ArrayDeque;
@@ -44,108 +44,108 @@ public class MazewoodSaplingBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void writeData(WriteView view) {
-        super.writeData(view);
+    protected void saveAdditional(ValueOutput view) {
+        super.saveAdditional(view);
 
-        WriteView.ListAppender<Long> appender = view.getListAppender("GrowInto", Codec.LONG);
+        ValueOutput.TypedOutputList<Long> appender = view.list("GrowInto", Codec.LONG);
         for (Long pos : growInto) {
             appender.add(pos);
         }
     }
 
     @Override
-    protected void readData(ReadView view) {
-        super.readData(view);
+    protected void loadAdditional(ValueInput view) {
+        super.loadAdditional(view);
 
         growInto.clear();
-        ReadView.TypedListReadView<Long> listView = view.getTypedListView("GrowInto", Codec.LONG);
+        ValueInput.TypedInputList<Long> listView = view.listOrEmpty("GrowInto", Codec.LONG);
         for (Long posLong : listView) {
             growInto.add(posLong);
         }
     }
 
     public void tickScheduled() {
-        if (world == null || world.isClient()) return;
+        if (level == null || level.isClientSide()) return;
 
         if (growInto.isEmpty()) {
-            BlockState matureMazewood = ModBlocks.MAZEWOOD.getDefaultState();
-            world.playSound(null, pos, ModSounds.MAZEWOOD_MATURE, SoundCategory.BLOCKS);
+            BlockState matureMazewood = ModBlocks.MAZEWOOD.defaultBlockState();
+            level.playSound(null, worldPosition, ModSounds.MAZEWOOD_MATURE, SoundSource.BLOCKS);
 
-            world.setBlockState(pos, matureMazewood);
-            world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, matureMazewood));
+            level.setBlockAndUpdate(worldPosition, matureMazewood);
+            level.gameEvent(GameEvent.BLOCK_CHANGE, worldPosition, GameEvent.Context.of(null, matureMazewood));
 
-            if (world.getBlockState(pos.up()).isAir()) {
-                world.setBlockState(pos.up(), matureMazewood);
-                world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos.up(), GameEvent.Emitter.of(null, matureMazewood));
+            if (level.getBlockState(worldPosition.above()).isAir()) {
+                level.setBlockAndUpdate(worldPosition.above(), matureMazewood);
+                level.gameEvent(GameEvent.BLOCK_CHANGE, worldPosition.above(), GameEvent.Context.of(null, matureMazewood));
 
-                if (world.getBlockState(pos.up().up()).isAir()) {
-                    world.setBlockState(pos.up().up(), matureMazewood);
-                    world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos.up().up(), GameEvent.Emitter.of(null, matureMazewood));
+                if (level.getBlockState(worldPosition.above().above()).isAir()) {
+                    level.setBlockAndUpdate(worldPosition.above().above(), matureMazewood);
+                    level.gameEvent(GameEvent.BLOCK_CHANGE, worldPosition.above().above(), GameEvent.Context.of(null, matureMazewood));
                 }
             }
             return;
         }
 
-        BlockPos growPos = BlockPos.fromLong(growInto.removeFirst());
-        BlockState checkState = world.getBlockState(growPos);
-        BlockState checkBelowState = world.getBlockState(growPos.down());
+        BlockPos growPos = BlockPos.of(growInto.removeFirst());
+        BlockState checkState = level.getBlockState(growPos);
+        BlockState checkBelowState = level.getBlockState(growPos.below());
         boolean planted = false;
         if (canPlantAt(checkState, checkBelowState)) {
-            world.playSound(null, growPos, ModSounds.MAZEWOOD_GROW, SoundCategory.BLOCKS);
-            BlockState blockState = getCachedState().with(MazewoodSaplingBlock.SPREAD, getCachedState().get(MazewoodSaplingBlock.SPREAD) - 1);
-            world.setBlockState(growPos, blockState);
-            world.emitGameEvent(GameEvent.BLOCK_CHANGE, growPos, GameEvent.Emitter.of(null, blockState));
+            level.playSound(null, growPos, ModSounds.MAZEWOOD_GROW, SoundSource.BLOCKS);
+            BlockState blockState = getBlockState().setValue(MazewoodSaplingBlock.SPREAD, getBlockState().getValue(MazewoodSaplingBlock.SPREAD) - 1);
+            level.setBlockAndUpdate(growPos, blockState);
+            level.gameEvent(GameEvent.BLOCK_CHANGE, growPos, GameEvent.Context.of(null, blockState));
             planted = true;
         }
 
-        world.scheduleBlockTick(pos, getCachedState().getBlock(), planted ? 15 + world.random.nextInt(30) : 1, TickPriority.EXTREMELY_LOW);
+        level.scheduleTick(worldPosition, getBlockState().getBlock(), planted ? 15 + level.random.nextInt(30) : 1, TickPriority.EXTREMELY_LOW);
     }
 
     private boolean canPlantAt(BlockState checkState, BlockState checkBelowState) {
-        return (checkBelowState.isIn(BlockTags.DIRT))
+        return (checkBelowState.is(BlockTags.DIRT))
                 && (checkState.isAir()
                 || (!(checkState.getBlock() instanceof MazewoodSaplingBlock)
-                    && (checkState.getBlock() instanceof PlantBlock)));
+                    && (checkState.getBlock() instanceof VegetationBlock)));
     }
 
-    public void tickRandom(Random random) {
-        if (world == null || world.isClient() || !this.growInto.isEmpty()) return;
+    public void tickRandom(RandomSource random) {
+        if (level == null || level.isClientSide() || !this.growInto.isEmpty()) return;
 
-        BlockState soil = world.getBlockState(pos.down());
-        if (soil.isOf(Blocks.FARMLAND)) {
+        BlockState soil = level.getBlockState(worldPosition.below());
+        if (soil.is(Blocks.FARMLAND)) {
             BlockState to = switch (random.nextInt(3)) {
-                case 0 -> Blocks.DIRT.getDefaultState();
-                case 1 -> Blocks.ROOTED_DIRT.getDefaultState();
-                default -> Blocks.COARSE_DIRT.getDefaultState();
+                case 0 -> Blocks.DIRT.defaultBlockState();
+                case 1 -> Blocks.ROOTED_DIRT.defaultBlockState();
+                default -> Blocks.COARSE_DIRT.defaultBlockState();
             };
-            world.setBlockState(pos.down(), to);
-        } else if (soil.isOf(ModBlocks.SOUL_FARMLAND)) {
-            world.setBlockState(pos.down(), random.nextBoolean()
-                    ? Blocks.SOUL_SOIL.getDefaultState()
-                    : Blocks.SOUL_SAND.getDefaultState());
+            level.setBlockAndUpdate(worldPosition.below(), to);
+        } else if (soil.is(ModBlocks.SOUL_FARMLAND)) {
+            level.setBlockAndUpdate(worldPosition.below(), random.nextBoolean()
+                    ? Blocks.SOUL_SOIL.defaultBlockState()
+                    : Blocks.SOUL_SAND.defaultBlockState());
         }
 
         mature();
     }
 
     private int getSpread() {
-        return getCachedState().get(MazewoodSaplingBlock.SPREAD);
+        return getBlockState().getValue(MazewoodSaplingBlock.SPREAD);
     }
 
     private void mature() {
-        if (world == null || world.isClient()) return;
-        if (!isWall(pos)) {
-            world.setBlockState(pos, Blocks.DEAD_BUSH.getDefaultState());
+        if (level == null || level.isClientSide()) return;
+        if (!isWall(worldPosition)) {
+            level.setBlockAndUpdate(worldPosition, Blocks.DEAD_BUSH.defaultBlockState());
             return;
         }
 
         if (getSpread() > 0) {
-            for (BlockPos p : BlockPos.iterateOutwards(pos, 2, 1, 2)) {
+            for (BlockPos p : BlockPos.withinManhattan(worldPosition, 2, 1, 2)) {
                 if (isWall(p)) growInto.addLast(p.asLong());
             }
-            world.scheduleBlockTick(pos, getCachedState().getBlock(), 15, TickPriority.EXTREMELY_LOW);
+            level.scheduleTick(worldPosition, getBlockState().getBlock(), 15, TickPriority.EXTREMELY_LOW);
         } else {
-            world.scheduleBlockTick(pos, getCachedState().getBlock(), 45, TickPriority.EXTREMELY_LOW);
+            level.scheduleTick(worldPosition, getBlockState().getBlock(), 45, TickPriority.EXTREMELY_LOW);
         }
 
     }

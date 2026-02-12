@@ -1,21 +1,27 @@
 package yelf42.cropcritters.blocks;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.block.*;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.state.property.IntProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldView;
-import net.minecraft.world.event.GameEvent;
-import net.minecraft.world.tick.ScheduledTickView;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.BonemealableBlock;
+import net.minecraft.world.level.block.VegetationBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.ScheduledTickAccess;
 import yelf42.cropcritters.config.WeedHelper;
 import yelf42.cropcritters.events.WeedGrowNotifier;
 
@@ -23,25 +29,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class SpreadingWeedBlock extends PlantBlock implements Fertilizable{
-    public static final MapCodec<SpreadingWeedBlock> CODEC = createCodec(SpreadingWeedBlock::new);
+public class SpreadingWeedBlock extends VegetationBlock implements BonemealableBlock {
+    public static final MapCodec<SpreadingWeedBlock> CODEC = simpleCodec(SpreadingWeedBlock::new);
     public static final int MAX_AGE = 1;
-    public static final IntProperty AGE = Properties.AGE_1;
-    private static final VoxelShape[] SHAPES_BY_AGE = Block.createShapeArray(2, age -> Block.createColumnShape(8 + age * 4, 0.0, 8 + age * 4));
-    public static final BooleanProperty CAN_SPREAD = BooleanProperty.of("can_spread");
+    public static final IntegerProperty AGE = BlockStateProperties.AGE_1;
+    private static final VoxelShape[] SHAPES_BY_AGE = Block.boxes(2, age -> Block.column(8 + age * 4, 0.0, 8 + age * 4));
+    public static final BooleanProperty CAN_SPREAD = BooleanProperty.create("can_spread");
 
-    public SpreadingWeedBlock(AbstractBlock.Settings settings) {
+    public SpreadingWeedBlock(BlockBehaviour.Properties settings) {
         super(settings);
-        this.setDefaultState(this.stateManager.getDefaultState().with(AGE, 0));
+        this.registerDefaultState(this.stateDefinition.any().setValue(AGE, 0));
     }
 
     @Override
-    public MapCodec<? extends SpreadingWeedBlock> getCodec() {
+    public MapCodec<? extends SpreadingWeedBlock> codec() {
         return CODEC;
     }
 
     @Override
-    protected VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+    protected VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
         return SHAPES_BY_AGE[this.getAge(state)];
     }
 
@@ -52,11 +58,11 @@ public class SpreadingWeedBlock extends PlantBlock implements Fertilizable{
     }
 
     public int getAge(BlockState state) {
-        return (Integer)state.get(AGE);
+        return (Integer)state.getValue(AGE);
     }
 
     public BlockState withAge(int age) {
-        return this.getDefaultState().with(AGE, age);
+        return this.defaultBlockState().setValue(AGE, age);
     }
 
     public final boolean isMature(BlockState state) {
@@ -64,26 +70,26 @@ public class SpreadingWeedBlock extends PlantBlock implements Fertilizable{
     }
 
     @Override
-    protected BlockState getStateForNeighborUpdate(BlockState state, WorldView world, ScheduledTickView tickView, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, Random random) {
-        return super.getStateForNeighborUpdate(state.with(CAN_SPREAD, state.get(CAN_SPREAD) || !neighborState.isOf(this)), world, tickView, pos, direction, neighborPos, neighborState, random);
+    protected BlockState updateShape(BlockState state, LevelReader world, ScheduledTickAccess tickView, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random) {
+        return super.updateShape(state.setValue(CAN_SPREAD, state.getValue(CAN_SPREAD) || !neighborState.is(this)), world, tickView, pos, direction, neighborPos, neighborState, random);
     }
 
     @Override
-    protected boolean hasRandomTicks(BlockState state) {
-        return state.get(CAN_SPREAD);
+    protected boolean isRandomlyTicking(BlockState state) {
+        return state.getValue(CAN_SPREAD);
     }
 
     @Override
-    protected void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
+    protected void randomTick(BlockState state, ServerLevel world, BlockPos pos, RandomSource random) {
 
         // Turn farmlands bad
-        BlockState soilCheck = world.getBlockState(pos.down());
-        if (soilCheck.isOf(Blocks.FARMLAND)) {
-            BlockState toDirt = (random.nextInt(4) == 0) ? Blocks.DIRT.getDefaultState() : (random.nextInt(2) == 0) ? Blocks.ROOTED_DIRT.getDefaultState() : Blocks.COARSE_DIRT.getDefaultState();
-            world.setBlockState(pos.down(), toDirt, Block.NOTIFY_LISTENERS);
-        } else if (soilCheck.isOf(ModBlocks.SOUL_FARMLAND)){
-            BlockState toDirt = (random.nextInt(2) == 0) ? Blocks.SOUL_SOIL.getDefaultState() : Blocks.SOUL_SAND.getDefaultState();
-            world.setBlockState(pos.down(), toDirt, Block.NOTIFY_LISTENERS);
+        BlockState soilCheck = world.getBlockState(pos.below());
+        if (soilCheck.is(Blocks.FARMLAND)) {
+            BlockState toDirt = (random.nextInt(4) == 0) ? Blocks.DIRT.defaultBlockState() : (random.nextInt(2) == 0) ? Blocks.ROOTED_DIRT.defaultBlockState() : Blocks.COARSE_DIRT.defaultBlockState();
+            world.setBlock(pos.below(), toDirt, Block.UPDATE_CLIENTS);
+        } else if (soilCheck.is(ModBlocks.SOUL_FARMLAND)){
+            BlockState toDirt = (random.nextInt(2) == 0) ? Blocks.SOUL_SOIL.defaultBlockState() : Blocks.SOUL_SAND.defaultBlockState();
+            world.setBlock(pos.below(), toDirt, Block.UPDATE_CLIENTS);
         }
 
         if (this.isMature(state)) {
@@ -93,11 +99,11 @@ public class SpreadingWeedBlock extends PlantBlock implements Fertilizable{
             for (int i = -1; i <= 1; i++) {
                 for (int j = -1; j <= 1; j++) {
                     for (int k = -1; k <= 1; k++) {
-                        BlockPos checkPos = pos.add(i, k, j);
+                        BlockPos checkPos = pos.offset(i, k, j);
                         BlockState checkState = world.getBlockState(checkPos);
-                        if (checkState.isOf(this)) neighbouringWeeds++;
-                        BlockState checkBelowState = world.getBlockState(checkPos.down());
-                        if (canPlantOnTop(checkBelowState, world, checkPos.down()) && WeedHelper.canWeedsReplace(checkState)) {
+                        if (checkState.is(this)) neighbouringWeeds++;
+                        BlockState checkBelowState = world.getBlockState(checkPos.below());
+                        if (mayPlaceOn(checkBelowState, world, checkPos.below()) && WeedHelper.canWeedsReplace(checkState)) {
                             canSpreadTo.add(checkPos);
                         }
                     }
@@ -109,55 +115,55 @@ public class SpreadingWeedBlock extends PlantBlock implements Fertilizable{
                 BlockPos targetPos = canSpreadTo.get(random.nextInt(canSpreadTo.size()));
                 setToWeed(world, targetPos);
             } else {
-                world.setBlockState(pos, state.with(CAN_SPREAD, false));
+                world.setBlockAndUpdate(pos, state.setValue(CAN_SPREAD, false));
             }
         } else if (random.nextInt(2) == 0) {
             // 50% chance to mature per random tick
-            world.setBlockState(pos, this.withAge(this.getMaxAge()), Block.NOTIFY_LISTENERS);
+            world.setBlock(pos, this.withAge(this.getMaxAge()), Block.UPDATE_CLIENTS);
         }
     }
 
-    public void setToWeed(World world, BlockPos pos) {
-        BlockState blockState = this.getDefaultState();
-        world.setBlockState(pos, blockState);
+    public void setToWeed(Level world, BlockPos pos) {
+        BlockState blockState = this.defaultBlockState();
+        world.setBlockAndUpdate(pos, blockState);
         WeedGrowNotifier.notifyEvent(world, pos);
-        world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(null, blockState));
+        world.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(null, blockState));
     }
 
     @Override
-    protected void onBlockAdded(BlockState state, World world, BlockPos pos, BlockState oldState, boolean notify) {
+    protected void onPlace(BlockState state, Level world, BlockPos pos, BlockState oldState, boolean notify) {
         WeedGrowNotifier.notifyEvent(world, pos);
-        super.onBlockAdded(state, world, pos, oldState, notify);
+        super.onPlace(state, world, pos, oldState, notify);
     }
 
     @Override
-    protected void onStateReplaced(BlockState state, ServerWorld world, BlockPos pos, boolean moved) {
+    protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel world, BlockPos pos, boolean moved) {
         WeedGrowNotifier.notifyRemoval(world, pos);
-        super.onStateReplaced(state, world, pos, moved);
+        super.affectNeighborsAfterRemoval(state, world, pos, moved);
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(AGE);
         builder.add(CAN_SPREAD);
     }
 
     @Override
-    public boolean isFertilizable(WorldView world, BlockPos pos, BlockState state) {
-        return !isMature(state) || Fertilizable.canSpread(world, pos, state);
+    public boolean isValidBonemealTarget(LevelReader world, BlockPos pos, BlockState state) {
+        return !isMature(state) || BonemealableBlock.hasSpreadableNeighbourPos(world, pos, state);
     }
 
     @Override
-    public boolean canGrow(World world, Random random, BlockPos pos, BlockState state) {
+    public boolean isBonemealSuccess(Level world, RandomSource random, BlockPos pos, BlockState state) {
         return random.nextInt(2) == 0;
     }
 
     @Override
-    public void grow(ServerWorld world, Random random, BlockPos pos, BlockState state) {
+    public void performBonemeal(ServerLevel world, RandomSource random, BlockPos pos, BlockState state) {
         if (!isMature(state)) {
-            world.setBlockState(pos, this.withAge(this.getMaxAge()), Block.NOTIFY_LISTENERS);
+            world.setBlock(pos, this.withAge(this.getMaxAge()), Block.UPDATE_CLIENTS);
         } else {
-            Fertilizable.findPosToSpreadTo(world, pos, state).ifPresent((posx) -> setToWeed(world,posx));
+            BonemealableBlock.findSpreadableNeighbourPos(world, pos, state).ifPresent((posx) -> setToWeed(world,posx));
         }
     }
 }

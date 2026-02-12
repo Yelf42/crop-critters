@@ -1,26 +1,26 @@
 package yelf42.cropcritters.entity;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.projectile.thrown.ThrownItemEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.particle.ParticleEffect;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectile;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.level.Level;
 
-public class SpitSeedProjectileEntity extends ThrownItemEntity {
+public class SpitSeedProjectileEntity extends ThrowableItemProjectile {
 
-    public SpitSeedProjectileEntity(EntityType<? extends ThrownItemEntity> entityType, World world) {
+    public SpitSeedProjectileEntity(EntityType<? extends ThrowableItemProjectile> entityType, Level world) {
         super(entityType, world);
     }
 
-    public SpitSeedProjectileEntity(ServerWorld serverWorld, LivingEntity livingEntity, ItemStack itemStack) {
+    public SpitSeedProjectileEntity(ServerLevel serverWorld, LivingEntity livingEntity, ItemStack itemStack) {
         super(ModEntities.SPIT_SEED_PROJECTILE, livingEntity, serverWorld, itemStack);
         //this.spatItem = itemStack.getItem();
     }
@@ -33,44 +33,44 @@ public class SpitSeedProjectileEntity extends ThrownItemEntity {
     @Override
     public void tick() {
         super.tick();
-        this.getEntityWorld().sendEntityStatus(this, (byte)4);
+        this.level().broadcastEntityEvent(this, (byte)4);
     }
 
-    private ParticleEffect getParticleParameters() {
+    private ParticleOptions getParticleParameters() {
         //ItemStack itemStack = this.getStack();
         return ParticleTypes.SPLASH;
     }
 
-    public void handleStatus(byte status) {
-        ParticleEffect particleEffect = this.getParticleParameters();
+    public void handleEntityEvent(byte status) {
+        ParticleOptions particleEffect = this.getParticleParameters();
         if (status == 3) {
             for(int i = 0; i < 8; ++i) {
-                this.getEntityWorld().addParticleClient(particleEffect, this.getX(), this.getY(), this.getZ(), 0.0D, 0.0D, 0.0D);
+                this.level().addParticle(particleEffect, this.getX(), this.getY(), this.getZ(), 0.0D, 0.0D, 0.0D);
             }
         }
         if (status == 4) {
-            this.getEntityWorld().addParticleClient(particleEffect, this.getX(), this.getY(), this.getZ(), 0.0D, 0.0D, 0.0D);
+            this.level().addParticle(particleEffect, this.getX(), this.getY(), this.getZ(), 0.0D, 0.0D, 0.0D);
         }
     }
 
 
 
     @Override
-    protected void onEntityHit(EntityHitResult entityHitResult) { // called on entity hit.
-        super.onEntityHit(entityHitResult);
+    protected void onHitEntity(EntityHitResult entityHitResult) { // called on entity hit.
+        super.onHitEntity(entityHitResult);
         Entity entity = entityHitResult.getEntity(); // sets a new Entity instance as the EntityHitResult (victim)
-        entity.serverDamage(this.getDamageSources().thrown(this, this.getOwner()), 1F);
-        if (!this.getEntityWorld().isClient()) {
-            this.getEntityWorld().sendEntityStatus(this, (byte)3);
+        entity.hurt(this.damageSources().thrown(this, this.getOwner()), 1F);
+        if (!this.level().isClientSide()) {
+            this.level().broadcastEntityEvent(this, (byte)3);
             this.discard();
         }
     }
 
     @Override
-    protected void onBlockCollision(BlockState state) {
-        World world = this.getEntityWorld();
-        if (!world.isClient()) {
-            world.sendEntityStatus(this, (byte)3);
+    protected void onInsideBlock(BlockState state) {
+        Level world = this.level();
+        if (!world.isClientSide()) {
+            world.broadcastEntityEvent(this, (byte)3);
             this.discard();
         }
     }

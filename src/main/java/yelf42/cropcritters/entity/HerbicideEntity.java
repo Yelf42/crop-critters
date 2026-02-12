@@ -1,55 +1,56 @@
 package yelf42.cropcritters.entity;
 
-import net.minecraft.block.*;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.projectile.thrown.ThrownItemEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Colors;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectile;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.CommonColors;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.items.ModItems;
 
-public class HerbicideEntity extends ThrownItemEntity {
+public class HerbicideEntity extends ThrowableItemProjectile {
 
-    public HerbicideEntity(EntityType<? extends ThrownItemEntity> entityType, World world) {
+    public HerbicideEntity(EntityType<? extends ThrowableItemProjectile> entityType, Level world) {
         super(entityType, world);
     }
 
-    public HerbicideEntity(double x, double y, double z, World world, ItemStack stack) {
+    public HerbicideEntity(double x, double y, double z, Level world, ItemStack stack) {
         super(ModEntities.HERBICIDE_PROJECTILE, x, y, z, world, stack);
     }
 
-    public HerbicideEntity(ServerWorld serverWorld, LivingEntity livingEntity, ItemStack itemStack) {
+    public HerbicideEntity(ServerLevel serverWorld, LivingEntity livingEntity, ItemStack itemStack) {
         super(ModEntities.HERBICIDE_PROJECTILE, livingEntity, serverWorld, itemStack);
     }
 
     @Override
-    protected void onCollision(HitResult hitResult) {
-        super.onCollision(hitResult);
-        this.getEntityWorld().sendEntityStatus(this, (byte)3);
-        if (this.getEntityWorld() instanceof ServerWorld serverWorld) {
-            killWeeds(serverWorld, this.getBlockPos());
-            serverWorld.syncWorldEvent(2002, this.getBlockPos(), Colors.GREEN);
+    protected void onHit(HitResult hitResult) {
+        super.onHit(hitResult);
+        this.level().broadcastEntityEvent(this, (byte)3);
+        if (this.level() instanceof ServerLevel serverWorld) {
+            killWeeds(serverWorld, this.blockPosition());
+            serverWorld.levelEvent(2002, this.blockPosition(), CommonColors.GREEN);
             this.discard();
         }
     }
 
-    private void killWeeds(ServerWorld world, BlockPos blockPos) {
-        Iterable<BlockPos> iterable = BlockPos.iterateOutwards(blockPos, 4, 4, 4);
+    private void killWeeds(ServerLevel world, BlockPos blockPos) {
+        Iterable<BlockPos> iterable = BlockPos.withinManhattan(blockPos, 4, 4, 4);
 
         for (BlockPos pos : iterable) {
-            if (!pos.isWithinDistance(this.getEntityPos(), 4)) continue;
+            if (!pos.closerToCenterThan(this.position(), 4)) continue;
 
             BlockState check = world.getBlockState(pos);
             boolean airState = check.getFluidState().isEmpty();
-            if (check.isIn(CropCritters.WEEDS) && !check.isOf(ModBlocks.PUFFBOMB_MUSHROOM)) {
-                world.setBlockState(pos, airState ? Blocks.AIR.getDefaultState() : Blocks.WATER.getDefaultState(), 3);
+            if (check.is(CropCritters.WEEDS) && !check.is(ModBlocks.PUFFBOMB_MUSHROOM)) {
+                world.setBlock(pos, airState ? Blocks.AIR.defaultBlockState() : Blocks.WATER.defaultBlockState(), 3);
             }
         }
     }
@@ -60,7 +61,7 @@ public class HerbicideEntity extends ThrownItemEntity {
     }
 
     @Override
-    protected double getGravity() {
+    protected double getDefaultGravity() {
         return 0.04;
     }
 }

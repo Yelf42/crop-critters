@@ -1,9 +1,9 @@
 package yelf42.cropcritters.config;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.enums.DoubleBlockHalf;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.BlockPos;
 import org.jspecify.annotations.Nullable;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.area_affectors.AffectorPositions;
@@ -19,9 +19,9 @@ public class AffectorsHelper {
 
     // Converts block state to affector type
     public static @Nullable AffectorType getTypeFromBlockState(BlockState state) {
-        if (state.isOf(ModBlocks.SOUL_ROSE) && state.get(SoulRoseBlock.HALF, DoubleBlockHalf.UPPER) == DoubleBlockHalf.LOWER) {
-            int level = state.get(SoulRoseBlock.LEVEL, 0);
-            SoulRoseType type = state.get(SoulRoseBlock.TYPE, SoulRoseType.NONE);
+        if (state.is(ModBlocks.SOUL_ROSE) && state.getValueOrElse(SoulRoseBlock.HALF, DoubleBlockHalf.UPPER) == DoubleBlockHalf.LOWER) {
+            int level = state.getValueOrElse(SoulRoseBlock.LEVEL, 0);
+            SoulRoseType type = state.getValueOrElse(SoulRoseBlock.TYPE, SoulRoseType.NONE);
             return switch (level) {
                 case 1 -> switch (type) {
                     case GOLD -> AffectorType.SOUL_ROSE_GOLD_1;
@@ -48,7 +48,7 @@ public class AffectorsHelper {
     }
 
     // Checks if block affected by copper Soul Rose
-    public static boolean copperSoulRoseCheck(ServerWorld serverWorld, BlockPos blockPos) {
+    public static boolean copperSoulRoseCheck(ServerLevel serverWorld, BlockPos blockPos) {
         AffectorPositions affectorPositions = serverWorld.getAttachedOrElse(
                 CropCritters.AFFECTOR_POSITIONS_ATTACHMENT_TYPE,
                 AffectorPositions.EMPTY
@@ -66,7 +66,7 @@ public class AffectorsHelper {
     }
 
     // returns level if block affected by iron Soul Rose
-    public static int ironSoulRoseCheck(ServerWorld serverWorld, BlockPos blockPos) {
+    public static int ironSoulRoseCheck(ServerLevel serverWorld, BlockPos blockPos) {
         AffectorPositions affectorPositions = serverWorld.getAttachedOrElse(
                 CropCritters.AFFECTOR_POSITIONS_ATTACHMENT_TYPE,
                 AffectorPositions.EMPTY

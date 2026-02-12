@@ -1,21 +1,24 @@
 package yelf42.cropcritters.items;
 
-import net.minecraft.advancement.criterion.Criteria;
-import net.minecraft.block.*;
-import net.minecraft.block.enums.DoubleBlockHalf;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.mob.SlimeEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.PitcherCropBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.monster.Slime;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.core.BlockPos;
 import yelf42.cropcritters.config.CritterHelper;
 import yelf42.cropcritters.entity.AbstractCropCritterEntity;
 import yelf42.cropcritters.sound.ModSounds;
@@ -24,62 +27,62 @@ import java.util.Optional;
 
 public class LostSoulItem extends Item {
 
-    public LostSoulItem(Settings settings) {
+    public LostSoulItem(Properties settings) {
         super(settings);
     }
 
     @Override
-    public ActionResult useOnBlock(ItemUsageContext context) {
-        if (context.getWorld().isClient()) return ActionResult.PASS;
-        ServerWorld world = (ServerWorld) context.getWorld();
-        BlockPos blockPos = context.getBlockPos();
+    public InteractionResult useOn(UseOnContext context) {
+        if (context.getLevel().isClientSide()) return InteractionResult.PASS;
+        ServerLevel world = (ServerLevel) context.getLevel();
+        BlockPos blockPos = context.getClickedPos();
         BlockState state = world.getBlockState(blockPos);
-        ItemStack itemStack = context.getStack();
-        PlayerEntity playerEntity = context.getPlayer();
+        ItemStack itemStack = context.getItemInHand();
+        Player playerEntity = context.getPlayer();
 
         // Create slime
-        if (state.isOf(Blocks.SLIME_BLOCK)) {
+        if (state.is(Blocks.SLIME_BLOCK)) {
             if (world.random.nextInt(2) == 0) {
-                world.spawnParticles(ParticleTypes.SMOKE, blockPos.getX() + 0.5, blockPos.getY() + 0.5, blockPos.getZ() + 0.5, 10, 0.5, 0.5, 0.5, 0F);
+                world.sendParticles(ParticleTypes.SMOKE, blockPos.getX() + 0.5, blockPos.getY() + 0.5, blockPos.getZ() + 0.5, 10, 0.5, 0.5, 0.5, 0F);
             } else {
-                world.setBlockState(blockPos, Blocks.AIR.getDefaultState(), Block.NOTIFY_LISTENERS);
-                SlimeEntity slime = EntityType.SLIME.create(world, SpawnReason.SPAWN_ITEM_USE);
+                world.setBlock(blockPos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+                Slime slime = EntityType.SLIME.create(world, EntitySpawnReason.SPAWN_ITEM_USE);
                 slime.setSize(2, true);
-                slime.setPosition(blockPos.toBottomCenterPos());
-                world.spawnEntity(slime);
-                world.playSound(null, blockPos, ModSounds.SPAWN_SLIME, SoundCategory.BLOCKS, 1F, 1F);
-                world.spawnParticles(ParticleTypes.SOUL_FIRE_FLAME, blockPos.getX() + 0.5, blockPos.getY() + 0.5, blockPos.getZ() + 0.5, 10, 0.5, 0.5, 0.5, 0F);
+                slime.setPos(blockPos.getBottomCenter());
+                world.addFreshEntity(slime);
+                world.playSound(null, blockPos, ModSounds.SPAWN_SLIME, SoundSource.BLOCKS, 1F, 1F);
+                world.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, blockPos.getX() + 0.5, blockPos.getY() + 0.5, blockPos.getZ() + 0.5, 10, 0.5, 0.5, 0.5, 0F);
             }
-            if (playerEntity instanceof ServerPlayerEntity serverPlayerEntity) {
-                Criteria.ITEM_USED_ON_BLOCK.trigger(serverPlayerEntity, blockPos, itemStack);
+            if (playerEntity instanceof ServerPlayer serverPlayerEntity) {
+                CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(serverPlayerEntity, blockPos, itemStack);
             }
-            itemStack.decrementUnlessCreative(1, playerEntity);
-            return ActionResult.SUCCESS;
+            itemStack.consume(1, playerEntity);
+            return InteractionResult.SUCCESS;
         }
 
         // Critter spawning logic
         Optional<AbstractCropCritterEntity> toSpawn = CritterHelper.spawnCritterWithItem(world, state);
-        if (toSpawn.isEmpty()) return ActionResult.PASS;
+        if (toSpawn.isEmpty()) return InteractionResult.PASS;
         AbstractCropCritterEntity critter = toSpawn.get();
         int failChance = (critter.getMaxHealth() > 12) ? 80 : 60;
         if (world.random.nextInt(100) + 1 <= failChance) {
-            world.spawnParticles(ParticleTypes.SMOKE, blockPos.getX() + 0.5, blockPos.getY() + 0.5, blockPos.getZ() + 0.5, 10, 0.5, 0.5, 0.5, 0F);
+            world.sendParticles(ParticleTypes.SMOKE, blockPos.getX() + 0.5, blockPos.getY() + 0.5, blockPos.getZ() + 0.5, 10, 0.5, 0.5, 0.5, 0F);
         } else {
             BlockPos toSpawnAt = blockPos;
-            if (state.get(PitcherCropBlock.HALF, DoubleBlockHalf.LOWER) == DoubleBlockHalf.UPPER) {
-                world.setBlockState(blockPos.down(), Blocks.AIR.getDefaultState(), Block.NOTIFY_LISTENERS);
-                toSpawnAt = blockPos.down();
+            if (state.getValueOrElse(PitcherCropBlock.HALF, DoubleBlockHalf.LOWER) == DoubleBlockHalf.UPPER) {
+                world.setBlock(blockPos.below(), Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+                toSpawnAt = blockPos.below();
             }
-            world.setBlockState(blockPos, Blocks.AIR.getDefaultState(), Block.NOTIFY_LISTENERS);
-            critter.setPosition(toSpawnAt.toBottomCenterPos());
-            world.spawnEntity(critter);
-            world.playSound(null, blockPos, ModSounds.SPAWN_CRITTER, SoundCategory.BLOCKS, 1F, 1F);
-            world.spawnParticles(ParticleTypes.SOUL_FIRE_FLAME, blockPos.getX() + 0.5, blockPos.getY() + 0.5, blockPos.getZ() + 0.5, 10, 0.5, 0.5, 0.5, 0F);
-            if (playerEntity instanceof ServerPlayerEntity serverPlayerEntity) {
-                Criteria.ITEM_USED_ON_BLOCK.trigger(serverPlayerEntity, blockPos, itemStack);
+            world.setBlock(blockPos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+            critter.setPos(toSpawnAt.getBottomCenter());
+            world.addFreshEntity(critter);
+            world.playSound(null, blockPos, ModSounds.SPAWN_CRITTER, SoundSource.BLOCKS, 1F, 1F);
+            world.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, blockPos.getX() + 0.5, blockPos.getY() + 0.5, blockPos.getZ() + 0.5, 10, 0.5, 0.5, 0.5, 0F);
+            if (playerEntity instanceof ServerPlayer serverPlayerEntity) {
+                CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(serverPlayerEntity, blockPos, itemStack);
             }
-            itemStack.decrementUnlessCreative(1, playerEntity);
+            itemStack.consume(1, playerEntity);
         }
-        return ActionResult.SUCCESS;
+        return InteractionResult.SUCCESS;
     }
 }

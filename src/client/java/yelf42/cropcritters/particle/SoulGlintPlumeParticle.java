@@ -1,57 +1,61 @@
 package yelf42.cropcritters.particle;
 
 import net.minecraft.client.particle.*;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.particle.SimpleParticleType;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.random.Random;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.client.particle.SingleQuadParticle;
+import net.minecraft.client.particle.SingleQuadParticle.Layer;
+import net.minecraft.client.particle.SpriteSet;
+import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 
-public class SoulGlintPlumeParticle extends BillboardParticle {
-    private final SpriteProvider spriteProvider;
+public class SoulGlintPlumeParticle extends SingleQuadParticle {
+    private final SpriteSet spriteProvider;
 
-    protected SoulGlintPlumeParticle(ClientWorld world, double x, double y, double z, double velocityX, double velocityY, double velocityZ, float scaleMultiplier, SpriteProvider spriteProvider) {
-        super(world, x, y, z, 0.0F, 0.0F, 0.0F, spriteProvider.getFirst());
-        this.velocityMultiplier = 0.96F;
-        this.gravityStrength = 0.5F;
-        this.ascending = true;
+    protected SoulGlintPlumeParticle(ClientLevel world, double x, double y, double z, double velocityX, double velocityY, double velocityZ, float scaleMultiplier, SpriteSet spriteProvider) {
+        super(world, x, y, z, 0.0F, 0.0F, 0.0F, spriteProvider.first());
+        this.friction = 0.96F;
+        this.gravity = 0.5F;
+        this.speedUpWhenYMotionIsBlocked = true;
         this.spriteProvider = spriteProvider;
-        this.velocityX *= 0.7F;
-        this.velocityY += 0.15F;
-        this.velocityY *= 0.6F;
-        this.velocityZ *= 0.7F;
-        this.velocityX += velocityX;
-        this.velocityY += velocityY;
-        this.velocityZ += velocityZ;
-        this.scale *= 0.75F * scaleMultiplier;
-        this.maxAge = (int)((double)7 / ((double)this.random.nextFloat() * 0.8 + 0.2) * (double)scaleMultiplier);
-        this.maxAge = Math.max(this.maxAge, 1);
-        this.updateSprite(spriteProvider);
-        this.collidesWithWorld = false;
+        this.xd *= 0.7F;
+        this.yd += 0.15F;
+        this.yd *= 0.6F;
+        this.zd *= 0.7F;
+        this.xd += velocityX;
+        this.yd += velocityY;
+        this.zd += velocityZ;
+        this.quadSize *= 0.75F * scaleMultiplier;
+        this.lifetime = (int)((double)7 / ((double)this.random.nextFloat() * 0.8 + 0.2) * (double)scaleMultiplier);
+        this.lifetime = Math.max(this.lifetime, 1);
+        this.setSpriteFromAge(spriteProvider);
+        this.hasPhysics = false;
     }
 
-    public BillboardParticle.RenderType getRenderType() {
-        return RenderType.PARTICLE_ATLAS_OPAQUE;
+    public SingleQuadParticle.Layer getLayer() {
+        return Layer.OPAQUE;
     }
 
-    public float getSize(float tickProgress) {
-        return this.scale * MathHelper.clamp(((float)this.age + tickProgress) / (float)this.maxAge * 32.0F, 0.0F, 1.0F);
+    public float getQuadSize(float tickProgress) {
+        return this.quadSize * Mth.clamp(((float)this.age + tickProgress) / (float)this.lifetime * 32.0F, 0.0F, 1.0F);
     }
 
     public void tick() {
-        this.gravityStrength = 0.88F * this.gravityStrength;
-        this.velocityMultiplier = 0.92F * this.velocityMultiplier;
-        this.updateSprite(this.spriteProvider);
+        this.gravity = 0.88F * this.gravity;
+        this.friction = 0.92F * this.friction;
+        this.setSpriteFromAge(this.spriteProvider);
         super.tick();
     }
 
-    public static class Factory implements ParticleFactory<SimpleParticleType> {
-        private final SpriteProvider spriteProvider;
+    public static class Factory implements ParticleProvider<SimpleParticleType> {
+        private final SpriteSet spriteProvider;
 
-        public Factory(SpriteProvider spriteProvider) {
+        public Factory(SpriteSet spriteProvider) {
             this.spriteProvider = spriteProvider;
         }
 
-        public Particle createParticle(SimpleParticleType simpleParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i, Random random) {
+        public Particle createParticle(SimpleParticleType simpleParticleType, ClientLevel clientWorld, double d, double e, double f, double g, double h, double i, RandomSource random) {
             return new SoulGlintPlumeParticle(clientWorld, d, e, f, g, h, i, 1.0F, this.spriteProvider);
         }
     }

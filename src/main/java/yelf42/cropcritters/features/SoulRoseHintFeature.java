@@ -1,39 +1,39 @@
 package yelf42.cropcritters.features;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.StructureWorldAccess;
-import net.minecraft.world.gen.feature.DefaultFeatureConfig;
-import net.minecraft.world.gen.feature.Feature;
-import net.minecraft.world.gen.feature.util.FeatureContext;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.levelgen.feature.Feature;
+import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import yelf42.cropcritters.blocks.SoulRoseBlockEntity;
 
-public class SoulRoseHintFeature extends Feature<DefaultFeatureConfig> {
+public class SoulRoseHintFeature extends Feature<NoneFeatureConfiguration> {
 
-    public SoulRoseHintFeature(Codec<DefaultFeatureConfig> configCodec) {
+    public SoulRoseHintFeature(Codec<NoneFeatureConfiguration> configCodec) {
         super(configCodec);
     }
 
     @Override
-    public boolean generate(FeatureContext<DefaultFeatureConfig> context) {
-        Random random = context.getRandom();
+    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> context) {
+        RandomSource random = context.random();
         int level = random.nextInt(3) + 1;
-        StructureWorldAccess world = context.getWorld();
-        if (!world.getBlockState(context.getOrigin()).isOf(Blocks.AIR)) return false;
-        BlockPos pos = context.getOrigin().down();
+        WorldGenLevel world = context.level();
+        if (!world.getBlockState(context.origin()).is(Blocks.AIR)) return false;
+        BlockPos pos = context.origin().below();
 
         // Stage 1
-        if (!trySetBlock(world, pos.down().down(), random)) return false;
+        if (!trySetBlock(world, pos.below().below(), random)) return false;
         for (Vec3i offset : SoulRoseBlockEntity.STAGE_1A) {
-            if (!trySetBlock(world, pos.add(offset), random)) return true;
+            if (!trySetBlock(world, pos.offset(offset), random)) return true;
         }
         for (int i = 0; i < 4; i++) {
             for (Vec3i offset : SoulRoseBlockEntity.STAGE_1B) {
-                trySetBlock(world, pos.add(rotate(offset, i)), random);
+                trySetBlock(world, pos.offset(rotate(offset, i)), random);
             }
         }
 
@@ -41,7 +41,7 @@ public class SoulRoseHintFeature extends Feature<DefaultFeatureConfig> {
         if (level > 1) {
             for (int i = 0; i < 4; i++) {
                 for (Vec3i offset : SoulRoseBlockEntity.STAGE_2) {
-                    trySetBlock(world, pos.add(rotate(offset, i)), random);
+                    trySetBlock(world, pos.offset(rotate(offset, i)), random);
                 }
             }
         }
@@ -50,7 +50,7 @@ public class SoulRoseHintFeature extends Feature<DefaultFeatureConfig> {
         if (level > 2) {
             for (int i = 0; i < 4; i++) {
                 for (Vec3i offset : SoulRoseBlockEntity.STAGE_3) {
-                    trySetBlock(world, pos.add(rotate(offset, i)), random);
+                    trySetBlock(world, pos.offset(rotate(offset, i)), random);
                 }
             }
         }
@@ -58,18 +58,18 @@ public class SoulRoseHintFeature extends Feature<DefaultFeatureConfig> {
         return true;
     }
 
-    private boolean trySetBlock(StructureWorldAccess world, BlockPos pos, Random random) {
+    private boolean trySetBlock(WorldGenLevel world, BlockPos pos, RandomSource random) {
         BlockState check = world.getBlockState(pos);
-        if (!check.isOf(Blocks.AIR)) {
-            this.setBlockState(world, pos, chooseBlock(random));
+        if (!check.is(Blocks.AIR)) {
+            this.setBlock(world, pos, chooseBlock(random));
             return true;
         }
         return false;
     }
 
-    private static BlockState chooseBlock(Random random) {
+    private static BlockState chooseBlock(RandomSource random) {
         //return Blocks.END_ROD.getDefaultState();
-        return random.nextInt(5) != 0 ? Blocks.GILDED_BLACKSTONE.getDefaultState() : (random.nextInt(2) == 0 ? Blocks.BLACKSTONE.getDefaultState() : Blocks.RAW_GOLD_BLOCK.getDefaultState());
+        return random.nextInt(5) != 0 ? Blocks.GILDED_BLACKSTONE.defaultBlockState() : (random.nextInt(2) == 0 ? Blocks.BLACKSTONE.defaultBlockState() : Blocks.RAW_GOLD_BLOCK.defaultBlockState());
     }
 
     private static Vec3i rotate(Vec3i v, int dir) {

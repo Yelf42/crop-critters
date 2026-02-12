@@ -1,46 +1,46 @@
 package yelf42.cropcritters.entity;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.thrown.ThrownItemEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.particle.ItemStackParticleEffect;
-import net.minecraft.particle.ParticleEffect;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.tag.BlockTags;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectile;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.particles.ItemParticleOption;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import yelf42.cropcritters.items.ModComponents;
 import yelf42.cropcritters.items.ModItems;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class SeedBallProjectileEntity extends ThrownItemEntity {
+public class SeedBallProjectileEntity extends ThrowableItemProjectile {
 
-    private static final List<Identifier> DefaultSeedTypes = Arrays.asList(Registries.BLOCK.getId(Blocks.WHEAT), Registries.BLOCK.getId(Blocks.CARROTS), Registries.BLOCK.getId(Blocks.POTATOES), Registries.BLOCK.getId(Blocks.BEETROOTS));
+    private static final List<Identifier> DefaultSeedTypes = Arrays.asList(BuiltInRegistries.BLOCK.getKey(Blocks.WHEAT), BuiltInRegistries.BLOCK.getKey(Blocks.CARROTS), BuiltInRegistries.BLOCK.getKey(Blocks.POTATOES), BuiltInRegistries.BLOCK.getKey(Blocks.BEETROOTS));
 
 
-    SeedBallProjectileEntity(EntityType<? extends ThrownItemEntity> entityType, World world) {
+    SeedBallProjectileEntity(EntityType<? extends ThrowableItemProjectile> entityType, Level world) {
         super(entityType, world);
     }
 
-    public SeedBallProjectileEntity(double x, double y, double z, World world, ItemStack stack) {
+    public SeedBallProjectileEntity(double x, double y, double z, Level world, ItemStack stack) {
         super(ModEntities.SEED_BALL_PROJECTILE, x, y, z, world, stack);
     }
 
-    public SeedBallProjectileEntity(ServerWorld serverWorld, LivingEntity livingEntity, ItemStack itemStack) {
+    public SeedBallProjectileEntity(ServerLevel serverWorld, LivingEntity livingEntity, ItemStack itemStack) {
         super(ModEntities.SEED_BALL_PROJECTILE, livingEntity, serverWorld, itemStack);
     }
 
@@ -49,16 +49,16 @@ public class SeedBallProjectileEntity extends ThrownItemEntity {
         return ModItems.SEED_BALL;
     }
 
-    private ParticleEffect getParticleParameters() {
-        ItemStack itemStack = this.getStack();
-        return (itemStack.isEmpty() ? ParticleTypes.SPLASH : new ItemStackParticleEffect(ParticleTypes.ITEM, itemStack));
+    private ParticleOptions getParticleParameters() {
+        ItemStack itemStack = this.getItem();
+        return (itemStack.isEmpty() ? ParticleTypes.SPLASH : new ItemParticleOption(ParticleTypes.ITEM, itemStack));
     }
 
-    public void handleStatus(byte status) {
+    public void handleEntityEvent(byte status) {
         if (status == 3) {
-            ParticleEffect particleEffect = this.getParticleParameters();
+            ParticleOptions particleEffect = this.getParticleParameters();
             for(int i = 0; i < 8; ++i) {
-                this.getEntityWorld().addParticleClient(particleEffect, this.getX(), this.getY(), this.getZ(), 0.0D, 0.0D, 0.0D);
+                this.level().addParticle(particleEffect, this.getX(), this.getY(), this.getZ(), 0.0D, 0.0D, 0.0D);
             }
         }
     }
@@ -66,43 +66,43 @@ public class SeedBallProjectileEntity extends ThrownItemEntity {
 
 
     @Override
-    protected void onEntityHit(EntityHitResult entityHitResult) {
+    protected void onHitEntity(EntityHitResult entityHitResult) {
         Entity entity = entityHitResult.getEntity();
-        if (entity instanceof PlayerEntity player) player.addStatusEffect((new StatusEffectInstance(StatusEffects.BLINDNESS, 20 * 4, 0)));
+        if (entity instanceof Player player) player.addEffect((new MobEffectInstance(MobEffects.BLINDNESS, 20 * 4, 0)));
         if (entity instanceof LivingEntity livingEntity) {
-            int p = this.getStack().getOrDefault(ModComponents.POISONOUS_SEED_BALL, new ModComponents.PoisonousComponent(0)).poisonStacks();
-            livingEntity.addStatusEffect((new StatusEffectInstance(StatusEffects.POISON, 20 * 6 * p, 0)));
+            int p = this.getItem().getOrDefault(ModComponents.POISONOUS_SEED_BALL, new ModComponents.PoisonousComponent(0)).poisonStacks();
+            livingEntity.addEffect((new MobEffectInstance(MobEffects.POISON, 20 * 6 * p, 0)));
         }
-        if (!this.getEntityWorld().isClient()) {
-            this.getEntityWorld().sendEntityStatus(this, (byte)3);
+        if (!this.level().isClientSide()) {
+            this.level().broadcastEntityEvent(this, (byte)3);
             this.discard();
         }
     }
 
     @Override
-    protected void onBlockCollision(BlockState state) {
-        World world = this.getEntityWorld();
-        if (!world.isClient()) {
+    protected void onInsideBlock(BlockState state) {
+        Level world = this.level();
+        if (!world.isClientSide()) {
             if (!state.isSolid()) return;
-            if (!state.isIn(BlockTags.DIRT)) {
+            if (!state.is(BlockTags.DIRT)) {
                 this.discard();
                 return;
             }
 
-            List<Identifier> crops = this.getStack().getOrDefault(ModComponents.SEED_TYPES, new ModComponents.SeedTypesComponent(DefaultSeedTypes)).seedTypes();
+            List<Identifier> crops = this.getItem().getOrDefault(ModComponents.SEED_TYPES, new ModComponents.SeedTypesComponent(DefaultSeedTypes)).seedTypes();
             if (crops.isEmpty()) {
                 this.discard();
                 return;
             }
 
-            Iterable<BlockPos> iterable = BlockPos.iterateOutwards(this.getBlockPos(), 2, 3, 2);
+            Iterable<BlockPos> iterable = BlockPos.withinManhattan(this.blockPosition(), 2, 3, 2);
             for(BlockPos blockPos : iterable) {
-                BlockState blockState = Registries.BLOCK.get(crops.get(this.random.nextInt(crops.size()))).getDefaultState();
-                if ((world.random.nextInt(2) == 0 || blockPos == this.getBlockPos()) && blockState.canPlaceAt(world, blockPos) && world.getBlockState(blockPos).isAir()) {
-                    world.setBlockState(blockPos, blockState);
+                BlockState blockState = BuiltInRegistries.BLOCK.getValue(crops.get(this.random.nextInt(crops.size()))).defaultBlockState();
+                if ((world.random.nextInt(2) == 0 || blockPos == this.blockPosition()) && blockState.canSurvive(world, blockPos) && world.getBlockState(blockPos).isAir()) {
+                    world.setBlockAndUpdate(blockPos, blockState);
                 }
             }
-            world.sendEntityStatus(this, (byte)3);
+            world.broadcastEntityEvent(this, (byte)3);
             this.discard();
         }
     }

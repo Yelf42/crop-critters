@@ -1,32 +1,32 @@
 package yelf42.cropcritters.entity;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.PlantBlock;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.passive.TameableEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.VegetationBlock;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.util.Tuple;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
 import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.sound.ModSounds;
 
 import java.util.function.Predicate;
 
 public class CarrotCritterEntity extends AbstractCropCritterEntity {
-    public CarrotCritterEntity(EntityType<? extends TameableEntity> entityType, World world) {
+    public CarrotCritterEntity(EntityType<? extends TamableAnimal> entityType, Level world) {
         super(entityType, world);
     }
 
     @Override
     protected Predicate<BlockState> getTargetBlockFilter() {
-        return (blockState -> blockState.isOf(Blocks.DIRT) || blockState.isOf(Blocks.GRASS_BLOCK)
-                                        || blockState.isOf(Blocks.SOUL_SOIL) || blockState.isOf(Blocks.SOUL_SAND));
+        return (blockState -> blockState.is(Blocks.DIRT) || blockState.is(Blocks.GRASS_BLOCK)
+                                        || blockState.is(Blocks.SOUL_SOIL) || blockState.is(Blocks.SOUL_SAND));
     }
 
     @Override
@@ -36,32 +36,32 @@ public class CarrotCritterEntity extends AbstractCropCritterEntity {
     public void completeTargetGoal() {
         if (this.targetPos == null) return;
         this.playSound(ModSounds.ENTITY_CRITTER_TILL, 1.0F, 1.0F);
-        BlockState target = this.getEntityWorld().getBlockState(this.targetPos);
-        BlockState farmland = (target.isOf(Blocks.DIRT) || target.isOf(Blocks.GRASS_BLOCK)) ? Blocks.FARMLAND.getDefaultState() : (target.isOf(Blocks.SOUL_SAND) || target.isOf(Blocks.SOUL_SOIL)) ? ModBlocks.SOUL_FARMLAND.getDefaultState() : null;
+        BlockState target = this.level().getBlockState(this.targetPos);
+        BlockState farmland = (target.is(Blocks.DIRT) || target.is(Blocks.GRASS_BLOCK)) ? Blocks.FARMLAND.defaultBlockState() : (target.is(Blocks.SOUL_SAND) || target.is(Blocks.SOUL_SOIL)) ? ModBlocks.SOUL_FARMLAND.defaultBlockState() : null;
         if (farmland == null) return;
-        this.getEntityWorld().setBlockState(this.targetPos, farmland, Block.NOTIFY_ALL_AND_REDRAW);
-        this.getEntityWorld().syncWorldEvent(this, 2001, this.targetPos, Block.getRawIdFromState(this.getEntityWorld().getBlockState(this.targetPos)));
+        this.level().setBlock(this.targetPos, farmland, Block.UPDATE_ALL_IMMEDIATE);
+        this.level().levelEvent(this, 2001, this.targetPos, Block.getId(this.level().getBlockState(this.targetPos)));
     }
 
     @Override
-    protected Pair<Item, Integer> getLoot() {
-        return new Pair<>(Items.CARROT, 6);
+    protected Tuple<Item, Integer> getLoot() {
+        return new Tuple<>(Items.CARROT, 6);
     }
 
     @Override
     protected boolean isHealingItem(ItemStack itemStack) {
-        return itemStack.isOf(Items.CARROT) || itemStack.isOf(Items.GOLDEN_CARROT);
+        return itemStack.is(Items.CARROT) || itemStack.is(Items.GOLDEN_CARROT);
     }
 
     @Override
     protected int resetTicksUntilCanWork() {
-        return resetTicksUntilCanWork(MathHelper.nextInt(this.random, 100, 200));
+        return resetTicksUntilCanWork(Mth.nextInt(this.random, 100, 200));
     }
 
     @Override
     public boolean isAttractive(BlockPos pos) {
-        BlockState target = this.getEntityWorld().getBlockState(pos);
-        BlockState above = this.getEntityWorld().getBlockState(pos.up());
-        return this.getTargetBlockFilter().test(target) && (above.isAir() || above.getBlock() instanceof PlantBlock);
+        BlockState target = this.level().getBlockState(pos);
+        BlockState above = this.level().getBlockState(pos.above());
+        return this.getTargetBlockFilter().test(target) && (above.isAir() || above.getBlock() instanceof VegetationBlock);
     }
 }

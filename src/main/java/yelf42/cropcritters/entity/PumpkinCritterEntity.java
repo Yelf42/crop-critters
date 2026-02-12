@@ -1,31 +1,36 @@
 package yelf42.cropcritters.entity;
 
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.FarmlandBlock;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.RangedAttackMob;
-import net.minecraft.entity.ai.TargetPredicate;
-import net.minecraft.entity.ai.goal.*;
-import net.minecraft.entity.ai.pathing.Path;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.passive.TameableEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.RangedAttackGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.FarmBlock;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.RangedAttackMob;
+import net.minecraft.world.entity.ai.targeting.TargetingConditions;
+import net.minecraft.world.level.pathfinder.Path;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Tuple;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
 import software.bernie.geckolib.animation.AnimationController;
 import software.bernie.geckolib.animation.RawAnimation;
@@ -44,31 +49,31 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
     public static final RawAnimation LOB_SEEDS = RawAnimation.begin().thenPlay("plant");
 
 
-    public PumpkinCritterEntity(EntityType<? extends TameableEntity> entityType, World world) {
+    public PumpkinCritterEntity(EntityType<? extends TamableAnimal> entityType, Level world) {
         super(entityType, world);
     }
 
     @Override
-    protected void initGoals() {
-        net.minecraft.entity.ai.goal.TemptGoal temptGoal = new TemptGoal(this, 0.6, (stack) -> stack.isOf(ModItems.LOST_SOUL), false);
-        this.goalSelector.add(0, new SwimGoal(this));
-        this.goalSelector.add(2, temptGoal);
+    protected void registerGoals() {
+        net.minecraft.world.entity.ai.goal.TemptGoal temptGoal = new TemptGoal(this, 0.6, (stack) -> stack.is(ModItems.LOST_SOUL), false);
+        this.goalSelector.addGoal(0, new FloatGoal(this));
+        this.goalSelector.addGoal(2, temptGoal);
         this.targetWorkGoal = new PumpkinTargetWorkGoal();
-        this.goalSelector.add(3, this.targetWorkGoal);
-        this.targetSelector.add(7, new MelonActiveTargetGoal());
-        this.goalSelector.add(7, new ProjectileAttackGoal(this, 1.25F, 20, 10.0F));
-        this.goalSelector.add(12, new WanderAroundGoal(this, 0.8));
-        this.goalSelector.add(20, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
-        this.goalSelector.add(20, new LookAroundGoal(this));
+        this.goalSelector.addGoal(3, this.targetWorkGoal);
+        this.targetSelector.addGoal(7, new MelonActiveTargetGoal());
+        this.goalSelector.addGoal(7, new RangedAttackGoal(this, 1.25F, 20, 10.0F));
+        this.goalSelector.addGoal(12, new RandomStrollGoal(this, 0.8));
+        this.goalSelector.addGoal(20, new LookAtPlayerGoal(this, Player.class, 8.0F));
+        this.goalSelector.addGoal(20, new RandomLookAroundGoal(this));
     }
 
-    public static DefaultAttributeContainer.Builder createAttributes() {
-        return MobEntity.createMobAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 16)
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.2)
-                .add(EntityAttributes.ATTACK_DAMAGE, 1)
-                .add(EntityAttributes.FOLLOW_RANGE, 10)
-                .add(EntityAttributes.TEMPT_RANGE, 10);
+    public static AttributeSupplier.Builder createAttributes() {
+        return Mob.createMobAttributes()
+                .add(Attributes.MAX_HEALTH, 16)
+                .add(Attributes.MOVEMENT_SPEED, 0.2)
+                .add(Attributes.ATTACK_DAMAGE, 1)
+                .add(Attributes.FOLLOW_RANGE, 10)
+                .add(Attributes.TEMPT_RANGE, 10);
     }
 
     @Override
@@ -80,7 +85,7 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
 
     @Override
     protected Predicate<BlockState> getTargetBlockFilter() {
-        return (blockState -> blockState.getBlock() instanceof FarmlandBlock || blockState.getBlock() instanceof SoulFarmland);
+        return (blockState -> blockState.getBlock() instanceof FarmBlock || blockState.getBlock() instanceof SoulFarmland);
     }
 
     @Override
@@ -90,50 +95,50 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
     public void completeTargetGoal() {
         if (this.targetPos == null) return;
         triggerAnim("plant_controller", "plant");
-        Vec3d dir = this.getRotationVector();
-        World world = this.getEntityWorld();
-        if (world instanceof ServerWorld serverWorld) {
+        Vec3 dir = this.getLookAngle();
+        Level world = this.level();
+        if (world instanceof ServerLevel serverWorld) {
             ItemStack itemStack = new ItemStack(ModItems.SEED_BALL);
-            ProjectileEntity.spawn(new SeedBallProjectileEntity(serverWorld, this, itemStack), serverWorld, itemStack, (entity) -> entity.setVelocity(dir.x, 1.8F, dir.z, 0.4F, 0.0F));
+            Projectile.spawnProjectile(new SeedBallProjectileEntity(serverWorld, this, itemStack), serverWorld, itemStack, (entity) -> entity.shoot(dir.x, 1.8F, dir.z, 0.4F, 0.0F));
         }
         this.playSound(ModSounds.ENTITY_CRITTER_SPIT, 2.0F, 0.4F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
     }
 
     @Override
-    public boolean damage(ServerWorld world, DamageSource source, float amount) {
+    public boolean hurtServer(ServerLevel world, DamageSource source, float amount) {
         if (this.isInvulnerableTo(world, source)) {
             return false;
         } else {
             this.targetWorkGoal.cancel();
-            return super.damage(world, source, amount);
+            return super.hurtServer(world, source, amount);
         }
     }
 
     @Override
-    protected Pair<Item, Integer> getLoot() {
-        return new Pair<>(Items.PUMPKIN, 1);
+    protected Tuple<Item, Integer> getLoot() {
+        return new Tuple<>(Items.PUMPKIN, 1);
     }
 
     @Override
     protected boolean isHealingItem(ItemStack itemStack) {
-        return itemStack.isOf(Items.PUMPKIN) || itemStack.isOf(Items.PUMPKIN_SEEDS) || itemStack.isOf(Items.CARVED_PUMPKIN);
+        return itemStack.is(Items.PUMPKIN) || itemStack.is(Items.PUMPKIN_SEEDS) || itemStack.is(Items.CARVED_PUMPKIN);
     }
 
     @Override
     protected int resetTicksUntilCanWork() {
-        return resetTicksUntilCanWork(MathHelper.nextInt(this.random, 150, 500));
+        return resetTicksUntilCanWork(Mth.nextInt(this.random, 150, 500));
     }
 
     @Override
-    public void shootAt(LivingEntity target, float pullProgress) {
+    public void performRangedAttack(LivingEntity target, float pullProgress) {
         double d = target.getX() - this.getX();
         double e = target.getEyeY() - 0.4F;
         double f = target.getZ() - this.getZ();
         double g = Math.sqrt(d * d + f * f) * (double)0.2F;
-        World var12 = this.getEntityWorld();
-        if (var12 instanceof ServerWorld serverWorld) {
+        Level var12 = this.level();
+        if (var12 instanceof ServerLevel serverWorld) {
             ItemStack itemStack = new ItemStack(Items.PUMPKIN_SEEDS);
-            ProjectileEntity.spawn(new SpitSeedProjectileEntity(serverWorld, this, itemStack), serverWorld, itemStack, (entity) -> entity.setVelocity(d, e + g - entity.getY(), f, 1.2F, 3.0F));
+            Projectile.spawnProjectile(new SpitSeedProjectileEntity(serverWorld, this, itemStack), serverWorld, itemStack, (entity) -> entity.shoot(d, e + g - entity.getY(), f, 1.2F, 3.0F));
         }
         this.playSound(ModSounds.ENTITY_CRITTER_SPIT, 2.0F, 0.4F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
     }
@@ -143,7 +148,7 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
         @Override
         public void start() {
             super.start();
-            this.nextTarget = Vec3d.ofBottomCenter(PumpkinCritterEntity.this.targetPos).add(0.0F, getTargetOffset(), 0.0F);
+            this.nextTarget = Vec3.atBottomCenterOf(PumpkinCritterEntity.this.targetPos).add(0.0F, getTargetOffset(), 0.0F);
         }
 
         @Override
@@ -153,14 +158,14 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
                 if (this.ticks > 600 || !(isAttractive(PumpkinCritterEntity.this.targetPos))) {
                     PumpkinCritterEntity.this.clearTargetPos();
                 } else {
-                    if (this.nextTarget.squaredDistanceTo(PumpkinCritterEntity.this.getEntityPos()) > (double)16.0F) {
+                    if (this.nextTarget.distanceToSqr(PumpkinCritterEntity.this.position()) > (double)16.0F) {
                         this.moveToNextTarget();
                     } else {
                         PumpkinCritterEntity.this.navigation.stop();
-                        PumpkinCritterEntity.this.setBodyYaw((float)MathHelper.lerpAngleDegrees(0.3, PumpkinCritterEntity.this.getBodyYaw(), targetYaw(this.nextTarget)));
-                        boolean bl2 = MathHelper.abs(MathHelper.wrapDegrees(PumpkinCritterEntity.this.getBodyYaw() - targetYaw(this.nextTarget))) < 5F;
+                        PumpkinCritterEntity.this.setYBodyRot((float) Mth.rotLerp(0.3, PumpkinCritterEntity.this.getVisualRotationYInDegrees(), targetYaw(this.nextTarget)));
+                        boolean bl2 = Mth.abs(Mth.wrapDegrees(PumpkinCritterEntity.this.getVisualRotationYInDegrees() - targetYaw(this.nextTarget))) < 5F;
                         if (bl2) {
-                            PumpkinCritterEntity.this.getLookControl().lookAt(this.nextTarget);
+                            PumpkinCritterEntity.this.getLookControl().setLookAt(this.nextTarget);
                             PumpkinCritterEntity.this.completeTargetGoal();
                             PumpkinCritterEntity.this.clearTargetPos();
                         }
@@ -169,27 +174,27 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
             }
         }
 
-        protected float targetYaw(Vec3d target) {
-            Vec3d d = target.subtract(PumpkinCritterEntity.this.getEntityPos());
-            return (float)(MathHelper.atan2(d.z, d.x) * (180.0 / Math.PI)) - 90.0F;
+        protected float targetYaw(Vec3 target) {
+            Vec3 d = target.subtract(PumpkinCritterEntity.this.position());
+            return (float)(Mth.atan2(d.z, d.x) * (180.0 / Math.PI)) - 90.0F;
         }
 
         @Override
         protected Optional<BlockPos> getTargetBlock() {
-            Iterable<BlockPos> iterable = BlockPos.iterateOutwards(PumpkinCritterEntity.this.getBlockPos(), 12, 2, 12);
+            Iterable<BlockPos> iterable = BlockPos.withinManhattan(PumpkinCritterEntity.this.blockPosition(), 12, 2, 12);
             Long2LongOpenHashMap long2LongOpenHashMap = new Long2LongOpenHashMap();
 
             for(BlockPos blockPos : iterable) {
                 long l = this.unreachableTargetsPosCache.getOrDefault(blockPos.asLong(), Long.MIN_VALUE);
-                if (PumpkinCritterEntity.this.getEntityWorld().getTime() < l) {
+                if (PumpkinCritterEntity.this.level().getGameTime() < l) {
                     long2LongOpenHashMap.put(blockPos.asLong(), l);
                 } else if (isAttractive(blockPos)) {
-                    Path path = PumpkinCritterEntity.this.navigation.findPathTo(blockPos, 0);
-                    if (path != null && path.reachesTarget() && !blockPos.isWithinDistance(PumpkinCritterEntity.this.getEntityPos(), 3)) {
+                    Path path = PumpkinCritterEntity.this.navigation.createPath(blockPos, 0);
+                    if (path != null && path.canReach() && !blockPos.closerToCenterThan(PumpkinCritterEntity.this.position(), 3)) {
                         return Optional.of(blockPos);
                     }
 
-                    long2LongOpenHashMap.put(blockPos.asLong(), PumpkinCritterEntity.this.getEntityWorld().getTime() + 600L);
+                    long2LongOpenHashMap.put(blockPos.asLong(), PumpkinCritterEntity.this.level().getGameTime() + 600L);
                 }
             }
 
@@ -198,30 +203,30 @@ public class PumpkinCritterEntity extends AbstractCropCritterEntity implements R
         }
     }
 
-    class MelonActiveTargetGoal extends ActiveTargetGoal<LivingEntity> {
+    class MelonActiveTargetGoal extends NearestAttackableTargetGoal<LivingEntity> {
 
         public MelonActiveTargetGoal() {
-            super(PumpkinCritterEntity.this, LivingEntity.class, 10, true, false, (entity, serverWorld) -> (!(entity.getType().isIn(CropCritters.CROP_CRITTERS))));
+            super(PumpkinCritterEntity.this, LivingEntity.class, 10, true, false, (entity, serverWorld) -> (!(entity.getType().is(CropCritters.CROP_CRITTERS))));
         }
 
         @Override
-        protected void findClosestTarget() {
-            ServerWorld serverWorld = getServerWorld(this.mob);
-            this.targetEntity = serverWorld.getClosestEntity(this.mob.getEntityWorld().getEntitiesByClass(this.targetClass, this.getSearchBox(this.getFollowRange()), (livingEntity) -> true), this.getAndUpdateTargetPredicate(), this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
+        protected void findTarget() {
+            ServerLevel serverWorld = getServerLevel(this.mob);
+            this.target = serverWorld.getNearestEntity(this.mob.level().getEntitiesOfClass(this.targetType, this.getTargetSearchArea(this.getFollowDistance()), (livingEntity) -> true), this.getAndUpdateTargetPredicate(), this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
         }
 
-        private TargetPredicate getAndUpdateTargetPredicate() {
-            return this.targetPredicate.setBaseMaxDistance(this.getFollowRange());
-        }
-
-        @Override
-        public boolean canStart() {
-            return super.canStart() && (!PumpkinCritterEntity.this.isTrusting() || this.targetEntity instanceof HostileEntity);
+        private TargetingConditions getAndUpdateTargetPredicate() {
+            return this.targetConditions.range(this.getFollowDistance());
         }
 
         @Override
-        public boolean shouldContinue() {
-            return super.shouldContinue() && (!PumpkinCritterEntity.this.isTrusting() || this.targetEntity instanceof HostileEntity);
+        public boolean canUse() {
+            return super.canUse() && (!PumpkinCritterEntity.this.isTrusting() || this.target instanceof Monster);
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            return super.canContinueToUse() && (!PumpkinCritterEntity.this.isTrusting() || this.target instanceof Monster);
         }
     }
 }

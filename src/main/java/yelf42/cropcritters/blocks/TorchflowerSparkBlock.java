@@ -1,58 +1,59 @@
 package yelf42.cropcritters.blocks;
 
-import net.minecraft.block.AirBlock;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.World;
-import net.minecraft.world.tick.TickPriority;
+import net.minecraft.world.level.block.AirBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.ticks.TickPriority;
 import yelf42.cropcritters.entity.TorchflowerCritterEntity;
 
 import java.util.List;
 
 public class TorchflowerSparkBlock extends AirBlock {
 
-    public TorchflowerSparkBlock(Settings settings) {
+    public TorchflowerSparkBlock(Properties settings) {
         super(settings);
     }
 
     @Override
-    protected void scheduledTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
-        List<TorchflowerCritterEntity> list = world.getEntitiesByClass(TorchflowerCritterEntity.class, new Box(pos).expand(2F), (torchflowerCritterEntity -> true));
+    protected void tick(BlockState state, ServerLevel world, BlockPos pos, RandomSource random) {
+        List<TorchflowerCritterEntity> list = world.getEntitiesOfClass(TorchflowerCritterEntity.class, new AABB(pos).inflate(2F), (torchflowerCritterEntity -> true));
         if (list.isEmpty()) {
-            world.setBlockState(pos, Blocks.AIR.getDefaultState());
+            world.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
         } else {
-            world.scheduleBlockTick(pos, ModBlocks.TORCHFLOWER_SPARK, 200, TickPriority.EXTREMELY_LOW);
+            world.scheduleTick(pos, ModBlocks.TORCHFLOWER_SPARK, 200, TickPriority.EXTREMELY_LOW);
         }
     }
 
     @Override
-    public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
-        super.randomDisplayTick(state, world, pos, random);
-        if (world.isClient()) {
-            Vec3d p = pos.toCenterPos();
-            world.addParticleClient(ParticleTypes.SOUL_FIRE_FLAME, p.x, p.y, p.z, 0F, 0F, 0F);
+    public void animateTick(BlockState state, Level world, BlockPos pos, RandomSource random) {
+        super.animateTick(state, world, pos, random);
+        if (world.isClientSide()) {
+            Vec3 p = pos.getCenter();
+            world.addParticle(ParticleTypes.SOUL_FIRE_FLAME, p.x, p.y, p.z, 0F, 0F, 0F);
         }
     }
 
     @Override
-    protected boolean hasRandomTicks(BlockState state) {
+    protected boolean isRandomlyTicking(BlockState state) {
         return true;
     }
 
     @Override
-    protected void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
-        world.scheduleBlockTick(pos, ModBlocks.TORCHFLOWER_SPARK, 1, TickPriority.EXTREMELY_LOW);
+    protected void randomTick(BlockState state, ServerLevel world, BlockPos pos, RandomSource random) {
+        world.scheduleTick(pos, ModBlocks.TORCHFLOWER_SPARK, 1, TickPriority.EXTREMELY_LOW);
     }
 
     @Override
-    protected void onBlockAdded(BlockState state, World world, BlockPos pos, BlockState oldState, boolean notify) {
-        world.scheduleBlockTick(pos, ModBlocks.TORCHFLOWER_SPARK, 200, TickPriority.EXTREMELY_LOW);
-        super.onBlockAdded(state, world, pos, oldState, notify);
+    protected void onPlace(BlockState state, Level world, BlockPos pos, BlockState oldState, boolean notify) {
+        world.scheduleTick(pos, ModBlocks.TORCHFLOWER_SPARK, 200, TickPriority.EXTREMELY_LOW);
+        super.onPlace(state, world, pos, oldState, notify);
     }
 }

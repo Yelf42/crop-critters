@@ -1,40 +1,48 @@
 package yelf42.cropcritters.entity;
 
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
-import net.minecraft.block.*;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.ai.goal.*;
-import net.minecraft.entity.ai.pathing.NavigationType;
-import net.minecraft.entity.ai.pathing.Path;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.passive.TameableEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.loot.context.LootContextParameters;
-import net.minecraft.loot.context.LootWorldContext;
-import net.minecraft.predicate.entity.EntityPredicates;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.NetherWartBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.pathfinder.PathComputationType;
+import net.minecraft.world.level.pathfinder.Path;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.util.Tuple;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
 import software.bernie.geckolib.animation.AnimationController;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.animation.object.PlayState;
 import software.bernie.geckolib.constant.DefaultAnimations;
-import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.config.RecognizedCropsState;
 import yelf42.cropcritters.items.ModItems;
 import yelf42.cropcritters.sound.ModSounds;
@@ -44,8 +52,8 @@ import java.util.function.Predicate;
 
 public class CocoaCritterEntity extends AbstractCropCritterEntity {
 
-    private static final Predicate<Entity> NOTICEABLE_PLAYER_FILTER = (entity) -> !entity.isSneaky() && EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR.test(entity);
-    private static final Predicate<ItemEntity> PICKABLE_DROP_FILTER = (item) -> !item.cannotPickup() && item.isAlive();
+    private static final Predicate<Entity> NOTICEABLE_PLAYER_FILTER = (entity) -> !entity.isDiscrete() && EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(entity);
+    private static final Predicate<ItemEntity> PICKABLE_DROP_FILTER = (item) -> !item.hasPickUpDelay() && item.isAlive();
     public static final RawAnimation HOLD = RawAnimation.begin().thenPlayAndHold("holding");
     private static final Set<Item> DEFAULT_KNOWN_ITEMS = new HashSet<>();
 
@@ -73,35 +81,35 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
     }
 
     @Override
-    protected void writeCustomData(WriteView view) {
-        super.writeCustomData(view);
-        view.putNullable("hopper_pos", BlockPos.CODEC, this.hopperPos);
+    protected void addAdditionalSaveData(ValueOutput view) {
+        super.addAdditionalSaveData(view);
+        view.storeNullable("hopper_pos", BlockPos.CODEC, this.hopperPos);
     }
 
     @Override
-    protected void readCustomData(ReadView view) {
-        super.readCustomData(view);
+    protected void readAdditionalSaveData(ValueInput view) {
+        super.readAdditionalSaveData(view);
         this.hopperPos = (BlockPos)view.read("hopper_pos", BlockPos.CODEC).orElse(null);
     }
 
 
-    public CocoaCritterEntity(EntityType<? extends TameableEntity> entityType, World world) {
+    public CocoaCritterEntity(EntityType<? extends TamableAnimal> entityType, Level world) {
         super(entityType, world);
         this.setCanPickUpLoot(true);
     }
 
-    protected void initGoals() {
-        net.minecraft.entity.ai.goal.TemptGoal temptGoal = new TemptGoal(this, 0.6, (stack) -> stack.isOf(ModItems.LOST_SOUL), true);
-        this.goalSelector.add(0, new SwimGoal(this));
-        this.goalSelector.add(2, temptGoal);
-        this.goalSelector.add(6, new FleeEntityGoal<>(this, PlayerEntity.class, 10.0F, 1.6, 1.4, (entity) -> NOTICEABLE_PLAYER_FILTER.test(entity) && !this.isTrusting()));
-        this.goalSelector.add(7, new DepositInHopperGoal());
+    protected void registerGoals() {
+        net.minecraft.world.entity.ai.goal.TemptGoal temptGoal = new TemptGoal(this, 0.6, (stack) -> stack.is(ModItems.LOST_SOUL), true);
+        this.goalSelector.addGoal(0, new FloatGoal(this));
+        this.goalSelector.addGoal(2, temptGoal);
+        this.goalSelector.addGoal(6, new AvoidEntityGoal<>(this, Player.class, 10.0F, 1.6, 1.4, (entity) -> NOTICEABLE_PLAYER_FILTER.test(entity) && !this.isTrusting()));
+        this.goalSelector.addGoal(7, new DepositInHopperGoal());
         this.targetWorkGoal = new TargetWorkGoal();
-        this.goalSelector.add(8, this.targetWorkGoal);
-        this.goalSelector.add(9, new PickupItemGoal());
-        this.goalSelector.add(12, new WanderAroundGoal(this, 0.8));
-        this.goalSelector.add(20, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
-        this.goalSelector.add(20, new LookAroundGoal(this));
+        this.goalSelector.addGoal(8, this.targetWorkGoal);
+        this.goalSelector.addGoal(9, new PickupItemGoal());
+        this.goalSelector.addGoal(12, new RandomStrollGoal(this, 0.8));
+        this.goalSelector.addGoal(20, new LookAtPlayerGoal(this, Player.class, 8.0F));
+        this.goalSelector.addGoal(20, new RandomLookAroundGoal(this));
     }
 
     @Override
@@ -109,7 +117,7 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
         controllerRegistrar.add(
                 DefaultAnimations.genericWalkIdleController(),
                 new AnimationController<>("Hold", test -> {
-                    if ((this.getEquippedStack(EquipmentSlot.MAINHAND).isEmpty())) {
+                    if ((this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty())) {
                         test.controller().reset();
                         return PlayState.STOP;
                     } else {
@@ -122,8 +130,8 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
 
     @Override
     protected Predicate<BlockState> getTargetBlockFilter() {
-        return (blockState -> ((blockState.getBlock() instanceof CropBlock cropBlock && cropBlock.isMature(blockState)))
-                || (blockState.getBlock() instanceof NetherWartBlock && blockState.get(NetherWartBlock.AGE, 0) >= NetherWartBlock.MAX_AGE));
+        return (blockState -> ((blockState.getBlock() instanceof CropBlock cropBlock && cropBlock.isMaxAge(blockState)))
+                || (blockState.getBlock() instanceof NetherWartBlock && blockState.getValueOrElse(NetherWartBlock.AGE, 0) >= NetherWartBlock.MAX_AGE));
     }
 
     @Override
@@ -133,83 +141,83 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
 
     @Override
     protected boolean canWork() {
-        return this.getEquippedStack(EquipmentSlot.MAINHAND).isEmpty();
+        return this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty();
     }
 
     @Override
-    protected Pair<Item, Integer> getLoot() {
-        return new Pair<>(Items.COCOA_BEANS, 3);
+    protected Tuple<Item, Integer> getLoot() {
+        return new Tuple<>(Items.COCOA_BEANS, 3);
     }
 
     @Override
     protected boolean isHealingItem(ItemStack itemStack) {
-        return itemStack.isOf(Items.COCOA_BEANS);
+        return itemStack.is(Items.COCOA_BEANS);
     }
 
     @Override
     protected int resetTicksUntilCanWork() {
-        return resetTicksUntilCanWork(MathHelper.nextInt(this.random, 500, 600));
+        return resetTicksUntilCanWork(Mth.nextInt(this.random, 500, 600));
     }
 
 
     @Override
     public void completeTargetGoal() {
-        if (!this.getEquippedStack(EquipmentSlot.MAINHAND).isEmpty() || this.targetPos == null || this.getEntityWorld().isClient()) return;
-        ServerWorld world = (ServerWorld) this.getEntityWorld();
+        if (!this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty() || this.targetPos == null || this.level().isClientSide()) return;
+        ServerLevel world = (ServerLevel) this.level();
         BlockState state = world.getBlockState(this.targetPos);
         if (!getTargetBlockFilter().test(state)) return;
 
-        LootWorldContext.Builder builder = (new LootWorldContext.Builder(world)).add(LootContextParameters.ORIGIN, Vec3d.ofCenter(this.targetPos)).add(LootContextParameters.TOOL, ItemStack.EMPTY);
-        List<ItemStack> items = state.getDroppedStacks(builder);
+        LootParams.Builder builder = (new LootParams.Builder(world)).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(this.targetPos)).withParameter(LootContextParams.TOOL, ItemStack.EMPTY);
+        List<ItemStack> items = state.getDrops(builder);
         if (items.isEmpty()) return;
 
         int index = world.random.nextInt(items.size());
         ItemStack toDrop = items.remove(index);
         toDrop.setCount(Math.clamp(toDrop.getCount(), 1, 5));
-        this.equipStack(EquipmentSlot.MAINHAND, toDrop);
-        this.setDropGuaranteed(EquipmentSlot.MAINHAND);
+        this.setItemSlot(EquipmentSlot.MAINHAND, toDrop);
+        this.setGuaranteedDrop(EquipmentSlot.MAINHAND);
         recordCrop(toDrop.getItem());
         items.forEach((stack) -> {
             recordCrop(stack.getItem());
-            Block.dropStack(world, this.targetPos, stack);
+            Block.popResource(world, this.targetPos, stack);
         });
 
-        world.syncWorldEvent(this, 2001, this.targetPos, Block.getRawIdFromState(state));
-        world.setBlockState(this.targetPos, Blocks.AIR.getDefaultState(), Block.NOTIFY_LISTENERS);
+        world.levelEvent(this, 2001, this.targetPos, Block.getId(state));
+        world.setBlock(this.targetPos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
     }
 
     private void recordCrop(Item item) {
-        if (this.getEntityWorld().isClient()) return;
-        ServerWorld world = (ServerWorld)this.getEntityWorld();
+        if (this.level().isClientSide()) return;
+        ServerLevel world = (ServerLevel)this.level();
         RecognizedCropsState state = RecognizedCropsState.getServerState(world.getServer());
         state.addCrop(item);
     }
 
     private boolean checkCrop(Item item) {
-        if (this.getEntityWorld().isClient()) return false;
+        if (this.level().isClientSide()) return false;
         if (DEFAULT_KNOWN_ITEMS.contains(item)) return true;
-        ServerWorld world = (ServerWorld)this.getEntityWorld();
+        ServerLevel world = (ServerLevel)this.level();
         RecognizedCropsState state = RecognizedCropsState.getServerState(world.getServer());
         return state.hasCrop(item);
     }
 
     @Override
-    protected void drop(ServerWorld world, DamageSource damageSource) {
-        ItemStack itemStack = this.getEquippedStack(EquipmentSlot.MAINHAND);
+    protected void dropAllDeathLoot(ServerLevel world, DamageSource damageSource) {
+        ItemStack itemStack = this.getItemBySlot(EquipmentSlot.MAINHAND);
         if (!itemStack.isEmpty()) {
-            this.dropStack(world, itemStack);
-            this.equipStack(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+            this.spawnAtLocation(world, itemStack);
+            this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
         }
 
-        super.drop(world, damageSource);
+        super.dropAllDeathLoot(world, damageSource);
     }
 
     // Right click with empty hand makes critter try drop held item
     @Override
-    public ActionResult interactMob(PlayerEntity player, Hand hand) {
-        ActionResult actionResult = super.interactMob(player, hand);
-        if (!this.getEntityWorld().isClient() && !actionResult.isAccepted() && this.isTrusting() && player.getStackInHand(hand).isEmpty()) {
-            if (tryPutDown(this.getEquippedStack(EquipmentSlot.MAINHAND), true)) return ActionResult.SUCCESS;
+    public InteractionResult mobInteract(Player player, InteractionHand hand) {
+        InteractionResult actionResult = super.mobInteract(player, hand);
+        if (!this.level().isClientSide() && !actionResult.consumesAction() && this.isTrusting() && player.getItemInHand(hand).isEmpty()) {
+            if (tryPutDown(this.getItemBySlot(EquipmentSlot.MAINHAND), true)) return InteractionResult.SUCCESS;
         }
         return actionResult;
     }
@@ -219,43 +227,43 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
         if (!stack.isEmpty()) {
             ItemEntity itemEntity;
             if (withVelocity) {
-                itemEntity = new ItemEntity(this.getEntityWorld(), this.getX() + this.getRotationVector().x, this.getY() + (double)0.6F, this.getZ() + this.getRotationVector().z, stack);
+                itemEntity = new ItemEntity(this.level(), this.getX() + this.getLookAngle().x, this.getY() + (double)0.6F, this.getZ() + this.getLookAngle().z, stack);
             } else {
-                itemEntity = new ItemEntity(this.getEntityWorld(), this.getX(), this.getY() + (double)0.6F, this.getZ(), stack, 0F, 0F, 0F);
+                itemEntity = new ItemEntity(this.level(), this.getX(), this.getY() + (double)0.6F, this.getZ(), stack, 0F, 0F, 0F);
             }
-            itemEntity.setPickupDelay(40);
+            itemEntity.setPickUpDelay(40);
             itemEntity.setThrower(this);
             this.playSound(ModSounds.ENTITY_CRITTER_DROP, 1.0F, 1.0F);
-            this.getEntityWorld().spawnEntity(itemEntity);
-            this.equipStack(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+            this.level().addFreshEntity(itemEntity);
+            this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
             return true;
         }
         return false;
     }
 
     @Override
-    public boolean canPickupItem(ItemStack stack) {
-        ItemStack itemStack = this.getEquippedStack(EquipmentSlot.MAINHAND);
+    public boolean canHoldItem(ItemStack stack) {
+        ItemStack itemStack = this.getItemBySlot(EquipmentSlot.MAINHAND);
         return itemStack.isEmpty() && checkCrop(stack.getItem());
     }
 
     private void dropItem(ItemStack stack) {
-        ItemEntity itemEntity = new ItemEntity(this.getEntityWorld(), this.getX(), this.getY(), this.getZ(), stack);
-        this.getEntityWorld().spawnEntity(itemEntity);
+        ItemEntity itemEntity = new ItemEntity(this.level(), this.getX(), this.getY(), this.getZ(), stack);
+        this.level().addFreshEntity(itemEntity);
     }
 
     @Override
-    protected void loot(ServerWorld world, ItemEntity itemEntity) {
-        ItemStack itemStack = itemEntity.getStack();
-        if (this.canPickupItem(itemStack)) {
+    protected void pickUpItem(ServerLevel world, ItemEntity itemEntity) {
+        ItemStack itemStack = itemEntity.getItem();
+        if (this.canHoldItem(itemStack)) {
             int i = itemStack.getCount();
             if (i > 5) {
                 this.dropItem(itemStack.split(i - 5));
             }
-            this.triggerItemPickedUpByEntityCriteria(itemEntity);
-            this.equipStack(EquipmentSlot.MAINHAND, itemStack.split(5));
-            this.setDropGuaranteed(EquipmentSlot.MAINHAND);
-            this.sendPickup(itemEntity, itemStack.getCount());
+            this.onItemPickup(itemEntity);
+            this.setItemSlot(EquipmentSlot.MAINHAND, itemStack.split(5));
+            this.setGuaranteedDrop(EquipmentSlot.MAINHAND);
+            this.take(itemEntity, itemStack.getCount());
             itemEntity.discard();
         }
 
@@ -263,18 +271,18 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
 
     protected boolean validHopperPos() {
         return this.hopperPos != null
-                && this.getEntityWorld().getBlockState(this.hopperPos).isOf(Blocks.HOPPER)
-                && this.hopperPos.isWithinDistance(this.getEntityPos(), MAX_HOPPER_DISTANCE);
+                && this.level().getBlockState(this.hopperPos).is(Blocks.HOPPER)
+                && this.hopperPos.closerToCenterThan(this.position(), MAX_HOPPER_DISTANCE);
     }
 
     class DepositInHopperGoal extends Goal {
         protected Long2LongOpenHashMap unreachableTargetsPosCache = new Long2LongOpenHashMap();
         protected int ticks;
-        protected Vec3d nextTarget;
+        protected Vec3 nextTarget;
 
         @Override
-        public boolean canStart() {
-            if (!CocoaCritterEntity.this.isTrusting() || CocoaCritterEntity.this.getEquippedStack(EquipmentSlot.MAINHAND).isEmpty()) return false;
+        public boolean canUse() {
+            if (!CocoaCritterEntity.this.isTrusting() || CocoaCritterEntity.this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty()) return false;
             if (validHopperPos()) return true;
             Optional<BlockPos> optional = this.getTargetBlock();
             if (optional.isPresent()) {
@@ -290,8 +298,8 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
         }
 
         @Override
-        public boolean shouldContinue() {
-            return validHopperPos() && !CocoaCritterEntity.this.getEquippedStack(EquipmentSlot.MAINHAND).isEmpty();
+        public boolean canContinueToUse() {
+            return validHopperPos() && !CocoaCritterEntity.this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty();
         }
 
         @Override
@@ -301,8 +309,8 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
                 CocoaCritterEntity.this.hopperPos = null;
             } else {
                 // validHopperPos() checks for null, ignore warning
-                Vec3d vec3d = Vec3d.ofBottomCenter(CocoaCritterEntity.this.hopperPos).add(0.0F, 1, 0.0F);
-                if (vec3d.squaredDistanceTo(CocoaCritterEntity.this.getEntityPos()) > (double)1.0F) {
+                Vec3 vec3d = Vec3.atBottomCenterOf(CocoaCritterEntity.this.hopperPos).add(0.0F, 1, 0.0F);
+                if (vec3d.distanceToSqr(CocoaCritterEntity.this.position()) > (double)1.0F) {
                     this.nextTarget = vec3d;
                     this.moveToNextTarget();
                 } else {
@@ -310,42 +318,42 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
                         this.nextTarget = vec3d;
                     }
 
-                    boolean bl = CocoaCritterEntity.this.getEntityPos().distanceTo(this.nextTarget) <= 0.5;
+                    boolean bl = CocoaCritterEntity.this.position().distanceTo(this.nextTarget) <= 0.5;
                     if (!bl && this.ticks > 300) {
                         CocoaCritterEntity.this.hopperPos = null;
                     } else if (bl) {
-                        ItemStack stack = CocoaCritterEntity.this.getEquippedStack(EquipmentSlot.MAINHAND);
+                        ItemStack stack = CocoaCritterEntity.this.getItemBySlot(EquipmentSlot.MAINHAND);
                         CocoaCritterEntity.this.tryPutDown(stack, false);
                     } else {
-                        CocoaCritterEntity.this.getMoveControl().moveTo(this.nextTarget.getX(), this.nextTarget.getY(), this.nextTarget.getZ(), 0.8F);
+                        CocoaCritterEntity.this.getMoveControl().setWantedPosition(this.nextTarget.x(), this.nextTarget.y(), this.nextTarget.z(), 0.8F);
                     }
                 }
             }
         }
 
         protected void moveToNextTarget() {
-            CocoaCritterEntity.this.navigation.startMovingAlong(CocoaCritterEntity.this.navigation.findPathTo(this.nextTarget.getX(), this.nextTarget.getY(), this.nextTarget.getZ(), 0), 1.2F);
+            CocoaCritterEntity.this.navigation.moveTo(CocoaCritterEntity.this.navigation.createPath(this.nextTarget.x(), this.nextTarget.y(), this.nextTarget.z(), 0), 1.2F);
         }
 
         protected boolean checkHopper(BlockPos blockPos) {
-            return (CocoaCritterEntity.this.getEntityWorld().getBlockState(blockPos).isOf(Blocks.HOPPER))
-                    && (CocoaCritterEntity.this.getEntityWorld().getBlockState(blockPos.up()).canPathfindThrough(NavigationType.LAND));
+            return (CocoaCritterEntity.this.level().getBlockState(blockPos).is(Blocks.HOPPER))
+                    && (CocoaCritterEntity.this.level().getBlockState(blockPos.above()).isPathfindable(PathComputationType.LAND));
         }
 
         protected Optional<BlockPos> getTargetBlock() {
-            Iterable<BlockPos> iterable = BlockPos.iterateOutwards(CocoaCritterEntity.this.getBlockPos(), 12, 2, 12);
+            Iterable<BlockPos> iterable = BlockPos.withinManhattan(CocoaCritterEntity.this.blockPosition(), 12, 2, 12);
             Long2LongOpenHashMap long2LongOpenHashMap = new Long2LongOpenHashMap();
 
             for(BlockPos blockPos : iterable) {
                 long l = this.unreachableTargetsPosCache.getOrDefault(blockPos.asLong(), Long.MIN_VALUE);
-                if (CocoaCritterEntity.this.getEntityWorld().getTime() < l) {
+                if (CocoaCritterEntity.this.level().getGameTime() < l) {
                     long2LongOpenHashMap.put(blockPos.asLong(), l);
                 } else if (checkHopper(blockPos)) {
-                    Path path = CocoaCritterEntity.this.navigation.findPathTo(blockPos, 0);
-                    if (path != null && path.reachesTarget()) {
+                    Path path = CocoaCritterEntity.this.navigation.createPath(blockPos, 0);
+                    if (path != null && path.canReach()) {
                         return Optional.of(blockPos);
                     }
-                    long2LongOpenHashMap.put(blockPos.asLong(), CocoaCritterEntity.this.getEntityWorld().getTime() + 600L);
+                    long2LongOpenHashMap.put(blockPos.asLong(), CocoaCritterEntity.this.level().getGameTime() + 600L);
                 }
             }
             this.unreachableTargetsPosCache = long2LongOpenHashMap;
@@ -356,29 +364,29 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
 
     class PickupItemGoal extends Goal {
         public PickupItemGoal() {
-            this.setControls(EnumSet.of(Control.MOVE));
+            this.setFlags(EnumSet.of(Flag.MOVE));
         }
 
-        public boolean canStart() {
-            if (!CocoaCritterEntity.this.getEquippedStack(EquipmentSlot.MAINHAND).isEmpty()) return false;
-            if (CocoaCritterEntity.this.getRandom().nextInt(toGoalTicks(10)) != 0) {
+        public boolean canUse() {
+            if (!CocoaCritterEntity.this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty()) return false;
+            if (CocoaCritterEntity.this.getRandom().nextInt(reducedTickDelay(10)) != 0) {
                 return false;
             } else {
-                List<ItemEntity> list = CocoaCritterEntity.this.getEntityWorld().getEntitiesByClass(ItemEntity.class, CocoaCritterEntity.this.getBoundingBox().expand(8.0F, 8.0F, 8.0F), CocoaCritterEntity.PICKABLE_DROP_FILTER);
+                List<ItemEntity> list = CocoaCritterEntity.this.level().getEntitiesOfClass(ItemEntity.class, CocoaCritterEntity.this.getBoundingBox().inflate(8.0F, 8.0F, 8.0F), CocoaCritterEntity.PICKABLE_DROP_FILTER);
                 return !list.isEmpty();
             }
         }
 
         public void tick() {
-            List<ItemEntity> list = CocoaCritterEntity.this.getEntityWorld().getEntitiesByClass(ItemEntity.class, CocoaCritterEntity.this.getBoundingBox().expand(8.0F, 8.0F, 8.0F), CocoaCritterEntity.PICKABLE_DROP_FILTER);
-            ItemStack itemStack = CocoaCritterEntity.this.getEquippedStack(EquipmentSlot.MAINHAND);
+            List<ItemEntity> list = CocoaCritterEntity.this.level().getEntitiesOfClass(ItemEntity.class, CocoaCritterEntity.this.getBoundingBox().inflate(8.0F, 8.0F, 8.0F), CocoaCritterEntity.PICKABLE_DROP_FILTER);
+            ItemStack itemStack = CocoaCritterEntity.this.getItemBySlot(EquipmentSlot.MAINHAND);
             if (itemStack.isEmpty() && !list.isEmpty()) {
                 moveTowardsCropItem(list);
             }
         }
 
         public void start() {
-            List<ItemEntity> list = CocoaCritterEntity.this.getEntityWorld().getEntitiesByClass(ItemEntity.class, CocoaCritterEntity.this.getBoundingBox().expand(8.0F, 8.0F, 8.0F), CocoaCritterEntity.PICKABLE_DROP_FILTER);
+            List<ItemEntity> list = CocoaCritterEntity.this.level().getEntitiesOfClass(ItemEntity.class, CocoaCritterEntity.this.getBoundingBox().inflate(8.0F, 8.0F, 8.0F), CocoaCritterEntity.PICKABLE_DROP_FILTER);
             if (!list.isEmpty()) {
                 moveTowardsCropItem(list);
             }
@@ -386,8 +394,8 @@ public class CocoaCritterEntity extends AbstractCropCritterEntity {
 
         private void moveTowardsCropItem(List<ItemEntity> list) {
             for (ItemEntity itemEntity : list) {
-                if (CocoaCritterEntity.this.checkCrop(itemEntity.getStack().getItem())) {
-                    CocoaCritterEntity.this.getNavigation().startMovingTo(itemEntity, 1.2F);
+                if (CocoaCritterEntity.this.checkCrop(itemEntity.getItem().getItem())) {
+                    CocoaCritterEntity.this.getNavigation().moveTo(itemEntity, 1.2F);
                     return;
                 }
             }

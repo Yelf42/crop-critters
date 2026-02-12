@@ -1,43 +1,44 @@
 package yelf42.cropcritters.blocks;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityCollisionHandler;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import yelf42.cropcritters.CropCritters;
 
 public class WitheringSpiteweed extends SpreadingWeedBlock {
 
-    public WitheringSpiteweed(Settings settings) {
+    public WitheringSpiteweed(Properties settings) {
         super(settings);
     }
 
     @Override
-    protected boolean canPlantOnTop(BlockState floor, BlockView world, BlockPos pos) {
-        return super.canPlantOnTop(floor, world, pos)
-                || floor.isOf(Blocks.SOUL_SOIL)
-                || floor.isOf(Blocks.SOUL_SAND)
-                || floor.isOf(Blocks.BLACKSTONE)
-                || floor.isOf(Blocks.CRIMSON_NYLIUM)
-                || floor.isOf(Blocks.WARPED_NYLIUM)
-                || floor.isOf(Blocks.NETHERRACK);
+    protected boolean mayPlaceOn(BlockState floor, BlockGetter world, BlockPos pos) {
+        return super.mayPlaceOn(floor, world, pos)
+                || floor.is(Blocks.SOUL_SOIL)
+                || floor.is(Blocks.SOUL_SAND)
+                || floor.is(Blocks.BLACKSTONE)
+                || floor.is(Blocks.CRIMSON_NYLIUM)
+                || floor.is(Blocks.WARPED_NYLIUM)
+                || floor.is(Blocks.NETHERRACK);
     }
 
     @Override
-    protected void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
-        BlockState soilCheck = world.getBlockState(pos.down());
-        if (!soilCheck.isOf(Blocks.BLACKSTONE) && (soilCheck.isOf(Blocks.SOUL_SAND) || soilCheck.isOf(Blocks.SOUL_SOIL) || soilCheck.isOf(ModBlocks.SOUL_FARMLAND))) {
-            world.setBlockState(pos.down(), Blocks.BLACKSTONE.getDefaultState(), Block.NOTIFY_LISTENERS);
+    protected void randomTick(BlockState state, ServerLevel world, BlockPos pos, RandomSource random) {
+        BlockState soilCheck = world.getBlockState(pos.below());
+        if (!soilCheck.is(Blocks.BLACKSTONE) && (soilCheck.is(Blocks.SOUL_SAND) || soilCheck.is(Blocks.SOUL_SOIL) || soilCheck.is(ModBlocks.SOUL_FARMLAND))) {
+            world.setBlock(pos.below(), Blocks.BLACKSTONE.defaultBlockState(), Block.UPDATE_CLIENTS);
         }
         super.randomTick(state, world, pos, random);
     }
@@ -47,22 +48,22 @@ public class WitheringSpiteweed extends SpreadingWeedBlock {
 
     // Also turn the block below in blackstone if possible
     @Override
-    public void setToWeed(World world, BlockPos pos) {
+    public void setToWeed(Level world, BlockPos pos) {
         super.setToWeed(world, pos);
-        BlockState soilCheck = world.getBlockState(pos.down());
-        if (soilCheck.isOf(Blocks.SOUL_SAND) || soilCheck.isOf(Blocks.SOUL_SOIL) || soilCheck.isOf(ModBlocks.SOUL_FARMLAND)) {
-            world.setBlockState(pos.down(), Blocks.BLACKSTONE.getDefaultState(), Block.NOTIFY_LISTENERS);
+        BlockState soilCheck = world.getBlockState(pos.below());
+        if (soilCheck.is(Blocks.SOUL_SAND) || soilCheck.is(Blocks.SOUL_SOIL) || soilCheck.is(ModBlocks.SOUL_FARMLAND)) {
+            world.setBlock(pos.below(), Blocks.BLACKSTONE.defaultBlockState(), Block.UPDATE_CLIENTS);
         }
     }
 
     @Override
-    protected void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler handler, boolean bl) {
+    protected void entityInside(BlockState state, Level world, BlockPos pos, Entity entity, InsideBlockEffectApplier handler, boolean bl) {
         if (entity instanceof LivingEntity livingEntity
-                && !(livingEntity.getType().isIn(CropCritters.WEED_IMMUNE))) {
-            Vec3d vec3d = new Vec3d(0.9, 0.9F, 0.9);
-            livingEntity.slowMovement(state, vec3d);
-            if (world instanceof ServerWorld serverWorld && !livingEntity.isInvulnerableTo(serverWorld, world.getDamageSources().wither())) {
-                livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.WITHER, 40));
+                && !(livingEntity.getType().is(CropCritters.WEED_IMMUNE))) {
+            Vec3 vec3d = new Vec3(0.9, 0.9F, 0.9);
+            livingEntity.makeStuckInBlock(state, vec3d);
+            if (world instanceof ServerLevel serverWorld && !livingEntity.isInvulnerableTo(serverWorld, world.damageSources().wither())) {
+                livingEntity.addEffect(new MobEffectInstance(MobEffects.WITHER, 40));
             }
         }
     }

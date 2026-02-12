@@ -1,17 +1,18 @@
 package yelf42.cropcritters.blocks;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityCollisionHandler;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 import yelf42.cropcritters.CropCritters;
 
 public class CrawlThistle extends SpreadingWeedBlock {
 
-    public CrawlThistle(Settings settings) {
+    public CrawlThistle(Properties settings) {
         super(settings);
     }
 
@@ -19,10 +20,10 @@ public class CrawlThistle extends SpreadingWeedBlock {
     public int getMaxNeighbours() { return 2; }
 
     @Override
-    protected void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler handler, boolean bl) {
-        if (entity instanceof LivingEntity livingEntity && !(livingEntity.getType().isIn(CropCritters.WEED_IMMUNE))) {
-            Vec3d vec3d = new Vec3d(0.9, 0.9F, 0.9);
-            livingEntity.slowMovement(state, vec3d);
+    protected void entityInside(BlockState state, Level world, BlockPos pos, Entity entity, InsideBlockEffectApplier handler, boolean bl) {
+        if (entity instanceof LivingEntity livingEntity && !(livingEntity.getType().is(CropCritters.WEED_IMMUNE))) {
+            Vec3 vec3d = new Vec3(0.9, 0.9F, 0.9);
+            livingEntity.makeStuckInBlock(state, vec3d);
         }
     }
 

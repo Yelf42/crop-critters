@@ -1,23 +1,29 @@
 package yelf42.cropcritters.entity;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.ai.goal.*;
-import net.minecraft.entity.passive.AnimalEntity;
-import net.minecraft.entity.passive.TameableEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.predicate.entity.EntityPredicates;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.tick.TickPriority;
+import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.FollowOwnerGoal;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.SitWhenOrderedToGoal;
+import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.util.Tuple;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.ticks.TickPriority;
 import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.items.ModItems;
@@ -25,11 +31,11 @@ import yelf42.cropcritters.items.ModItems;
 import java.util.function.Predicate;
 
 public class TorchflowerCritterEntity extends AbstractCropCritterEntity {
-    private static final Predicate<Entity> NOTICEABLE_PLAYER_FILTER = (entity) -> !entity.isSneaky() && EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR.test(entity);
-    private static final Predicate<Entity> FARM_ANIMALS_FILTER = (entity -> entity.getType().isIn(CropCritters.SCARE_CRITTERS));
+    private static final Predicate<Entity> NOTICEABLE_PLAYER_FILTER = (entity) -> !entity.isDiscrete() && EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(entity);
+    private static final Predicate<Entity> FARM_ANIMALS_FILTER = (entity -> entity.getType().is(CropCritters.SCARE_CRITTERS));
 
 
-    public TorchflowerCritterEntity(EntityType<? extends TameableEntity> entityType, World world) {
+    public TorchflowerCritterEntity(EntityType<? extends TamableAnimal> entityType, Level world) {
         super(entityType, world);
     }
 
@@ -39,12 +45,12 @@ public class TorchflowerCritterEntity extends AbstractCropCritterEntity {
     protected int getTargetOffset() {return 0;}
 
     @Override
-    protected Pair<Item, Integer> getLoot() {
-        return new Pair<>(Items.TORCHFLOWER, 1);
+    protected Tuple<Item, Integer> getLoot() {
+        return new Tuple<>(Items.TORCHFLOWER, 1);
     }
 
     @Override
-    protected boolean isHealingItem(ItemStack itemStack) {return itemStack.isOf(Items.TORCHFLOWER);}
+    protected boolean isHealingItem(ItemStack itemStack) {return itemStack.is(Items.TORCHFLOWER);}
 
     @Override
     protected int resetTicksUntilCanWork() {return 0;}
@@ -52,44 +58,44 @@ public class TorchflowerCritterEntity extends AbstractCropCritterEntity {
     public void completeTargetGoal() {}
 
     @Override
-    protected void initGoals() {
-        net.minecraft.entity.ai.goal.TemptGoal temptGoal = new TemptGoal(this, 0.6, (stack) -> stack.isOf(ModItems.LOST_SOUL), true);
-        this.goalSelector.add(0, new SwimGoal(this));
-        this.goalSelector.add(1, new SitGoal(this));
-        this.goalSelector.add(2, temptGoal);
-        this.goalSelector.add(6, new FollowOwnerGoal(this, (double)2.0F, 6.0F, 2.0F));
-        this.goalSelector.add(8, new FleeEntityGoal<>(this, AnimalEntity.class, 10.0F, 1.6, 1.4, (entity) -> FARM_ANIMALS_FILTER.test(entity) && !this.isTrusting()));
-        this.goalSelector.add(8, new FleeEntityGoal<>(this, PlayerEntity.class, 10.0F, 1.6, 1.4, (entity) -> NOTICEABLE_PLAYER_FILTER.test(entity) && !this.isTrusting()));
-        this.goalSelector.add(12, new WanderAroundFarGoal(this, (double)1.0F));
-        this.goalSelector.add(20, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
-        this.goalSelector.add(20, new LookAroundGoal(this));
+    protected void registerGoals() {
+        net.minecraft.world.entity.ai.goal.TemptGoal temptGoal = new TemptGoal(this, 0.6, (stack) -> stack.is(ModItems.LOST_SOUL), true);
+        this.goalSelector.addGoal(0, new FloatGoal(this));
+        this.goalSelector.addGoal(1, new SitWhenOrderedToGoal(this));
+        this.goalSelector.addGoal(2, temptGoal);
+        this.goalSelector.addGoal(6, new FollowOwnerGoal(this, (double)2.0F, 6.0F, 2.0F));
+        this.goalSelector.addGoal(8, new AvoidEntityGoal<>(this, Animal.class, 10.0F, 1.6, 1.4, (entity) -> FARM_ANIMALS_FILTER.test(entity) && !this.isTrusting()));
+        this.goalSelector.addGoal(8, new AvoidEntityGoal<>(this, Player.class, 10.0F, 1.6, 1.4, (entity) -> NOTICEABLE_PLAYER_FILTER.test(entity) && !this.isTrusting()));
+        this.goalSelector.addGoal(12, new WaterAvoidingRandomStrollGoal(this, (double)1.0F));
+        this.goalSelector.addGoal(20, new LookAtPlayerGoal(this, Player.class, 8.0F));
+        this.goalSelector.addGoal(20, new RandomLookAroundGoal(this));
     }
 
     @Override
-    protected void mobTick(ServerWorld world) {
-        super.mobTick(world);
-        BlockPos pos = this.getBlockPos().up();
+    protected void customServerAiStep(ServerLevel world) {
+        super.customServerAiStep(world);
+        BlockPos pos = this.blockPosition().above();
         if (world.getBlockState(pos).isAir()) {
-            world.setBlockState(pos, ModBlocks.TORCHFLOWER_SPARK.getDefaultState());
-            world.scheduleBlockTick(pos, ModBlocks.TORCHFLOWER_SPARK, 200, TickPriority.EXTREMELY_LOW);
+            world.setBlockAndUpdate(pos, ModBlocks.TORCHFLOWER_SPARK.defaultBlockState());
+            world.scheduleTick(pos, ModBlocks.TORCHFLOWER_SPARK, 200, TickPriority.EXTREMELY_LOW);
         }
     }
 
     @Override
-    public ActionResult interactMob(PlayerEntity player, Hand hand) {
-        ActionResult actionResult = super.interactMob(player, hand);
+    public InteractionResult mobInteract(Player player, InteractionHand hand) {
+        InteractionResult actionResult = super.mobInteract(player, hand);
         //CropCritters.LOGGER.info(this.getOwner() == null ? "null" : "present");
-        if (!actionResult.isAccepted() && this.isTrusting() && this.isOwner(player)) {
-            this.setSitting(!this.isSitting());
-            return ActionResult.SUCCESS;
+        if (!actionResult.consumesAction() && this.isTrusting() && this.isOwnedBy(player)) {
+            this.setOrderedToSit(!this.isOrderedToSit());
+            return InteractionResult.SUCCESS;
         }
         return actionResult;
     }
 
     @Override
-    protected void tryTame(PlayerEntity player) {
+    protected void tryTame(Player player) {
         super.tryTame(player);
-        if (this.isTamed()) this.setSitting(true);
+        if (this.isTame()) this.setOrderedToSit(true);
     }
 
 

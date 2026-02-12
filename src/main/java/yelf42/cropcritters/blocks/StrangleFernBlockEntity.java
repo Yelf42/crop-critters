@@ -1,33 +1,33 @@
 package yelf42.cropcritters.blocks;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.core.BlockPos;
 
 public class StrangleFernBlockEntity extends BlockEntity {
-    private BlockState infestedState = Blocks.DEAD_BUSH.getDefaultState();
+    private BlockState infestedState = Blocks.DEAD_BUSH.defaultBlockState();
 
     public StrangleFernBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.STRANGLE_FERN, pos, state);
-        if (Math.random() > 0.5) infestedState = Blocks.SHORT_GRASS.getDefaultState();
+        if (Math.random() > 0.5) infestedState = Blocks.SHORT_GRASS.defaultBlockState();
     }
 
     @Override
-    protected void readData(ReadView view) {
-        super.readData(view);
-        infestedState = view.read("InfestedState", BlockState.CODEC).orElse(Blocks.DEAD_BUSH.getDefaultState());
+    protected void loadAdditional(ValueInput view) {
+        super.loadAdditional(view);
+        infestedState = view.read("InfestedState", BlockState.CODEC).orElse(Blocks.DEAD_BUSH.defaultBlockState());
     }
 
     @Override
-    protected void writeData(WriteView view) {
-        super.writeData(view);
-        view.put("InfestedState", BlockState.CODEC, infestedState);
+    protected void saveAdditional(ValueOutput view) {
+        super.saveAdditional(view);
+        view.store("InfestedState", BlockState.CODEC, infestedState);
     }
 
     public BlockState getInfestedState() {
@@ -39,16 +39,16 @@ public class StrangleFernBlockEntity extends BlockEntity {
         updateListeners();
     }
 
-    public BlockEntityUpdateS2CPacket toUpdatePacket() {
-        return BlockEntityUpdateS2CPacket.create(this);
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
-    public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registries) {
-        return this.createComponentlessNbt(registries);
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        return this.saveCustomOnly(registries);
     }
 
     private void updateListeners() {
-        this.markDirty();
-        this.world.updateListeners(this.getPos(), this.getCachedState(), this.getCachedState(), 3);
+        this.setChanged();
+        this.level.sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), 3);
     }
 }

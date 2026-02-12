@@ -1,10 +1,10 @@
 package yelf42.cropcritters.sound;
 
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
+import net.minecraft.core.Holder;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.resources.Identifier;
 import yelf42.cropcritters.CropCritters;
 
 public class ModSounds {
@@ -18,7 +18,7 @@ public class ModSounds {
     public static final SoundEvent MAZEWOOD_GROW = register("mazewood_grow");
 
     public static final SoundEvent TICKING = register("ticking");
-    public static final RegistryEntry<SoundEvent> PUFFBOMB_EXPLODE = registerEntry("puffbomb_explode");
+    public static final Holder<SoundEvent> PUFFBOMB_EXPLODE = registerEntry("puffbomb_explode");
 
     public static final SoundEvent WITHER_ROSE_CONVERT = register("wither_rose_convert");
     public static final SoundEvent WITHER_ROSE_CONVERT_EXTRA = register("wither_rose_convert_extra");
@@ -50,12 +50,12 @@ public class ModSounds {
 
 
     private static SoundEvent register(String name) {
-        Identifier id = Identifier.of(CropCritters.MOD_ID, name);
-        return Registry.register(Registries.SOUND_EVENT, id, SoundEvent.of(id));
+        Identifier id = Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, name);
+        return Registry.register(BuiltInRegistries.SOUND_EVENT, id, SoundEvent.createVariableRangeEvent(id));
     }
-    private static RegistryEntry<SoundEvent> registerEntry(String name) {
-        Identifier id = Identifier.of(CropCritters.MOD_ID, name);
-        return Registry.registerReference(Registries.SOUND_EVENT, id, SoundEvent.of(id));
+    private static Holder<SoundEvent> registerEntry(String name) {
+        Identifier id = Identifier.fromNamespaceAndPath(CropCritters.MOD_ID, name);
+        return Registry.registerForHolder(BuiltInRegistries.SOUND_EVENT, id, SoundEvent.createVariableRangeEvent(id));
     }
 
     public static void initialize() {
