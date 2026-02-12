@@ -1,7 +1,5 @@
 package yelf42.cropcritters.entity;
 
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.CropBlock;
 import net.minecraft.block.Fertilizable;
@@ -21,6 +19,7 @@ import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Pair;
@@ -165,31 +164,34 @@ public class MelonCritterEntity extends AbstractCropCritterEntity implements Ran
         public void tick() {
             MelonCritterEntity.this.wateringDuration--;
             MelonCritterEntity.this.navigation.stop();
-            if (MelonCritterEntity.this.random.nextInt(10) == 0) {
-                BlockPos toWater = wateringTargets.get(MelonCritterEntity.this.random.nextInt(wateringTargets.size()));
-                World world = MelonCritterEntity.this.getEntityWorld();
-                BlockState toWaterState = world.getBlockState(toWater);
-                if (toWaterState.getBlock() instanceof Fertilizable fertilizable) {
-                    if (fertilizable.isFertilizable(world, toWater, toWaterState)) {
-                        if (world instanceof ServerWorld) {
-                            if (fertilizable.canGrow(world, world.random, toWater, toWaterState)) {
-                                fertilizable.grow((ServerWorld) world, world.random, toWater, toWaterState);
+            World world = MelonCritterEntity.this.getEntityWorld();
+            if (world instanceof ServerWorld serverWorld) {
+                if (MelonCritterEntity.this.random.nextInt(10) == 0) {
+                    BlockPos toWater = wateringTargets.get(MelonCritterEntity.this.random.nextInt(wateringTargets.size()));
+                    BlockState toWaterState = serverWorld.getBlockState(toWater);
+                    if (toWaterState.getBlock() instanceof Fertilizable fertilizable) {
+                        if (fertilizable.isFertilizable(serverWorld, toWater, toWaterState)) {
+                            if (fertilizable.canGrow(serverWorld, serverWorld.random, toWater, toWaterState)) {
+                                fertilizable.grow(serverWorld, serverWorld.random, toWater, toWaterState);
                             }
                         }
                     }
                 }
-            }
-            Vec3d facing = MelonCritterEntity.this.getRotationVector().normalize().multiply(3);
-            Vec3d start = MelonCritterEntity.this.getEntityPos().add(0F, 0.1F, 0F);
+                Vec3d facing = MelonCritterEntity.this.getRotationVector().normalize().multiply(3);
+                Vec3d start = MelonCritterEntity.this.getEntityPos().add(0F, 0.1F, 0F);
 
-            CropCritters.WaterSprayS2CPayload payload = new CropCritters.WaterSprayS2CPayload(start, facing);
+                CropCritters.WaterSprayS2CPayload payload = new CropCritters.WaterSprayS2CPayload(start, facing);
+                CustomPayloadS2CPacket packet = new CustomPayloadS2CPacket(payload);
 
-            for (ServerPlayerEntity player : PlayerLookup.world((ServerWorld) MelonCritterEntity.this.getEntityWorld())) {
-                if (start.isInRange(player.getEntityPos(), 64)) {
-                    ServerPlayNetworking.send(player, payload);
+                for (ServerPlayerEntity player : serverWorld.getPlayers()) {
+                    if (start.isInRange(player.getEntityPos(), 64)) {
+                        player.networkHandler.sendPacket(packet);
+                    }
                 }
+
+                MelonCritterEntity.this.playSound(ModSounds.ENTITY_CRITTER_WATER, 0.01F, 0.8F / (MelonCritterEntity.this.getRandom().nextFloat() * 0.4F + 0.8F));
             }
-            MelonCritterEntity.this.playSound(ModSounds.ENTITY_CRITTER_WATER, 0.01F, 0.8F / (MelonCritterEntity.this.getRandom().nextFloat() * 0.4F + 0.8F));
+
 
         }
 

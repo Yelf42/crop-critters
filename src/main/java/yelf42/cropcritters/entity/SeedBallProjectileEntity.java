@@ -1,7 +1,5 @@
 package yelf42.cropcritters.entity;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
@@ -51,13 +49,11 @@ public class SeedBallProjectileEntity extends ThrownItemEntity {
         return ModItems.SEED_BALL;
     }
 
-    @Environment(EnvType.CLIENT)
     private ParticleEffect getParticleParameters() {
         ItemStack itemStack = this.getStack();
         return (itemStack.isEmpty() ? ParticleTypes.SPLASH : new ItemStackParticleEffect(ParticleTypes.ITEM, itemStack));
     }
 
-    @Environment(EnvType.CLIENT)
     public void handleStatus(byte status) {
         if (status == 3) {
             ParticleEffect particleEffect = this.getParticleParameters();

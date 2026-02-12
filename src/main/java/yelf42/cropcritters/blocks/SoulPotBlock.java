@@ -1,8 +1,6 @@
 package yelf42.cropcritters.blocks;
 
 import com.mojang.serialization.MapCodec;
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -13,6 +11,7 @@ import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.tag.EnchantmentTags;
 import net.minecraft.registry.tag.ItemTags;
@@ -41,7 +40,6 @@ import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.tick.ScheduledTickView;
 import org.jspecify.annotations.Nullable;
 import yelf42.cropcritters.CropCritters;
-import yelf42.cropcritters.entity.MelonCritterEntity;
 import yelf42.cropcritters.items.ModItems;
 import yelf42.cropcritters.particle.ModParticles;
 import yelf42.cropcritters.sound.ModSounds;
@@ -110,9 +108,11 @@ public class SoulPotBlock extends BlockWithEntity implements Waterloggable {
 
                     Vec3d center = pos.up().toCenterPos();
                     CropCritters.ParticleRingS2CPayload payload = new CropCritters.ParticleRingS2CPayload(center, 0.5F, 10, ModParticles.SOUL_GLOW);
-                    for (ServerPlayerEntity player : PlayerLookup.world(world)) {
+                    CustomPayloadS2CPacket packet = new CustomPayloadS2CPacket(payload);
+
+                    for (ServerPlayerEntity player : world.getPlayers()) {
                         if (center.isInRange(player.getEntityPos(), 64)) {
-                            ServerPlayNetworking.send(player, payload);
+                            player.networkHandler.sendPacket(packet);
                         }
                     }
                 }

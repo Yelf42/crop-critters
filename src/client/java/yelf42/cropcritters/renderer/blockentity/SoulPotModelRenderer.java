@@ -1,8 +1,6 @@
 package yelf42.cropcritters.renderer.blockentity;
 
 import com.mojang.serialization.MapCodec;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.client.render.command.OrderedRenderCommandQueue;
 import net.minecraft.client.render.item.model.special.SpecialModelRenderer;
 import net.minecraft.client.util.math.MatrixStack;
@@ -11,7 +9,6 @@ import net.minecraft.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3fc;
 
-@Environment(EnvType.CLIENT)
 public class SoulPotModelRenderer implements SpecialModelRenderer<Integer> {
     private final SoulPotBlockEntityRenderer blockEntityRenderer;
 
@@ -37,7 +34,6 @@ public class SoulPotModelRenderer implements SpecialModelRenderer<Integer> {
         this.blockEntityRenderer.collectVertices(consumer);
     }
 
-    @Environment(EnvType.CLIENT)
     public record Unbaked() implements SpecialModelRenderer.Unbaked {
         public static final MapCodec<Unbaked> CODEC = MapCodec.unit(new Unbaked());
 

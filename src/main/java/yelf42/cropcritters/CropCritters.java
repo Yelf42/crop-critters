@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.DispenserBlock;
@@ -40,7 +41,6 @@ import yelf42.cropcritters.blocks.ModBlocks;
 import yelf42.cropcritters.config.ConfigManager;
 import yelf42.cropcritters.effects.ModEffects;
 import yelf42.cropcritters.entity.ModEntities;
-import yelf42.cropcritters.events.ModEvents;
 import yelf42.cropcritters.features.ModFeatures;
 import yelf42.cropcritters.items.ModComponents;
 import yelf42.cropcritters.items.ModItems;
@@ -87,6 +87,7 @@ public class CropCritters implements ModInitializer {
 		LOGGER.info("Starting initialize of " + CropCritters.MOD_ID);
 
 		// Config load:
+        ConfigManager.setConfigPath(FabricLoader.getInstance().getConfigDir());
 		ConfigManager.load();
 
         ModParticles.initialize();
@@ -98,7 +99,6 @@ public class CropCritters implements ModInitializer {
 		ModItems.initialize();
 		ModBlocks.initialize();
 		ModBlockEntities.initialize();
-		ModEvents.initialize();
 
 		// Strange fertilizer dispenser behaviour
 		LOGGER.info("Registering dispenser behaviours for " + CropCritters.MOD_ID);

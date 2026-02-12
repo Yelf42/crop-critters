@@ -10,7 +10,6 @@ import net.minecraft.client.render.state.CameraRenderState;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemDisplayContext;
 import net.minecraft.util.math.RotationAxis;
-import org.joml.Vector3fc;
 import yelf42.cropcritters.entity.PopperPodEntity;
 
 public class PopperPodEntityRenderer extends EntityRenderer<PopperPodEntity, FireworkRocketEntityRenderState> {

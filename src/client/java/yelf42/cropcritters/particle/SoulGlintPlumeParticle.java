@@ -1,14 +1,11 @@
 package yelf42.cropcritters.particle;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.client.particle.*;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.particle.SimpleParticleType;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.random.Random;
 
-@Environment(EnvType.CLIENT)
 public class SoulGlintPlumeParticle extends BillboardParticle {
     private final SpriteProvider spriteProvider;
 
@@ -47,7 +44,6 @@ public class SoulGlintPlumeParticle extends BillboardParticle {
         super.tick();
     }
 
-    @Environment(EnvType.CLIENT)
     public static class Factory implements ParticleFactory<SimpleParticleType> {
         private final SpriteProvider spriteProvider;
 

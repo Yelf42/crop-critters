@@ -1,7 +1,5 @@
 package yelf42.cropcritters.entity;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -38,13 +36,11 @@ public class SpitSeedProjectileEntity extends ThrownItemEntity {
         this.getEntityWorld().sendEntityStatus(this, (byte)4);
     }
 
-    @Environment(EnvType.CLIENT)
     private ParticleEffect getParticleParameters() {
         //ItemStack itemStack = this.getStack();
         return ParticleTypes.SPLASH;
     }
 
-    @Environment(EnvType.CLIENT)
     public void handleStatus(byte status) {
         ParticleEffect particleEffect = this.getParticleParameters();
         if (status == 3) {

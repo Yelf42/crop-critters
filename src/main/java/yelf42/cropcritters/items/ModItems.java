@@ -5,8 +5,6 @@ import net.fabricmc.fabric.api.registry.*;
 import net.minecraft.block.DispenserBlock;
 import net.minecraft.component.type.FoodComponent;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.decoration.painting.PaintingEntity;
-import net.minecraft.entity.decoration.painting.PaintingVariant;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.*;
 import net.minecraft.recipe.RecipeSerializer;

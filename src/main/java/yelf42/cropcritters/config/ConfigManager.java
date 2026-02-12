@@ -1,6 +1,5 @@
 package yelf42.cropcritters.config;
 
-import net.fabricmc.loader.api.FabricLoader;
 import yelf42.cropcritters.CropCritters;
 
 import java.io.BufferedReader;
@@ -10,10 +9,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class ConfigManager {
-    private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir().resolve("crop-critters-config.toml");
+    private static Path CONFIG_PATH;
     public static CropCrittersConfig CONFIG = CropCrittersConfig.getDefaults();
 
+    public static void setConfigPath(Path configPath) {
+        CONFIG_PATH = configPath.resolve("crop-critters-config.toml");
+    }
+
     public static void load() {
+        if (CONFIG_PATH == null) {
+            throw new IllegalStateException("Config path not initialized! Call setConfigPath() first.");
+        }
+
         if (!Files.exists(CONFIG_PATH)) {
             CropCritters.LOGGER.info("Generating first time CropCritters config");
             save(); // Save defaults

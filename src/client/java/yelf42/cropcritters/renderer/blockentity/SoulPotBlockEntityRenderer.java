@@ -1,7 +1,5 @@
 package yelf42.cropcritters.renderer.blockentity;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.block.entity.DecoratedPotBlockEntity;
 import net.minecraft.client.model.*;
 import net.minecraft.client.render.OverlayTexture;
@@ -32,25 +30,15 @@ import yelf42.cropcritters.CropCritters;
 import yelf42.cropcritters.blocks.SoulPotBlockEntity;
 import yelf42.cropcritters.items.ModItems;
 
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-@Environment(EnvType.CLIENT)
 public class SoulPotBlockEntityRenderer implements BlockEntityRenderer<SoulPotBlockEntity, SoulPotBlockEntityRenderState> {
     private static final Map<Integer, SpriteIdentifier> COVER_SPRITES = new HashMap<>();
     private static final Map<Integer, SpriteIdentifier> INSIDE_SPRITES = new HashMap<>();
 
-
     private final SpriteHolder materials;
-    private static final String NECK = "neck";
-    private static final String FRONT = "front";
-    private static final String BACK = "back";
-    private static final String LEFT = "left";
-    private static final String RIGHT = "right";
-    private static final String TOP = "top";
-    private static final String BOTTOM = "bottom";
     private final ModelPart neck;
     private final ModelPart front;
     private final ModelPart back;
@@ -58,7 +46,6 @@ public class SoulPotBlockEntityRenderer implements BlockEntityRenderer<SoulPotBl
     private final ModelPart right;
     private final ModelPart top;
     private final ModelPart bottom;
-    private static final float field_46728 = 0.125F;
 
     public SoulPotBlockEntityRenderer(BlockEntityRendererFactory.Context context) {
         this(context.loadedEntityModels(), context.spriteHolder());
@@ -81,29 +68,6 @@ public class SoulPotBlockEntityRenderer implements BlockEntityRenderer<SoulPotBl
         this.right = modelPart2.getChild("right");
     }
 
-    public static TexturedModelData getTopBottomNeckTexturedModelData() {
-        ModelData modelData = new ModelData();
-        ModelPartData modelPartData = modelData.getRoot();
-        Dilation dilation = new Dilation(0.2F);
-        Dilation dilation2 = new Dilation(-0.1F);
-        modelPartData.addChild("neck", ModelPartBuilder.create().uv(0, 0).cuboid(4.0F, 17.0F, 4.0F, 8.0F, 3.0F, 8.0F, dilation2).uv(0, 5).cuboid(5.0F, 20.0F, 5.0F, 6.0F, 1.0F, 6.0F, dilation), ModelTransform.of(0.0F, 37.0F, 16.0F, (float)Math.PI, 0.0F, 0.0F));
-        ModelPartBuilder modelPartBuilder = ModelPartBuilder.create().uv(-14, 13).cuboid(0.0F, 0.0F, 0.0F, 14.0F, 0.0F, 14.0F);
-        modelPartData.addChild("top", modelPartBuilder, ModelTransform.of(1.0F, 16.0F, 1.0F, 0.0F, 0.0F, 0.0F));
-        modelPartData.addChild("bottom", modelPartBuilder, ModelTransform.of(1.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F));
-        return TexturedModelData.of(modelData, 32, 32);
-    }
-
-    public static TexturedModelData getSidesTexturedModelData() {
-        ModelData modelData = new ModelData();
-        ModelPartData modelPartData = modelData.getRoot();
-        ModelPartBuilder modelPartBuilder = ModelPartBuilder.create().uv(1, 0).cuboid(0.0F, 0.0F, 0.0F, 14.0F, 16.0F, 0.0F, EnumSet.of(Direction.NORTH));
-        modelPartData.addChild("back", modelPartBuilder, ModelTransform.of(15.0F, 16.0F, 1.0F, 0.0F, 0.0F, (float)Math.PI));
-        modelPartData.addChild("left", modelPartBuilder, ModelTransform.of(1.0F, 16.0F, 1.0F, 0.0F, (-(float)Math.PI / 2F), (float)Math.PI));
-        modelPartData.addChild("right", modelPartBuilder, ModelTransform.of(15.0F, 16.0F, 15.0F, 0.0F, ((float)Math.PI / 2F), (float)Math.PI));
-        modelPartData.addChild("front", modelPartBuilder, ModelTransform.of(1.0F, 16.0F, 15.0F, (float)Math.PI, 0.0F, 0.0F));
-        return TexturedModelData.of(modelData, 16, 16);
-    }
-
     public SoulPotBlockEntityRenderState createRenderState() {
         return new SoulPotBlockEntityRenderState();
     }
@@ -123,19 +87,18 @@ public class SoulPotBlockEntityRenderer implements BlockEntityRenderer<SoulPotBl
     public void render(SoulPotBlockEntityRenderState soulPotBlockEntityRenderState, MatrixStack matrixStack, OrderedRenderCommandQueue orderedRenderCommandQueue, CameraRenderState cameraRenderState) {
         matrixStack.push();
         Direction direction = soulPotBlockEntityRenderState.facing;
-        matrixStack.translate((double)0.5F, (double)0.0F, (double)0.5F);
+        matrixStack.translate(0.5F, 0.0F, (double)0.5F);
         matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180.0F - direction.getPositiveHorizontalDegrees()));
-        matrixStack.translate((double)-0.5F, (double)0.0F, (double)-0.5F);
+        matrixStack.translate(-0.5F, 0.0F, (double)-0.5F);
         if (soulPotBlockEntityRenderState.wobbleAnimationProgress >= 0.0F && soulPotBlockEntityRenderState.wobbleAnimationProgress <= 1.0F) {
             if (soulPotBlockEntityRenderState.wobbleType == DecoratedPotBlockEntity.WobbleType.POSITIVE) {
-                float f = 0.015625F;
                 float g = soulPotBlockEntityRenderState.wobbleAnimationProgress * ((float)Math.PI * 2F);
-                float h = -1.5F * (MathHelper.cos((double)g) + 0.5F) * MathHelper.sin((double)(g / 2.0F));
+                float h = -1.5F * (MathHelper.cos(g) + 0.5F) * MathHelper.sin((double)(g / 2.0F));
                 matrixStack.multiply(RotationAxis.POSITIVE_X.rotation(h * 0.015625F), 0.5F, 0.0F, 0.5F);
-                float i = MathHelper.sin((double)g);
+                float i = MathHelper.sin(g);
                 matrixStack.multiply(RotationAxis.POSITIVE_Z.rotation(i * 0.015625F), 0.5F, 0.0F, 0.5F);
             } else {
-                float f = MathHelper.sin((double)(-soulPotBlockEntityRenderState.wobbleAnimationProgress * 3.0F * (float)Math.PI)) * 0.125F;
+                float f = MathHelper.sin(-soulPotBlockEntityRenderState.wobbleAnimationProgress * 3.0F * (float)Math.PI) * 0.125F;
                 float g = 1.0F - soulPotBlockEntityRenderState.wobbleAnimationProgress;
                 matrixStack.multiply(RotationAxis.POSITIVE_Y.rotation(f * g), 0.5F, 0.0F, 0.5F);
             }

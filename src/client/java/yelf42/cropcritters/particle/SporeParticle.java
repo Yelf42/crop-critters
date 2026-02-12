@@ -1,7 +1,5 @@
 package yelf42.cropcritters.particle;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.particle.*;
@@ -63,7 +61,6 @@ public class SporeParticle extends BillboardParticle {
         return clientPlayerEntity != null && clientPlayerEntity.getEyePos().squaredDistanceTo(this.x, this.y, this.z) <= (double) 9.0F && minecraftClient.options.getPerspective().isFirstPerson() && clientPlayerEntity.isUsingSpyglass();
     }
 
-    @Environment(EnvType.CLIENT)
     public static class Factory implements ParticleFactory<TintedParticleEffect> {
         private final SpriteProvider spriteProvider;
 

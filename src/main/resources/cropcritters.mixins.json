@@ -5,9 +5,12 @@
   "mixins": [
     "AttachedStemBlockMixin",
     "BiomeMixin",
+    "BlockItemMixin",
     "BlockMixin",
     "CropBlockMixin",
+    "PlayerEntityMixin",
     "FarmlandBlockMixin",
+    "HoeItemMixin",
     "LandPathNodeMakerMixin",
     "LightningEntityMixin",
     "NetherWartBlockMixin",
@@ -15,6 +18,7 @@
     "PlantBlockMixin",
     "ServerWorldMixin",
     "ShearsDispenserBehaviourMixin",
+    "ShearsItemMixin",
     "StemBlockMixin"
   ],
   "server": [],
