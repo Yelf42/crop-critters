@@ -1,6 +1,1 @@
-# TODO / IDEAS:
-- Custom beacon-esque multiblock
-- Pests
-- Locust swarm raid
-- New weed types:
-  - Tumbleweed
+Project moved to [HERE](https://github.com/Yelf42/cropcritters-multiloader) for the multiloader capabilities
